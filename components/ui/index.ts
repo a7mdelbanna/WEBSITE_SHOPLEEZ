@@ -64,3 +64,6 @@ export {
   CarouselWithIndicators,
   CarouselWithDots,
 } from './carousel-indicators';
+
+// Overlay
+export { Overlay } from './overlay';

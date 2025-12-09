@@ -11,6 +11,7 @@
 
 import { AppShell } from '@/components/layout';
 import { ProductCard, ProductScroll } from '@/components/products/product-card';
+import { ProductDetailModal, useProductDetailModal, type ProductDetailData } from '@/components/products/product-detail-modal';
 import { CarouselWithIndicators } from '@/components/ui/carousel-indicators';
 import { ChevronRight } from 'lucide-react';
 import Image from 'next/image';
@@ -154,7 +155,8 @@ const MARQUEE_BANNERS = [
 ];
 
 // Products for "Выгодная полка" section (Samokat reference style)
-const DEALS_PRODUCTS = [
+// Extended with full product details for the modal
+const DEALS_PRODUCTS: ProductDetailData[] = [
   {
     id: 1,
     name: 'Адвент-календарь Самокат Beauty Rituals',
@@ -162,8 +164,16 @@ const DEALS_PRODUCTS = [
     image: 'https://images.unsplash.com/photo-1607083206869-4c7672e72a8a?w=400&h=400&fit=crop',
     price: 2999,
     originalPrice: 3999,
-    weight: '',
+    volume: '',
     badge: { text: '-25%', textAr: '-25%', variant: 'discount' as const },
+    highlights: [
+      '24 косметических продукта',
+      'Эксклюзивные средства Самокат',
+      'Подарочная упаковка',
+    ],
+    description: 'Адвент-календарь с 24 косметическими продуктами для ежедневного ухода. Идеальный подарок к новому году.',
+    brand: 'Самокат',
+    productType: 'набор',
   },
   {
     id: 2,
@@ -172,8 +182,18 @@ const DEALS_PRODUCTS = [
     image: 'https://images.unsplash.com/photo-1556228578-0d85b1a4d571?w=400&h=400&fit=crop',
     price: 379,
     originalPrice: 423,
-    weight: '300 мл',
+    volume: '300 мл',
     badge: { text: '-10%', textAr: '-10%', variant: 'discount' as const },
+    highlights: [
+      'С экстрактом шафрана',
+      'Увлажняющая формула',
+      'Приятный восточный аромат',
+    ],
+    description: 'Гель для душа с уникальным ароматом шафрана и специй. Бережно очищает кожу, не пересушивая её.',
+    usage: 'Нанесите на влажную кожу, вспеньте и тщательно смойте водой.',
+    brand: 'Самокат',
+    productType: 'гель для душа',
+    shelfLife: '24 месяца',
   },
   {
     id: 3,
@@ -182,18 +202,71 @@ const DEALS_PRODUCTS = [
     image: 'https://images.unsplash.com/photo-1585386959984-a4155224a1ad?w=400&h=400&fit=crop',
     price: 299,
     originalPrice: 379,
-    weight: '3 шт.',
+    volume: '3 шт.',
     badge: { text: '-21%', textAr: '-21%', variant: 'discount' as const },
+    highlights: [
+      '5 острых лезвий',
+      'Увлажняющая полоска',
+      'Эргономичная ручка',
+    ],
+    description: 'Одноразовые бритвы с 5 лезвиями для гладкого бритья. Увлажняющая полоска с алоэ вера.',
+    quantity: '3 шт.',
+    brand: 'Самокат',
+    productType: 'бритвы',
   },
   {
     id: 4,
-    name: 'Лосьон-шейк для тела Самокат Dewy Repair',
+    name: 'Лосьон-шейк для тела Самокат Dewy Repair, увлажняющий, с ароматом земляники',
     nameAr: 'Лосьон-шейк для тела Самокат Dewy Repair',
     image: 'https://images.unsplash.com/photo-1608248543803-ba4f8c70ae0b?w=400&h=400&fit=crop',
     price: 319,
     originalPrice: 371,
-    weight: '150 мл',
+    volume: '150 мл',
     badge: { text: '-14%', textAr: '-14%', variant: 'discount' as const },
+    highlights: [
+      'С экстрактом клубники, маслами и пантенолом',
+      'Можно использовать после загара',
+      'Приятный земляничный аромат',
+    ],
+    description: 'Спрей легко наносится, быстро впитывается и защищает кожу от сухости. Экстракт клубники в составе способствует регенерации кожи и сужению пор, успокаивает и увлажняет кожу. Масло авокадо обладает антиоксидантными свойствами, ниацинамид — способствует выравниванию текстуры кожи и уменьшению пигментации. Пантенол и бисаболол обладают заживляющими свойствами и повышают эластичность. У спрея приятный земляничный аромат. Можно использовать после загара.',
+    usage: 'Хорошо встряхните флакон, чтобы смешать две фазы. Нанесите спрей на предварительно очищенную кожу. Дождитесь естественного высыхания или распределите средство массирующими движениями до полного впитывания.',
+    composition: 'Aqua, Paraffinum Liquidum, Isododecane, Isopropyl Myristate, Polysorbate-20, Fragaria Vesca Fruit Extract(экстракт клубники), Cetearyl Alcohol, Potassium Cetyl Phosphate, Macadamia Ternifolia Seed Oil, Persea Gratissima (Avocado) Oil, Prunus Amygdalus Dulcis (Sweet Almond) Oil, Parfum...',
+    shelfLife: '37 месяцев',
+    storageConditions: 'При температуре от +5°C до +25°C',
+    manufacturer: 'ООО Мыловаренная мануфактура Куафер, Россия',
+    quantity: '1.0 шт.',
+    productType: 'лосьон',
+    brand: 'Самокат',
+    applicationArea: 'для тела',
+    relatedProducts: [
+      {
+        id: 101,
+        name: 'Бальзам для губ Самокат, Cherry Blossom',
+        nameAr: 'Бальзам для губ',
+        image: 'https://images.unsplash.com/photo-1586495777744-4413f21062fa?w=400&h=400&fit=crop',
+        price: 199,
+        weight: '12 мл',
+      },
+      {
+        id: 102,
+        name: 'Крем-спрей для волос Самокат',
+        nameAr: 'Крем-спрей для волос',
+        image: 'https://images.unsplash.com/photo-1527799820374-dcf8d9d4a388?w=400&h=400&fit=crop',
+        price: 419,
+        originalPrice: 600,
+        weight: '250 мл',
+        badge: { text: '-30%', textAr: '-30%', variant: 'discount' as const },
+      },
+      {
+        id: 103,
+        name: 'Гель для умывания Самокат, Pimple Killer',
+        nameAr: 'Гель для умывания',
+        image: 'https://images.unsplash.com/photo-1556228720-195a672e8a03?w=400&h=400&fit=crop',
+        price: 299,
+        weight: '150 мл',
+        promoText: 'От воспалений',
+      },
+    ],
   },
   {
     id: 5,
@@ -202,8 +275,16 @@ const DEALS_PRODUCTS = [
     image: 'https://images.unsplash.com/photo-1570194065650-d99fb4b38b15?w=400&h=400&fit=crop',
     price: 399,
     originalPrice: 499,
-    weight: '300 мл',
+    volume: '300 мл',
     badge: { text: '-20%', textAr: '-20%', variant: 'discount' as const },
+    highlights: [
+      'Натуральные скрабирующие частицы',
+      'Мятно-ягодный аромат',
+      'Увлажняет и тонизирует',
+    ],
+    description: 'Скраб для тела с натуральными скрабирующими частицами и освежающим ароматом мяты и лесных ягод.',
+    brand: 'Самокат',
+    productType: 'скраб',
   },
   {
     id: 6,
@@ -212,8 +293,16 @@ const DEALS_PRODUCTS = [
     image: 'https://images.unsplash.com/photo-1611930022073-b7a4ba5fcccd?w=400&h=400&fit=crop',
     price: 189,
     originalPrice: 249,
-    weight: '75 мл',
+    volume: '75 мл',
     badge: { text: '-24%', textAr: '-24%', variant: 'discount' as const },
+    highlights: [
+      'Интенсивное увлажнение',
+      'Быстро впитывается',
+      'Не оставляет липкости',
+    ],
+    description: 'Крем для рук с интенсивным увлажнением. Быстро впитывается и не оставляет липкой пленки.',
+    brand: 'Самокат',
+    productType: 'крем для рук',
   },
   {
     id: 7,
@@ -222,22 +311,39 @@ const DEALS_PRODUCTS = [
     image: 'https://images.unsplash.com/photo-1596755389378-c31d21fd1273?w=400&h=400&fit=crop',
     price: 99,
     originalPrice: 149,
-    weight: '1 шт.',
+    volume: '1 шт.',
     badge: { text: '-33%', textAr: '-33%', variant: 'discount' as const },
+    highlights: [
+      'Глубокое увлажнение',
+      'Тканевая основа',
+      '15 минут для эффекта',
+    ],
+    description: 'Тканевая маска для глубокого увлажнения кожи лица. Результат за 15 минут.',
+    brand: 'Самокат',
+    productType: 'маска',
   },
 ];
 
 export default function HomePage() {
+  const { isOpen, selectedProduct, openModal, closeModal } = useProductDetailModal();
+
   const handleAddToCart = (productId: number) => {
     console.log('Add to cart:', productId);
   };
 
-  const handleProductClick = (productId: number) => {
-    console.log('Product clicked:', productId);
+  const handleProductClick = (product: ProductDetailData) => {
+    openModal(product);
   };
 
   return (
     <AppShell cartCount={3}>
+      {/* Product Detail Modal */}
+      <ProductDetailModal
+        product={selectedProduct}
+        isOpen={isOpen}
+        onClose={closeModal}
+        onAddToCart={handleAddToCart}
+      />
       <div className="flex gap-[12px]">
         {/* Main content - white rounded container */}
         <div className="flex-1 min-w-0 bg-white rounded-[20px] p-[32px]">
@@ -443,9 +549,20 @@ export default function HomePage() {
               {DEALS_PRODUCTS.map((product) => (
                 <div key={product.id} className="w-[140px] shrink-0 snap-start">
                   <ProductCard
-                    {...product}
+                    id={product.id}
+                    name={product.name}
+                    nameAr={product.nameAr || product.name}
+                    image={product.image}
+                    price={product.price}
+                    originalPrice={product.originalPrice}
+                    weight={product.volume}
+                    badge={product.badge ? {
+                      text: product.badge.text,
+                      textAr: product.badge.textAr || product.badge.text,
+                      variant: product.badge.variant,
+                    } : undefined}
                     onAddToCart={() => handleAddToCart(product.id)}
-                    onClick={() => handleProductClick(product.id)}
+                    onClick={() => handleProductClick(product)}
                   />
                 </div>
               ))}
