@@ -188,16 +188,14 @@ export function ProductDetailModal({
             <X className="w-[20px] h-[20px] text-[#666]" />
           </button>
 
-          {/* Main scrollable content */}
-          <div className="flex-1 overflow-y-auto">
-            {/* Two-column layout */}
-            <div className="flex flex-col md:flex-row">
+          {/* Two-column layout - both columns scroll independently */}
+          <div className="flex flex-col md:flex-row flex-1 overflow-hidden">
 
-              {/* LEFT COLUMN - Image + Related Products (two separate blocks) */}
-              <div className="w-full md:w-[480px] shrink-0 p-[16px] space-y-[16px]">
+            {/* LEFT COLUMN - Image + Related Products (scrolls independently) */}
+            <div className="w-full md:w-[480px] shrink-0 p-[16px] space-y-[16px] overflow-y-auto">
 
-                {/* Block 1: Image Card - ONLY image + badge */}
-                <div className="relative bg-[#FFF5F7] rounded-[24px] overflow-hidden">
+              {/* Block 1: Image Card - ONLY image + badge */}
+              <div className="relative bg-[#F5F5F5] rounded-[24px] overflow-hidden">
                   {/* Discount badge */}
                   {product.badge && (
                     <div
@@ -282,10 +280,10 @@ export function ProductDetailModal({
                 )}
               </div>
 
-              {/* RIGHT COLUMN - Product Details with sticky bottom bar */}
-              <div className="flex-1 flex flex-col relative">
-                {/* Scrollable details area */}
-                <div className="flex-1 p-[24px] pr-[32px] pt-[24px] pb-[100px] overflow-y-auto">
+            {/* RIGHT COLUMN - Product Details with sticky bottom CTA */}
+            <div className="flex-1 flex flex-col overflow-y-auto relative">
+              {/* Scrollable details area */}
+              <div className="flex-1 p-[24px] pr-[32px] pt-[24px] pb-[80px]">
                   {/* Product name */}
                   <h1 className="text-[22px] font-bold text-[#1A1A1A] leading-[1.25] mb-[4px] pr-[32px]">
                     {product.name}
@@ -388,31 +386,21 @@ export function ProductDetailModal({
                   </div>
                 </div>
 
-                {/* STICKY Add to Cart bar - RIGHT COLUMN ONLY */}
-                <div className="absolute bottom-0 left-0 right-0 bg-white border-t border-[#F0F0F0] px-[24px] py-[14px] flex items-center justify-between">
-                  {/* Old price - strikethrough, grey */}
-                  {hasDiscount ? (
-                    <span className="text-[15px] text-[#BEBEBE] line-through">
-                      {product.originalPrice} ₽
+              {/* STICKY Add to Cart bar - FULL WIDTH of right column */}
+              <div className="sticky bottom-0 left-0 right-0 bg-white px-[16px] py-[16px] z-10">
+                {/* Full-width pink pill button */}
+                <button
+                  onClick={handleAddToCart}
+                  className="w-full h-[56px] rounded-full bg-[#F95C78] hover:bg-[#E84D69] text-white text-[18px] font-semibold flex items-center justify-center gap-[8px] transition-colors"
+                >
+                  {hasDiscount && (
+                    <span className="text-[16px] text-white/60 line-through">
+                      {product.originalPrice}
                     </span>
-                  ) : (
-                    <span />
                   )}
-
-                  {/* Pink purchase button */}
-                  <button
-                    onClick={handleAddToCart}
-                    className="h-[48px] px-[32px] rounded-full bg-[#FF7B8A] hover:bg-[#FF6B7A] text-white text-[16px] font-semibold flex items-center gap-[6px] transition-colors"
-                  >
-                    {hasDiscount && (
-                      <span className="text-[14px] text-white/50 line-through mr-[4px]">
-                        {product.originalPrice}
-                      </span>
-                    )}
-                    <span>{product.price} ₽</span>
-                    <span className="text-[20px] font-normal ml-[4px]">+</span>
-                  </button>
-                </div>
+                  <span>{product.price} ₽</span>
+                  <span className="text-[24px] font-normal ml-[6px]">+</span>
+                </button>
               </div>
             </div>
           </div>
