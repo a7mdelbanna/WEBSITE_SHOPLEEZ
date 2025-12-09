@@ -51,7 +51,7 @@ export function Header({ onMenuClick, cartCount = 0 }: HeaderProps) {
 
       {/* Floating search when focused - breaks out of header */}
       {searchFocused && (
-        <div className="fixed top-0 left-0 right-0 z-50 flex justify-center items-center pt-[12px] px-[20px] md:px-[32px]">
+        <div className="fixed top-0 left-0 right-0 z-50 flex justify-center items-center pt-[12px] px-[12px]">
           <form onSubmit={handleSearch} className="w-full max-w-[640px]">
             <div className="flex h-[48px] items-center rounded-full bg-white shadow-[0_8px_32px_rgba(0,0,0,0.12)] px-[20px]">
               <Search className="h-[20px] w-[20px] shrink-0 text-[#9E9E9E]" />
@@ -78,8 +78,8 @@ export function Header({ onMenuClick, cartCount = 0 }: HeaderProps) {
         </div>
       )}
 
-      <header className="sticky top-0 bg-white shadow-[0_1px_3px_rgba(0,0,0,0.08)] rounded-b-[20px] z-30">
-        <div className="flex h-[64px] items-center justify-between px-[20px] md:px-[24px] lg:px-[32px] max-w-[1904px] mx-auto">
+      <header className="sticky top-0 mx-[12px] bg-white shadow-[0_1px_3px_rgba(0,0,0,0.08)] rounded-b-[20px] z-30">
+        <div className="flex h-[64px] items-center justify-between px-[20px]">
           {/* Left: Logo */}
           <div className="flex items-center shrink-0">
             {/* Mobile menu button */}

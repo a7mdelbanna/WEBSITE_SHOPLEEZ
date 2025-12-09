@@ -42,7 +42,8 @@ export function AppShell({
       />
 
       {/* Main area with padding */}
-      <div className="flex gap-[12px] px-[12px] pt-[12px]">
+      <div className="px-[12px] pt-[12px]">
+        <div className="flex gap-[12px]">
         {/* Mobile sidebar overlay */}
         <MobileSidebar
           isOpen={isMobileSidebarOpen}
@@ -67,6 +68,7 @@ export function AppShell({
         <main className="flex-1 min-w-0">
           {children}
         </main>
+        </div>
       </div>
     </div>
   );
