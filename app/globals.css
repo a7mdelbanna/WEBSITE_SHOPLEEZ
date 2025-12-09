@@ -246,17 +246,15 @@ html[lang="ar"] body {
    ================================ */
 h1, h2, h3, h4, h5, h6 {
   margin: 0;
-  font-weight: var(--font-semibold);
   line-height: var(--leading-tight);
   color: var(--color-text-primary);
 }
 
-h1 { font-size: var(--text-4xl); }
-h2 { font-size: var(--text-3xl); }
-h3 { font-size: var(--text-2xl); }
-h4 { font-size: var(--text-xl); }
-h5 { font-size: var(--text-lg); }
-h6 { font-size: var(--text-base); }
+/*
+ * NOTE: Font sizes for headings are NOT set globally.
+ * Use Tailwind classes (text-[Xpx]) for specific sizing.
+ * This prevents global styles from overriding component styles.
+ */
 
 p {
   margin: 0;
@@ -421,8 +419,7 @@ textarea {
 button {
   cursor: pointer;
   border: none;
-  background: none;
-  padding: 0;
+  /* NOTE: padding and background removed - let Tailwind classes control them */
 }
 
 input[type="search"] {

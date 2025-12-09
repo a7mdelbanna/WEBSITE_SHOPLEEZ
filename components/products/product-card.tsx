@@ -1,19 +1,19 @@
 'use client';
 
 /**
- * ProductCard Component - Exact Samokat Design
+ * ProductCard Component - Pixel-Perfect Samokat Design
  *
- * Features:
- * - WHITE background container with rounded corners (16px)
- * - Square image taking full width
- * - Badge at bottom-left of image
- * - Product name (2 lines max)
- * - Weight + promo text in one line
- * - Light pink price button WITHOUT border
+ * Reference: Samokat "Выгодная полка" section
+ *
+ * Key Design Details:
+ * - Light gray card background (#F5F5F7)
+ * - DARK badge (not orange!) for discounts
+ * - Large product name (15px, semi-bold)
+ * - Light pink price pill with strikethrough + current price + plus icon
+ * - Smooth hover lift effect
  */
 
 import Image from 'next/image';
-import { Plus } from 'lucide-react';
 import { useLocalization } from '@/lib/hooks/use-tenant';
 import { cn } from '@/lib/utils';
 
@@ -69,31 +69,37 @@ export function ProductCard({
     <div
       onClick={onClick}
       className={cn(
-        'group relative flex flex-col bg-white rounded-[16px]',
+        'product-card group relative flex flex-col',
+        'bg-white rounded-[20px]',
         'cursor-pointer overflow-hidden',
-        'transition-all duration-200 hover:shadow-md',
+        'transition-all duration-300 ease-out',
+        'hover:shadow-lg hover:-translate-y-[2px]',
         !isAvailable && 'opacity-60',
         className
       )}
     >
-      {/* Image container - square with light gray bg */}
-      <div className="relative aspect-square overflow-hidden bg-[#F5F5F5] rounded-t-[16px]">
+      {/* Image container - gray background, rounded top corners */}
+      <div className="relative aspect-square overflow-hidden bg-[#F5F5F7] rounded-t-[20px]">
         <Image
           src={image}
           alt={displayName}
           fill
-          className="object-cover transition-transform duration-200 group-hover:scale-105"
+          className="object-cover transition-transform duration-300 ease-out group-hover:scale-[1.03]"
           sizes="(max-width: 768px) 50vw, 25vw"
         />
 
-        {/* Badge - Bottom left of image */}
+        {/* Discount Badge - DARK background (Samokat style) */}
         {badge && (
           <div
             className={cn(
-              'absolute bottom-[8px] left-[8px] rounded-[6px] px-[8px] py-[3px] text-[11px] font-semibold',
-              badge.variant === 'discount' && 'bg-[#FF4B12] text-white',
-              badge.variant === 'tag' && 'bg-[#00B894] text-white',
-              badge.variant === 'new' && 'bg-[#6C5CE7] text-white'
+              'absolute bottom-[12px]',
+              isRTL ? 'right-[12px]' : 'left-[12px]',
+              'px-[10px] py-[6px] rounded-[8px]',
+              'text-[13px] font-semibold text-white',
+              // Dark badge for discount (Samokat reference)
+              badge.variant === 'discount' && 'bg-[#1F1F1F]',
+              badge.variant === 'tag' && 'bg-[#00B894]',
+              badge.variant === 'new' && 'bg-[#6C5CE7]'
             )}
           >
             {isRTL ? badge.textAr : badge.text}
@@ -101,60 +107,71 @@ export function ProductCard({
         )}
       </div>
 
-      {/* Content section */}
-      <div className="flex flex-1 flex-col p-[12px] pt-[10px]">
-        {/* Product name - 2 lines max */}
-        <h3 className="text-[13px] font-medium text-[#1A1A1A] leading-[1.3] line-clamp-2 mb-[4px]">
+      {/* Content section - FIXED HEIGHT for uniform cards, WHITE bg */}
+      <div className="flex flex-col p-[12px] pt-[10px] h-[120px] bg-white">
+        {/* Product name - 13px to match Samokat reference exactly */}
+        <h3 className="text-[13px] font-medium text-[#1A1A1A] leading-[1.4] line-clamp-2 h-[38px] mb-[2px]">
           {displayName}
         </h3>
 
-        {/* Weight + Promo text in one line */}
-        <div className="flex items-center gap-[4px] text-[12px] mb-[10px]">
+        {/* Weight / Volume - smaller, gray */}
+        <div className="h-[18px] mb-[10px]">
           {weight && (
-            <span className="text-[#999999]">{weight}</span>
+            <span className="text-[13px] text-[#8E8E93]">
+              {weight}
+            </span>
           )}
-          {weight && displayPromo && (
-            <span className="text-[#999999]">·</span>
-          )}
-          {displayPromo && (
-            <span className="text-[#FF4B12] truncate">{displayPromo}</span>
+          {displayPromo && !weight && (
+            <span className="text-[12px] text-[#FF4B12] truncate">
+              {displayPromo}
+            </span>
           )}
         </div>
 
-        {/* Spacer to push price to bottom */}
-        <div className="flex-1" />
-
-        {/* Price row - Light pink button WITHOUT border */}
-        <div className="flex items-center">
-          <div className="flex items-center gap-[6px] h-[32px] px-[12px] rounded-full bg-[#FFF0ED]">
-            {/* Original price (strikethrough) */}
+        {/* Price Button - pixel-perfect Samokat reference */}
+        <div className="mt-auto">
+          <button
+            onClick={handleAddClick}
+            disabled={!isAvailable}
+            className={cn(
+              'inline-flex items-center justify-center',
+              'h-[44px] px-[18px] rounded-full',
+              'bg-[#FFEAE8] hover:bg-[#FFE0DD]',
+              'transition-colors duration-200',
+              'disabled:opacity-50 disabled:cursor-not-allowed',
+              'w-fit'
+            )}
+          >
+            {/* Original price (strikethrough) - medium gray */}
             {hasDiscount && (
-              <span className="text-[12px] text-[#CCCCCC] line-through">
+              <span className="text-[15px] text-[#BEBEBE] line-through font-normal mr-[8px]">
                 {originalPrice}
               </span>
             )}
-            {/* Current price */}
-            <span className={cn(
-              'text-[14px] font-bold',
-              hasDiscount ? 'text-[#FF4B12]' : 'text-[#1A1A1A]'
-            )}>
+
+            {/* Current price - dark/black for contrast */}
+            <span className="text-[17px] font-bold text-[#1A1A1A]">
               {price} ₽
             </span>
 
-            {/* Plus button */}
-            <button
-              onClick={handleAddClick}
-              disabled={!isAvailable}
-              className={cn(
-                'flex items-center justify-center ml-[2px]',
-                'text-[#FF4B12]',
-                'transition-colors',
-                'disabled:opacity-40 disabled:cursor-not-allowed'
-              )}
-            >
-              <Plus className="w-[18px] h-[18px]" strokeWidth={2.5} />
-            </button>
-          </div>
+            {/* Plus icon - elegant, thin stroke like Samokat */}
+            <span className="ml-[8px] flex items-center justify-center">
+              <svg
+                width="22"
+                height="22"
+                viewBox="0 0 22 22"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  d="M11 4V18M4 11H18"
+                  stroke="#F27D7D"
+                  strokeWidth="1.5"
+                  strokeLinecap="round"
+                />
+              </svg>
+            </span>
+          </button>
         </div>
       </div>
     </div>
@@ -163,29 +180,63 @@ export function ProductCard({
 
 /**
  * Horizontal Product Scroll - Samokat style
+ * NO negative margins - stays within parent padding
  */
 export function ProductScroll({
   children,
   className,
+  showArrow = true,
 }: {
   children: React.ReactNode;
   className?: string;
+  showArrow?: boolean;
 }) {
   return (
-    <div
-      className={cn(
-        'flex gap-[8px] overflow-x-auto pb-2 scrollbar-hide',
-        '-mx-[24px] px-[24px]',
-        className
+    <div className="product-scroll-container relative group/scroll">
+      <div
+        className={cn(
+          'flex gap-[16px] overflow-x-auto pb-2 scrollbar-hide',
+          'scroll-smooth snap-x snap-mandatory',
+          className
+        )}
+      >
+        {children}
+      </div>
+
+      {/* Navigation Arrow - Right side (appears on hover) */}
+      {showArrow && (
+        <button
+          className={cn(
+            'absolute -right-[22px] top-[35%] -translate-y-1/2 z-10',
+            'w-[44px] h-[44px] rounded-full',
+            'bg-white shadow-lg border border-[#F0F0F0]',
+            'flex items-center justify-center',
+            'opacity-0 group-hover/scroll:opacity-100',
+            'transition-all duration-200',
+            'hover:scale-105 hover:shadow-xl'
+          )}
+        >
+          <svg
+            width="20"
+            height="20"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            className="text-[#1A1A1A]"
+          >
+            <path d="M9 18l6-6-6-6" />
+          </svg>
+        </button>
       )}
-    >
-      {children}
     </div>
   );
 }
 
 /**
- * Product Grid - 4 columns, 8px gap
+ * Product Grid - 4 columns, 12px gap
  */
 export function ProductGrid({
   children,
@@ -197,8 +248,8 @@ export function ProductGrid({
   return (
     <div
       className={cn(
-        'grid gap-[8px]',
-        'grid-cols-2 sm:grid-cols-3 lg:grid-cols-4',
+        'grid gap-[12px]',
+        'grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5',
         className
       )}
     >
@@ -212,12 +263,12 @@ export function ProductGrid({
  */
 export function ProductCardSkeleton() {
   return (
-    <div className="flex flex-col rounded-[16px] bg-white overflow-hidden">
-      <div className="aspect-square animate-pulse bg-[#F5F5F5]" />
-      <div className="p-[12px]">
-        <div className="mb-[8px] h-[32px] animate-pulse rounded bg-[#F5F5F5]" />
-        <div className="mb-[10px] h-[14px] w-[80px] animate-pulse rounded bg-[#F5F5F5]" />
-        <div className="h-[32px] w-[90px] animate-pulse rounded-full bg-[#FFF0ED]" />
+    <div className="flex flex-col rounded-[20px] bg-white overflow-hidden">
+      <div className="aspect-square animate-pulse bg-[#F5F5F7] rounded-t-[20px]" />
+      <div className="p-[12px] h-[120px] bg-white">
+        <div className="mb-[4px] h-[38px] animate-pulse rounded-[6px] bg-[#F0F0F0]" />
+        <div className="mb-[10px] h-[16px] w-[50px] animate-pulse rounded-[4px] bg-[#F0F0F0]" />
+        <div className="h-[36px] w-[100px] animate-pulse rounded-full bg-[#FEEEEE]" />
       </div>
     </div>
   );
@@ -228,9 +279,9 @@ export function ProductCardSkeleton() {
  */
 export function ProductScrollSkeleton({ count = 5 }: { count?: number }) {
   return (
-    <ProductScroll>
+    <ProductScroll showArrow={false}>
       {Array.from({ length: count }).map((_, i) => (
-        <div key={i} className="w-[180px] shrink-0">
+        <div key={i} className="w-[200px] shrink-0 snap-start">
           <ProductCardSkeleton />
         </div>
       ))}

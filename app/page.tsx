@@ -153,37 +153,77 @@ const MARQUEE_BANNERS = [
   },
 ];
 
-// Products for "Выгодная полка" section
+// Products for "Выгодная полка" section (Samokat reference style)
 const DEALS_PRODUCTS = [
   {
     id: 1,
-    name: 'Lapland Emmental',
-    nameAr: 'Lapland Emmental',
-    image: 'https://images.unsplash.com/photo-1486297678162-eb2a19b0a32d?w=400&h=400&fit=crop',
-    price: 299,
-    originalPrice: 399,
-    weight: '200 г',
+    name: 'Адвент-календарь Самокат Beauty Rituals',
+    nameAr: 'Адвент-календарь Самокат Beauty Rituals',
+    image: 'https://images.unsplash.com/photo-1607083206869-4c7672e72a8a?w=400&h=400&fit=crop',
+    price: 2999,
+    originalPrice: 3999,
+    weight: '',
     badge: { text: '-25%', textAr: '-25%', variant: 'discount' as const },
   },
   {
     id: 2,
-    name: 'Суперлист Розмарин',
-    nameAr: 'Суперлист Розмарин',
-    image: 'https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?w=400&h=400&fit=crop',
-    price: 159,
-    originalPrice: 219,
-    weight: '100 г',
-    badge: { text: '-27%', textAr: '-27%', variant: 'discount' as const },
+    name: 'Гель для душа Самокат, Saffron Spark',
+    nameAr: 'Гель для душа Самокат, Saffron Spark',
+    image: 'https://images.unsplash.com/photo-1556228578-0d85b1a4d571?w=400&h=400&fit=crop',
+    price: 379,
+    originalPrice: 423,
+    weight: '300 мл',
+    badge: { text: '-10%', textAr: '-10%', variant: 'discount' as const },
   },
   {
     id: 3,
-    name: 'Шоколад молочный',
-    nameAr: 'Шоколад молочный',
-    image: 'https://images.unsplash.com/photo-1511381939415-e44015466834?w=400&h=400&fit=crop',
-    price: 89,
-    originalPrice: 129,
-    weight: '90 г',
-    badge: { text: '-31%', textAr: '-31%', variant: 'discount' as const },
+    name: 'Одноразовые бритвы Самокат, 5 лезвий',
+    nameAr: 'Одноразовые бритвы Самокат, 5 лезвий',
+    image: 'https://images.unsplash.com/photo-1585386959984-a4155224a1ad?w=400&h=400&fit=crop',
+    price: 299,
+    originalPrice: 379,
+    weight: '3 шт.',
+    badge: { text: '-21%', textAr: '-21%', variant: 'discount' as const },
+  },
+  {
+    id: 4,
+    name: 'Лосьон-шейк для тела Самокат Dewy Repair',
+    nameAr: 'Лосьон-шейк для тела Самокат Dewy Repair',
+    image: 'https://images.unsplash.com/photo-1608248543803-ba4f8c70ae0b?w=400&h=400&fit=crop',
+    price: 319,
+    originalPrice: 371,
+    weight: '150 мл',
+    badge: { text: '-14%', textAr: '-14%', variant: 'discount' as const },
+  },
+  {
+    id: 5,
+    name: 'Скраб для тела Самокат Mint Berry',
+    nameAr: 'Скраб для тела Самокат Mint Berry',
+    image: 'https://images.unsplash.com/photo-1570194065650-d99fb4b38b15?w=400&h=400&fit=crop',
+    price: 399,
+    originalPrice: 499,
+    weight: '300 мл',
+    badge: { text: '-20%', textAr: '-20%', variant: 'discount' as const },
+  },
+  {
+    id: 6,
+    name: 'Крем для рук увлажняющий Самокат',
+    nameAr: 'Крем для рук увлажняющий Самокат',
+    image: 'https://images.unsplash.com/photo-1611930022073-b7a4ba5fcccd?w=400&h=400&fit=crop',
+    price: 189,
+    originalPrice: 249,
+    weight: '75 мл',
+    badge: { text: '-24%', textAr: '-24%', variant: 'discount' as const },
+  },
+  {
+    id: 7,
+    name: 'Маска для лица тканевая Самокат',
+    nameAr: 'Маска для лица тканевая Самокат',
+    image: 'https://images.unsplash.com/photo-1596755389378-c31d21fd1273?w=400&h=400&fit=crop',
+    price: 99,
+    originalPrice: 149,
+    weight: '1 шт.',
+    badge: { text: '-33%', textAr: '-33%', variant: 'discount' as const },
   },
 ];
 
@@ -385,19 +425,23 @@ export default function HomePage() {
             </CarouselWithIndicators>
           </section>
 
-          {/* "Выгодная полка" Section */}
-          <section className="mb-[48px]">
+          {/* "Выгодная полка" Section - Samokat Reference Style */}
+          <section className="mb-[48px] group">
             <div className="flex items-center justify-between mb-[24px]">
               <h2 className="text-[28px] font-bold text-[#1A1A1A] leading-none">Выгодная полка</h2>
-              <Link href="#" className="flex items-center gap-[6px] text-[15px] font-semibold text-[#1A1A1A] hover:text-[#FF4B12] transition-colors">
+              <Link
+                href="#"
+                className="flex items-center gap-[4px] text-[15px] font-medium text-[#1A1A1A] hover:text-[#FF4B12] transition-colors"
+              >
                 Больше
-                <ChevronRight className="w-[20px] h-[20px]" strokeWidth={2} />
+                <ChevronRight className="w-[18px] h-[18px]" strokeWidth={2} />
               </Link>
             </div>
 
+            {/* Product Scroll - wider cards matching reference */}
             <ProductScroll>
               {DEALS_PRODUCTS.map((product) => (
-                <div key={product.id} className="w-[180px] shrink-0">
+                <div key={product.id} className="w-[200px] shrink-0 snap-start">
                   <ProductCard
                     {...product}
                     onAddToCart={() => handleAddToCart(product.id)}
