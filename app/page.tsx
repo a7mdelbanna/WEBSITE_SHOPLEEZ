@@ -438,10 +438,10 @@ export default function HomePage() {
               </Link>
             </div>
 
-            {/* Product Scroll - wider cards matching reference */}
+            {/* Product Scroll - compact cards to fit 5 in view */}
             <ProductScroll>
               {DEALS_PRODUCTS.map((product) => (
-                <div key={product.id} className="w-[200px] shrink-0 snap-start">
+                <div key={product.id} className="w-[140px] shrink-0 snap-start">
                   <ProductCard
                     {...product}
                     onAddToCart={() => handleAddToCart(product.id)}
