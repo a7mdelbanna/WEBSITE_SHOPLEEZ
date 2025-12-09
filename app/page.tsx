@@ -11,6 +11,7 @@
 
 import { AppShell } from '@/components/layout';
 import { ProductCard, ProductScroll } from '@/components/products/product-card';
+import { CarouselWithIndicators } from '@/components/ui/carousel-indicators';
 import { ChevronRight } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -44,38 +45,111 @@ const DELIVERY_CARDS = [
   },
 ];
 
-// Promotional campaigns data
-const PROMOTIONS = [
+// Vertical Banner Section - Modern Bento Layout
+const BENTO_BANNERS = [
   {
     id: 1,
-    title: 'Новогодняя игра, итоги года, призы',
-    image: 'https://images.unsplash.com/photo-1512909006721-3d6018887383?w=400&h=300&fit=crop',
-    bgColor: 'bg-gradient-to-br from-pink-100 to-pink-200',
+    image: 'https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=800&h=800&fit=crop',
+    alt: 'Special offers',
+    gridClass: 'col-span-2 row-span-2', // Large featured banner
   },
   {
     id: 2,
-    title: 'Тут товары по низким ценам',
-    badge: 'цены ниже',
-    image: 'https://images.unsplash.com/photo-1573883430060-6a0d21a78583?w=400&h=300&fit=crop',
-    bgColor: 'bg-gradient-to-br from-pink-50 to-pink-100',
+    image: 'https://images.unsplash.com/photo-1607082348824-0a96f2a4b9da?w=600&h=400&fit=crop',
+    alt: 'Flash sale',
+    gridClass: 'col-span-1 row-span-1',
   },
   {
     id: 3,
-    title: 'Товары за 99 ₽',
-    image: 'https://images.unsplash.com/photo-1542838132-92c53300491e?w=400&h=300&fit=crop',
-    bgColor: 'bg-gradient-to-br from-lime-100 to-lime-200',
+    image: 'https://images.unsplash.com/photo-1534723452862-4c874018d66d?w=600&h=400&fit=crop',
+    alt: 'New arrivals',
+    gridClass: 'col-span-1 row-span-1',
   },
   {
     id: 4,
-    title: 'Скидка 20% на цитрусы и ёлки',
-    image: 'https://images.unsplash.com/photo-1587049352846-4a222e784e38?w=400&h=300&fit=crop',
-    bgColor: 'bg-gradient-to-br from-blue-100 to-blue-200',
+    image: 'https://images.unsplash.com/photo-1560472354-b33ff0c44a43?w=800&h=400&fit=crop',
+    alt: 'Weekend deals',
+    gridClass: 'col-span-2 row-span-1', // Wide banner
   },
   {
     id: 5,
-    title: 'Ещё больше скидок',
-    image: 'https://images.unsplash.com/photo-1607082348824-0a96f2a4b9da?w=400&h=300&fit=crop',
-    bgColor: 'bg-gradient-to-br from-purple-100 to-purple-200',
+    image: 'https://images.unsplash.com/photo-1472851294608-062f824d29cc?w=600&h=600&fit=crop',
+    alt: 'Categories',
+    gridClass: 'col-span-1 row-span-1',
+  },
+  {
+    id: 6,
+    image: 'https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=600&h=600&fit=crop',
+    alt: 'Best sellers',
+    gridClass: 'col-span-1 row-span-1',
+  },
+];
+
+// Minimal scroll banners - Clean modern cards
+const BRAND_BANNERS = [
+  {
+    id: 1,
+    image: 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=600&h=360&fit=crop',
+    alt: 'Premium collection',
+  },
+  {
+    id: 2,
+    image: 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=600&h=360&fit=crop',
+    alt: 'Smart watches',
+  },
+  {
+    id: 3,
+    image: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=600&h=360&fit=crop',
+    alt: 'Audio gear',
+  },
+  {
+    id: 4,
+    image: 'https://images.unsplash.com/photo-1526170375885-4d8ecf77b99f?w=600&h=360&fit=crop',
+    alt: 'Photography',
+  },
+  {
+    id: 5,
+    image: 'https://images.unsplash.com/photo-1483985988355-763728e1935b?w=600&h=360&fit=crop',
+    alt: 'Fashion',
+  },
+  {
+    id: 6,
+    image: 'https://images.unsplash.com/photo-1585386959984-a4155224a1ad?w=600&h=360&fit=crop',
+    alt: 'Skincare',
+  },
+];
+
+// Auto-scrolling marquee banners
+const MARQUEE_BANNERS = [
+  {
+    id: 1,
+    image: 'https://images.unsplash.com/photo-1607082349566-187342175e2f?w=400&h=250&fit=crop',
+    alt: 'Flash deals',
+  },
+  {
+    id: 2,
+    image: 'https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=400&h=250&fit=crop',
+    alt: 'Special offers',
+  },
+  {
+    id: 3,
+    image: 'https://images.unsplash.com/photo-1472851294608-062f824d29cc?w=400&h=250&fit=crop',
+    alt: 'New arrivals',
+  },
+  {
+    id: 4,
+    image: 'https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=400&h=250&fit=crop',
+    alt: 'Trending',
+  },
+  {
+    id: 5,
+    image: 'https://images.unsplash.com/photo-1560472354-b33ff0c44a43?w=400&h=250&fit=crop',
+    alt: 'Weekend sale',
+  },
+  {
+    id: 6,
+    image: 'https://images.unsplash.com/photo-1534723452862-4c874018d66d?w=400&h=250&fit=crop',
+    alt: 'Best sellers',
   },
 ];
 
@@ -173,38 +247,142 @@ export default function HomePage() {
             </button>
           </section>
 
-          {/* "Акции" Section */}
-          <section className="mb-[48px]">
-            <div className="flex items-center justify-between mb-[24px]">
-              <h2 className="text-[28px] font-bold text-[#1A1A1A] leading-none">Акции</h2>
+          {/* Modern Bento Banner Section */}
+          <section className="mb-[56px]">
+            {/* Section Header with "See All" link */}
+            <div className="flex items-center justify-between mb-[32px]">
+              <h2 className="text-[28px] font-bold text-[#1A1A1A] leading-none">
+                Специальные предложения
+              </h2>
+              <Link
+                href="#"
+                className="flex items-center gap-[6px] text-[15px] font-semibold text-[#FF4B12] hover:text-[#E63E1C] transition-colors group"
+              >
+                Смотреть все
+                <ChevronRight className="w-[18px] h-[18px] group-hover:translate-x-1 transition-transform" strokeWidth={2.5} />
+              </Link>
             </div>
 
-            {/* IMAGE ONLY - NO TEXT OVERLAYS */}
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-[12px]">
-              {PROMOTIONS.map((promo) => (
+            {/* Bento Grid Layout - Modern Vertical Design */}
+            <div className="bento-grid grid grid-cols-4 gap-[16px] auto-rows-[180px]">
+              {BENTO_BANNERS.map((banner, index) => (
                 <Link
-                  key={promo.id}
+                  key={banner.id}
                   href="#"
-                  className="group relative aspect-[3/4] rounded-[20px] overflow-hidden hover:scale-[1.02] transition-transform"
+                  className={`
+                    bento-card group relative
+                    ${banner.gridClass}
+                    animate-fade-in-up
+                  `}
+                  style={{
+                    animationDelay: `${index * 100}ms`,
+                    animationFillMode: 'both'
+                  }}
                 >
-                  {/* Image only - text is baked into the image by designer */}
+                  {/* Image */}
                   <Image
-                    src={promo.image}
-                    alt={promo.title}
+                    src={banner.image}
+                    alt={banner.alt}
+                    fill
+                    className="object-cover"
+                  />
+
+                  {/* Shine effect overlay */}
+                  <div className="bento-shine" />
+
+                  {/* Subtle gradient overlay on hover */}
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/10 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                </Link>
+              ))}
+            </div>
+          </section>
+
+          {/* Auto-Scroll Marquee Banner Section */}
+          <section className="mb-[56px]">
+            {/* Section Header */}
+            <div className="flex items-center justify-between mb-[32px]">
+              <h2 className="text-[28px] font-bold text-[#1A1A1A] leading-none">
+                Популярные категории
+              </h2>
+              <Link
+                href="#"
+                className="flex items-center gap-[6px] text-[15px] font-semibold text-[#FF4B12] hover:text-[#E63E1C] transition-colors group"
+              >
+                Все категории
+                <ChevronRight className="w-[18px] h-[18px] group-hover:translate-x-1 transition-transform" strokeWidth={2.5} />
+              </Link>
+            </div>
+
+            {/* Marquee Container - Auto-scrolling banners */}
+            <div className="marquee-container">
+              <div className="marquee-track">
+                {/* First set of banners */}
+                {MARQUEE_BANNERS.map((banner) => (
+                  <Link
+                    key={banner.id}
+                    href="#"
+                    className="marquee-card w-[280px] h-[160px]"
+                  >
+                    <Image
+                      src={banner.image}
+                      alt={banner.alt}
+                      fill
+                      className="object-cover"
+                    />
+                  </Link>
+                ))}
+                {/* Duplicate set for seamless loop */}
+                {MARQUEE_BANNERS.map((banner) => (
+                  <Link
+                    key={`dup-${banner.id}`}
+                    href="#"
+                    className="marquee-card w-[280px] h-[160px]"
+                  >
+                    <Image
+                      src={banner.image}
+                      alt={banner.alt}
+                      fill
+                      className="object-cover"
+                    />
+                  </Link>
+                ))}
+              </div>
+            </div>
+          </section>
+
+          {/* Minimal Scroll - Clean Modern Brands */}
+          <section className="mb-[56px]">
+            {/* Section Header */}
+            <div className="flex items-center justify-between mb-[24px]">
+              <h2 className="text-[28px] font-bold text-[#1A1A1A] leading-none">
+                Топ бренды
+              </h2>
+              <Link
+                href="#"
+                className="flex items-center gap-[6px] text-[15px] font-semibold text-[#1A1A1A] hover:text-[#FF4B12] transition-colors group"
+              >
+                Все бренды
+                <ChevronRight className="w-[18px] h-[18px] group-hover:translate-x-0.5 transition-transform" strokeWidth={2} />
+              </Link>
+            </div>
+
+            {/* Modern Carousel with Dash Indicators */}
+            <CarouselWithIndicators itemWidth={300} gap={20}>
+              {BRAND_BANNERS.map((banner) => (
+                <Link
+                  key={banner.id}
+                  href="#"
+                  className="carousel-card"
+                >
+                  <Image
+                    src={banner.image}
+                    alt={banner.alt}
                     fill
                     className="object-cover"
                   />
                 </Link>
               ))}
-
-              {/* "Больше" button */}
-              <button className="aspect-[3/4] rounded-[20px] bg-white border border-[#E5E5E5] flex flex-col items-center justify-center hover:bg-[#FAFAFA] transition-colors shadow-sm">
-                <span className="text-[17px] font-bold text-[#1A1A1A] mb-[12px]">Больше</span>
-                <div className="w-[40px] h-[40px] rounded-full bg-[#F5F5F5] flex items-center justify-center">
-                  <ChevronRight className="w-[20px] h-[20px] text-[#1A1A1A]" strokeWidth={2.5} />
-                </div>
-              </button>
-            </div>
+            </CarouselWithIndicators>
           </section>
 
           {/* "Выгодная полка" Section */}

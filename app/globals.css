@@ -1039,6 +1039,38 @@ html[dir="rtl"] .header-actions {
   50% { transform: translateY(0); }
 }
 
+/* Modern Bento Banner Animations */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeInScale {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+
 /* Animation classes */
 .animate-fade-in { animation: fadeIn var(--duration-normal) var(--ease-default); }
 .animate-fade-out { animation: fadeOut var(--duration-normal) var(--ease-default); }
@@ -1051,6 +1083,55 @@ html[dir="rtl"] .header-actions {
 .animate-pulse { animation: pulse 2s ease-in-out infinite; }
 .animate-bounce { animation: bounce 1s ease-in-out infinite; }
 
+/* Modern Bento Animations */
+.animate-fade-in-up {
+  animation: fadeInUp 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.animate-fade-in-scale {
+  animation: fadeInScale 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Bento Card Hover Effects */
+.bento-card {
+  position: relative;
+  overflow: hidden;
+  border-radius: var(--radius-2xl);
+  transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1),
+              box-shadow 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.bento-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.12);
+}
+
+.bento-card img {
+  transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.bento-card:hover img {
+  transform: scale(1.05);
+}
+
+/* Shine effect overlay */
+.bento-shine {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    105deg,
+    transparent 40%,
+    rgba(255, 255, 255, 0.15) 50%,
+    transparent 60%
+  );
+  transform: translateX(-100%);
+  transition: transform 0.6s ease;
+}
+
+.bento-card:hover .bento-shine {
+  transform: translateX(100%);
+}
+
 /* RTL-aware animations */
 html[dir="rtl"] .animate-slide-in-right {
   animation: slideInFromLeft var(--duration-slow) var(--ease-default);
@@ -1058,6 +1139,435 @@ html[dir="rtl"] .animate-slide-in-right {
 
 html[dir="rtl"] .animate-slide-in-left {
   animation: slideInFromRight var(--duration-slow) var(--ease-default);
+}
+
+/* ================================
+   Marquee / Auto-Scroll Banner
+   ================================ */
+@keyframes marquee {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
+@keyframes marquee-rtl {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(50%);
+  }
+}
+
+.marquee-container {
+  position: relative;
+  overflow: hidden;
+  width: 100%;
+  mask-image: linear-gradient(
+    to right,
+    transparent,
+    black 5%,
+    black 95%,
+    transparent
+  );
+  -webkit-mask-image: linear-gradient(
+    to right,
+    transparent,
+    black 5%,
+    black 95%,
+    transparent
+  );
+}
+
+.marquee-track {
+  display: flex;
+  gap: var(--space-4);
+  width: max-content;
+  animation: marquee 30s linear infinite;
+}
+
+/* Pause on hover for user interaction */
+.marquee-container:hover .marquee-track {
+  animation-play-state: paused;
+}
+
+/* RTL support */
+html[dir="rtl"] .marquee-track {
+  animation: marquee-rtl 30s linear infinite;
+}
+
+html[dir="rtl"] .marquee-container {
+  mask-image: linear-gradient(
+    to left,
+    transparent,
+    black 5%,
+    black 95%,
+    transparent
+  );
+  -webkit-mask-image: linear-gradient(
+    to left,
+    transparent,
+    black 5%,
+    black 95%,
+    transparent
+  );
+}
+
+/* Marquee card styling */
+.marquee-card {
+  flex-shrink: 0;
+  position: relative;
+  overflow: hidden;
+  border-radius: var(--radius-2xl);
+  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1),
+              box-shadow 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.marquee-card:hover {
+  transform: scale(1.03);
+  box-shadow: 0 16px 32px rgba(0, 0, 0, 0.15);
+}
+
+.marquee-card img {
+  transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.marquee-card:hover img {
+  transform: scale(1.08);
+}
+
+/* Shine effect for marquee cards */
+.marquee-card::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    105deg,
+    transparent 40%,
+    rgba(255, 255, 255, 0.2) 50%,
+    transparent 60%
+  );
+  transform: translateX(-100%);
+  transition: transform 0.5s ease;
+  pointer-events: none;
+}
+
+.marquee-card:hover::after {
+  transform: translateX(100%);
+}
+
+/* Speed variants */
+.marquee-track--slow {
+  animation-duration: 45s;
+}
+
+.marquee-track--fast {
+  animation-duration: 20s;
+}
+
+/* ================================
+   Minimal Scroll - Clean Modern Design
+   Inspired by Apple's design philosophy
+   ================================ */
+
+/* Container - clean horizontal scroll */
+.minimal-scroll {
+  display: flex;
+  gap: 20px;
+  padding: 8px 4px;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  scroll-behavior: smooth;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  cursor: grab;
+}
+
+.minimal-scroll:active {
+  cursor: grabbing;
+}
+
+.minimal-scroll::-webkit-scrollbar {
+  display: none;
+}
+
+/* Card - clean, minimal, purposeful */
+.minimal-card {
+  flex-shrink: 0;
+  position: relative;
+  width: 300px;
+  height: 180px;
+  border-radius: 16px;
+  overflow: hidden;
+  scroll-snap-align: start;
+  background: #f8f8f8;
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+              box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+/* Subtle lift on hover - refined and intentional */
+.minimal-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.1);
+}
+
+/* Image - clean scaling */
+.minimal-card img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.minimal-card:hover img {
+  transform: scale(1.03);
+}
+
+/* Progress line - understated elegance */
+.minimal-progress {
+  position: relative;
+  height: 2px;
+  background: #f0f0f0;
+  border-radius: 1px;
+  margin-top: 24px;
+  overflow: hidden;
+}
+
+.minimal-progress-track {
+  position: absolute;
+  height: 100%;
+  background: #1a1a1a;
+  border-radius: 1px;
+  width: 25%;
+  transition: left 0.2s ease-out;
+}
+
+/* Scroll hint - subtle fade edges */
+.minimal-scroll-wrapper {
+  position: relative;
+}
+
+.minimal-scroll-wrapper::before,
+.minimal-scroll-wrapper::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 40px;
+  z-index: 2;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.minimal-scroll-wrapper::after {
+  right: 0;
+  background: linear-gradient(to left, white, transparent);
+}
+
+.minimal-scroll-wrapper.has-overflow::after {
+  opacity: 1;
+}
+
+/* Navigation arrows - minimal and clean */
+.minimal-nav {
+  display: flex;
+  gap: 8px;
+}
+
+.minimal-nav-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: #f5f5f5;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background 0.2s ease, transform 0.2s ease;
+}
+
+.minimal-nav-btn:hover {
+  background: #ebebeb;
+}
+
+.minimal-nav-btn:active {
+  transform: scale(0.95);
+}
+
+.minimal-nav-btn:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+.minimal-nav-btn svg {
+  width: 18px;
+  height: 18px;
+  color: #1a1a1a;
+}
+
+/* ================================
+   Modern Carousel Indicators
+   Premium UX - Apple/Figma inspired
+   ================================ */
+
+/* Container */
+.carousel-container {
+  position: relative;
+  width: 100%;
+}
+
+/* Scroll area */
+.carousel-scroll {
+  display: flex;
+  padding: 8px 4px;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  scroll-behavior: smooth;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  cursor: grab;
+}
+
+.carousel-scroll:active {
+  cursor: grabbing;
+}
+
+.carousel-scroll::-webkit-scrollbar {
+  display: none;
+}
+
+/* Dash/Pill Indicators - Modern Premium Style */
+.carousel-indicators {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 6px;
+  margin-top: 24px;
+  padding: 8px 0;
+}
+
+.carousel-indicator {
+  position: relative;
+  width: 24px;
+  height: 4px;
+  border-radius: 2px;
+  background: #E5E5E5;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  overflow: hidden;
+}
+
+/* Hover state - subtle feedback */
+.carousel-indicator:hover {
+  background: #D1D1D1;
+  transform: scaleY(1.2);
+}
+
+/* Active state - expanded with accent color */
+.carousel-indicator.active {
+  width: 40px;
+  background: #1A1A1A;
+}
+
+/* Premium shine effect on active */
+.carousel-indicator.active::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.4),
+    transparent
+  );
+  animation: indicatorShine 2s ease-in-out infinite;
+}
+
+@keyframes indicatorShine {
+  0% { left: -100%; }
+  50%, 100% { left: 100%; }
+}
+
+/* Dot Indicators - Minimal alternative */
+.carousel-dots {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  margin-top: 20px;
+  padding: 8px 0;
+}
+
+.carousel-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #E5E5E5;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.carousel-dot:hover {
+  background: #BFBFBF;
+  transform: scale(1.2);
+}
+
+.carousel-dot.active {
+  background: #1A1A1A;
+  transform: scale(1.15);
+}
+
+/* Brand-colored variant */
+.carousel-indicators--brand .carousel-indicator.active {
+  background: var(--color-brand);
+}
+
+.carousel-dots--brand .carousel-dot.active {
+  background: var(--color-brand);
+}
+
+/* Carousel card styling */
+.carousel-card {
+  flex-shrink: 0;
+  position: relative;
+  width: 300px;
+  height: 180px;
+  border-radius: 16px;
+  overflow: hidden;
+  scroll-snap-align: start;
+  background: #f8f8f8;
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+              box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+.carousel-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.1);
+}
+
+.carousel-card img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.carousel-card:hover img {
+  transform: scale(1.03);
 }
 
 /* ================================
@@ -1076,6 +1586,15 @@ html[dir="rtl"] .animate-slide-in-left {
 
   .right-panel {
     display: none;
+  }
+
+  /* Bento grid - 2 columns on tablet */
+  .bento-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .bento-grid .col-span-2 {
+    grid-column: span 2;
   }
 }
 
@@ -1096,5 +1615,72 @@ html[dir="rtl"] .animate-slide-in-left {
 
   .sidebar {
     display: none;
+  }
+
+  /* Bento grid - single column on mobile */
+  .bento-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .bento-grid .col-span-2,
+  .bento-grid .row-span-2 {
+    grid-column: span 1;
+    grid-row: span 1;
+  }
+
+  /* Marquee - smaller cards on mobile */
+  .marquee-card {
+    width: 200px !important;
+    height: 120px !important;
+  }
+
+  /* Faster marquee on mobile for better UX */
+  .marquee-track {
+    animation-duration: 20s;
+  }
+
+  /* Minimal scroll - smaller on mobile */
+  .minimal-card {
+    width: 240px;
+    height: 150px;
+  }
+
+  .minimal-scroll {
+    gap: 12px;
+  }
+
+  /* Carousel - smaller on mobile */
+  .carousel-card {
+    width: 240px;
+    height: 150px;
+  }
+
+  .carousel-scroll {
+    gap: 12px;
+  }
+
+  /* Smaller indicators on mobile */
+  .carousel-indicators {
+    margin-top: 16px;
+    gap: 4px;
+  }
+
+  .carousel-indicator {
+    width: 16px;
+    height: 3px;
+  }
+
+  .carousel-indicator.active {
+    width: 28px;
+  }
+
+  .carousel-dots {
+    margin-top: 14px;
+    gap: 6px;
+  }
+
+  .carousel-dot {
+    width: 6px;
+    height: 6px;
   }
 }

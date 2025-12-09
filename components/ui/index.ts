@@ -58,3 +58,9 @@ export {
   DialogTitle,
   DialogDescription,
 } from './modal';
+
+// Carousel Indicators
+export {
+  CarouselWithIndicators,
+  CarouselWithDots,
+} from './carousel-indicators';
