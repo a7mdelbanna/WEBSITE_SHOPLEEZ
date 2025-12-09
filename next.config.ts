@@ -7,6 +7,14 @@ const nextConfig: NextConfig = {
         protocol: 'https',
         hostname: 'images.unsplash.com',
       },
+      {
+        protocol: 'http',
+        hostname: 'modytest-002-site3.atempurl.com',
+      },
+      {
+        protocol: 'https',
+        hostname: 'modytest-002-site3.atempurl.com',
+      },
     ],
   },
 };

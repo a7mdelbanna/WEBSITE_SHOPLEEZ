@@ -93,14 +93,26 @@ export interface Product {
 export interface ProductSummary {
   id: number;
   name: string;
+  nameEn?: string;        // English name (from API)
   nameAr: string;
+  description?: string;
+  descriptionEn?: string;
+  descriptionAr?: string;
   mainImage: string;
+  imageUrl?: string;      // Alternative image field from API
   price: number;
   discountPrice?: number;
+  originalPrice?: number; // Alternative original price field
+  discountPercent?: number;
   isAvailable: boolean;
   isNew: boolean;
   weight?: string;
+  volume?: string;
   categoryId: number;
+  categoryName?: string;
+  categoryNameAr?: string;
+  brandName?: string;
+  brandNameAr?: string;
   hasQuantityDiscount: boolean;
 }
 

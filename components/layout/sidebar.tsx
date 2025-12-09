@@ -1,20 +1,24 @@
 'use client';
 
 /**
- * Sidebar Component - Exact Samokat Design
+ * Sidebar Component - Category Navigation
  *
  * Features:
- * - Smaller category images (40x40 rounded)
+ * - Category images (40x40 rounded)
  * - Parent categories with images
  * - Subcategories as text-only links (indented)
  * - White container with rounded corners (from AppShell)
+ * - API integration for dynamic categories
+ * - RTL support
  */
 
 import Link from 'next/link';
 import Image from 'next/image';
-import { useLocalization } from '@/lib/hooks/use-tenant';
+import { useTranslations } from '@/lib/hooks/use-translations';
+import { useCategories } from '@/lib/services';
 import { cn } from '@/lib/utils';
-import type { CategoryNavItem } from '@/types/category';
+import type { Category, CategoryNavItem } from '@/types/category';
+import { Skeleton } from '@/components/ui/skeleton';
 
 interface SidebarProps {
   categories?: CategoryNavItem[];
@@ -22,124 +26,110 @@ interface SidebarProps {
   onClose?: () => void;
 }
 
-// Top featured categories with images (like Samokat's "Собрали для вас", "От Самоката", "Готовая еда")
-const FEATURED_CATEGORIES = [
+/**
+ * Featured sections data (store-specific, could be from API in future)
+ */
+const getFeaturedSections = (t: (key: string) => string) => [
   {
     id: 'featured',
-    name: 'Собрали для вас',
-    nameAr: 'اخترنا لك',
+    name: t('sidebar.pickedForYou'),
     image: 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=80&h=80&fit=crop',
     href: '/featured',
   },
   {
-    id: 'samokat',
-    name: 'От Самоката',
-    nameAr: 'من سامكات',
+    id: 'store-brand',
+    name: t('sidebar.fromStore'),
     image: 'https://images.unsplash.com/photo-1565958011703-44f9829ba187?w=80&h=80&fit=crop',
     href: '/brand',
   },
   {
     id: 'ready-food',
-    name: 'Готовая еда',
-    nameAr: 'طعام جاهز',
+    name: t('sidebar.readyFood'),
     image: 'https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?w=80&h=80&fit=crop',
     href: '/ready-food',
     subcategories: [
-      { id: 'new-hits', name: 'Новинки и хиты', nameAr: 'جديد ومميز', href: '/ready-food/new' },
-      { id: 'all-ready', name: 'Вся готовая еда', nameAr: 'كل الطعام الجاهز', href: '/ready-food/all' },
-      { id: 'combo', name: 'Комбо-наборы', nameAr: 'وجبات كومبو', href: '/ready-food/combo' },
-      { id: 'hot', name: 'Всё горячее', nameAr: 'ساخن', href: '/ready-food/hot' },
-      { id: 'pinsky', name: 'Меню от Pinskiy&Co', nameAr: 'قائمة Pinskiy&Co', href: '/ready-food/pinsky' },
-      { id: 'restaurants', name: 'Из ресторанов и кафе', nameAr: 'من المطاعم والمقاهي', href: '/ready-food/restaurants' },
-      { id: 'street', name: 'Стритфуд', nameAr: 'ستريت فود', href: '/ready-food/street' },
-      { id: 'desserts', name: 'Десерты и выпечка', nameAr: 'حلويات ومخبوزات', href: '/ready-food/desserts' },
-      { id: 'drinks', name: 'Напитки', nameAr: 'مشروبات', href: '/ready-food/drinks' },
+      { id: 'new-hits', name: t('sidebar.newAndHits'), href: '/ready-food/new' },
+      { id: 'all-ready', name: t('sidebar.allReadyFood'), href: '/ready-food/all' },
+      { id: 'combo', name: t('sidebar.comboSets'), href: '/ready-food/combo' },
+      { id: 'hot', name: t('sidebar.hotItems'), href: '/ready-food/hot' },
+      { id: 'street', name: t('sidebar.streetFood'), href: '/ready-food/street' },
+      { id: 'desserts', name: t('sidebar.dessertsAndPastries'), href: '/ready-food/desserts' },
+      { id: 'drinks', name: t('sidebar.drinks'), href: '/ready-food/drinks' },
     ],
   },
 ];
 
-// Main product categories with images
-const MAIN_CATEGORIES = [
-  {
-    id: 1,
-    name: 'Овощи и фрукты',
-    nameAr: 'خضروات وفواكه',
-    image: 'https://images.unsplash.com/photo-1610832958506-aa56368176cf?w=80&h=80&fit=crop',
-  },
-  {
-    id: 2,
-    name: 'Молоко, яйца и сыр',
-    nameAr: 'حليب وبيض وجبن',
-    image: 'https://images.unsplash.com/photo-1628088062854-d1870b4553da?w=80&h=80&fit=crop',
-  },
-  {
-    id: 3,
-    name: 'Хлеб и выпечка',
-    nameAr: 'خبز ومخبوزات',
-    image: 'https://images.unsplash.com/photo-1509440159596-0249088772ff?w=80&h=80&fit=crop',
-  },
-  {
-    id: 4,
-    name: 'Мясо и рыба',
-    nameAr: 'لحوم وأسماك',
-    image: 'https://images.unsplash.com/photo-1607623814075-e51df1bdc82f?w=80&h=80&fit=crop',
-  },
-  {
-    id: 5,
-    name: 'Морозилка',
-    nameAr: 'مجمدات',
-    image: 'https://images.unsplash.com/photo-1563805042-7684c019e1cb?w=80&h=80&fit=crop',
-  },
-  {
-    id: 6,
-    name: 'Вода и напитки',
-    nameAr: 'مياه ومشروبات',
-    image: 'https://images.unsplash.com/photo-1534353473418-4cfa6c56fd38?w=80&h=80&fit=crop',
-  },
-  {
-    id: 7,
-    name: 'Сладкое',
-    nameAr: 'حلويات',
-    image: 'https://images.unsplash.com/photo-1551024601-bec78aea704b?w=80&h=80&fit=crop',
-  },
-];
+/**
+ * Category skeleton for loading state
+ */
+function CategorySkeleton() {
+  return (
+    <div className="flex items-center gap-[12px] px-[16px] py-[6px]">
+      <Skeleton className="w-[40px] h-[40px] rounded-[10px]" />
+      <Skeleton className="h-[14px] w-[120px]" />
+    </div>
+  );
+}
 
 export function Sidebar({
-  categories,
+  categories: propCategories,
   activeCategoryId,
   onClose,
 }: SidebarProps) {
-  const { isRTL } = useLocalization();
+  const { t, isRTL, locale } = useTranslations();
+
+  // Fetch categories from API if not provided via props
+  const { data: apiCategories, isLoading } = useCategories();
+
+  // Use prop categories if provided, otherwise use API categories
+  const categories = propCategories || apiCategories;
+
+  // Get featured sections with translations
+  const featuredSections = getFeaturedSections(t);
+
+  /**
+   * Get localized category name
+   */
+  const getCategoryName = (category: Category | CategoryNavItem): string => {
+    if ('nameAr' in category && locale === 'ar') {
+      return category.nameAr || category.name;
+    }
+    return category.name;
+  };
 
   return (
     <nav className="py-[8px]">
-      {/* Featured categories */}
-      {FEATURED_CATEGORIES.map((category) => (
-        <div key={category.id}>
+      {/* Featured sections */}
+      {featuredSections.map((section) => (
+        <div key={section.id}>
           <Link
-            href={category.href}
+            href={section.href}
             onClick={onClose}
             className="flex items-center gap-[12px] px-[16px] py-[6px] transition-colors hover:bg-[#F5F5F5]"
           >
-            {/* Category image - 40x40 rounded */}
+            {/* Section image - 40x40 rounded */}
             <div className="w-[40px] h-[40px] rounded-[10px] overflow-hidden bg-[#F5F5F5] shrink-0">
               <Image
-                src={category.image}
-                alt={category.name}
+                src={section.image}
+                alt={section.name}
                 width={40}
                 height={40}
                 className="w-full h-full object-cover"
+                unoptimized
               />
             </div>
             <span className="text-[14px] font-medium text-[#1A1A1A] leading-[1.2]">
-              {category.name}
+              {section.name}
             </span>
           </Link>
 
           {/* Subcategories - text only, indented */}
-          {category.subcategories && (
-            <div className="pl-[68px] py-[4px]">
-              {category.subcategories.map((sub) => (
+          {section.subcategories && (
+            <div className={cn(
+              "py-[4px]",
+              isRTL ? "pr-[68px]" : "pl-[68px]"
+            )}>
+              {section.subcategories.map((sub) => (
                 <Link
                   key={sub.id}
                   href={sub.href}
@@ -157,9 +147,30 @@ export function Sidebar({
       {/* Divider */}
       <div className="my-[8px] mx-[16px] border-t border-[#F0F0F0]" />
 
-      {/* Main categories */}
-      {MAIN_CATEGORIES.map((category) => {
+      {/* Section title */}
+      <div className="px-[16px] py-[8px]">
+        <span className="text-[12px] font-semibold text-[#9CA3AF] uppercase tracking-wide">
+          {t('sidebar.categories')}
+        </span>
+      </div>
+
+      {/* Loading state */}
+      {isLoading && (
+        <>
+          <CategorySkeleton />
+          <CategorySkeleton />
+          <CategorySkeleton />
+          <CategorySkeleton />
+          <CategorySkeleton />
+        </>
+      )}
+
+      {/* Main categories from API */}
+      {categories?.map((category) => {
         const isActive = category.id === activeCategoryId;
+        const categoryName = getCategoryName(category);
+        const categoryImage = category.imageUrl || category.iconUrl ||
+          `https://images.unsplash.com/photo-1610832958506-aa56368176cf?w=80&h=80&fit=crop`;
 
         return (
           <Link
@@ -174,19 +185,29 @@ export function Sidebar({
             {/* Category image - 40x40 rounded */}
             <div className="w-[40px] h-[40px] rounded-[10px] overflow-hidden bg-[#F5F5F5] shrink-0">
               <Image
-                src={category.image}
-                alt={category.name}
+                src={categoryImage}
+                alt={categoryName}
                 width={40}
                 height={40}
                 className="w-full h-full object-cover"
+                unoptimized
               />
             </div>
             <span className="text-[14px] font-medium text-[#1A1A1A] leading-[1.2]">
-              {category.name}
+              {categoryName}
             </span>
           </Link>
         );
       })}
+
+      {/* Empty state */}
+      {!isLoading && (!categories || categories.length === 0) && (
+        <div className="px-[16px] py-[24px] text-center">
+          <p className="text-[14px] text-[#9CA3AF]">
+            {t('common.noResults')}
+          </p>
+        </div>
+      )}
     </nav>
   );
 }
@@ -199,7 +220,7 @@ export function MobileSidebar({
   onClose,
   ...props
 }: SidebarProps & { isOpen: boolean }) {
-  const { isRTL } = useLocalization();
+  const { isRTL } = useTranslations();
 
   if (!isOpen) return null;
 

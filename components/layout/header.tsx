@@ -10,8 +10,9 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { Search, User, Menu, X, MessageCircle } from 'lucide-react';
-import { useTenant, useLocalization } from '@/lib/hooks/use-tenant';
+import { Search, User, Menu, X, MessageCircle, Globe } from 'lucide-react';
+import { useTenant } from '@/lib/hooks/use-tenant';
+import { useTranslations } from '@/lib/hooks/use-translations';
 import { cn } from '@/lib/utils';
 
 interface HeaderProps {
@@ -21,7 +22,7 @@ interface HeaderProps {
 
 export function Header({ onMenuClick, cartCount = 0 }: HeaderProps) {
   const { tenant, locale, setLocale } = useTenant();
-  const { t, isRTL } = useLocalization();
+  const { t, isRTL, localize } = useTranslations();
   const [searchQuery, setSearchQuery] = useState('');
   const [searchFocused, setSearchFocused] = useState(false);
 
@@ -37,6 +38,13 @@ export function Header({ onMenuClick, cartCount = 0 }: HeaderProps) {
       setSearchFocused(false);
     }, 150);
   };
+
+  const toggleLocale = () => {
+    setLocale(locale === 'ar' ? 'en' : 'ar');
+  };
+
+  // Get store name based on locale
+  const storeName = localize(tenant.name);
 
   return (
     <>
@@ -61,7 +69,7 @@ export function Header({ onMenuClick, cartCount = 0 }: HeaderProps) {
                 onChange={(e) => setSearchQuery(e.target.value)}
                 onBlur={handleSearchBlur}
                 autoFocus
-                placeholder="Искать в Самокате"
+                placeholder={t('common.searchPlaceholder')}
                 className="flex-1 bg-transparent px-[16px] text-[15px] text-[#1A1A1A] placeholder-[#9E9E9E] outline-none border-none focus:ring-0"
               />
               {searchQuery && (
@@ -85,19 +93,22 @@ export function Header({ onMenuClick, cartCount = 0 }: HeaderProps) {
             {/* Mobile menu button */}
             <button
               onClick={onMenuClick}
-              className="flex h-[40px] w-[40px] items-center justify-center rounded-full hover:bg-[#F5F5F5] lg:hidden transition-colors mr-[8px]"
-              aria-label="Открыть меню"
+              className={cn(
+                "flex h-[40px] w-[40px] items-center justify-center rounded-full hover:bg-[#F5F5F5] lg:hidden transition-colors",
+                isRTL ? "ml-[8px]" : "mr-[8px]"
+              )}
+              aria-label={t('common.openMenu')}
             >
               <Menu className="h-[24px] w-[24px] text-[#1A1A1A]" />
             </button>
 
             {/* Logo */}
             <Link href="/" className="flex items-center gap-[12px]">
-              <div className="w-[36px] h-[36px] rounded-full bg-[#FF4B12] flex items-center justify-center flex-shrink-0">
+              <div className="w-[36px] h-[36px] rounded-full bg-[var(--color-brand)] flex items-center justify-center flex-shrink-0">
                 <div className="w-[18px] h-[18px] rounded-full border-[3px] border-white" />
               </div>
-              <span className="hidden text-[20px] font-bold text-[#FF4B12] lg:block tracking-[-0.02em] leading-none">
-                самокат
+              <span className="hidden text-[20px] font-bold text-[var(--color-brand)] lg:block tracking-[-0.02em] leading-none">
+                {storeName}
               </span>
             </Link>
           </div>
@@ -117,24 +128,38 @@ export function Header({ onMenuClick, cartCount = 0 }: HeaderProps) {
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 onFocus={() => setSearchFocused(true)}
-                placeholder="Искать в Самокате"
+                placeholder={t('common.searchPlaceholder')}
                 className="flex-1 bg-transparent px-[16px] text-[15px] text-[#1A1A1A] placeholder-[#9E9E9E] outline-none border-none focus:ring-0"
               />
             </div>
           </form>
 
-          {/* Right: Login + Chat */}
+          {/* Right: Language + Login + Chat */}
           <div className="flex items-center gap-[12px] shrink-0">
-            <button className="flex h-[52px] items-center gap-[10px] rounded-full bg-[#F5F5F7] px-[24px] text-[#1A1A1A] transition-colors hover:bg-[#ECECEC]">
-              <User className="h-[22px] w-[22px]" strokeWidth={2} />
-              <span className="text-[16px] font-medium leading-none">
-                Войти
+            {/* Language Toggle */}
+            <button
+              onClick={toggleLocale}
+              className="flex h-[40px] items-center gap-[6px] rounded-full bg-[#F5F5F7] px-[16px] text-[#1A1A1A] transition-colors hover:bg-[#ECECEC]"
+              title={locale === 'ar' ? 'Switch to English' : 'التبديل للعربية'}
+            >
+              <Globe className="h-[18px] w-[18px]" strokeWidth={2} />
+              <span className="text-[14px] font-medium leading-none">
+                {locale === 'ar' ? 'EN' : 'عربي'}
               </span>
             </button>
 
+            {/* Login Button */}
+            <button className="flex h-[52px] items-center gap-[10px] rounded-full bg-[#F5F5F7] px-[24px] text-[#1A1A1A] transition-colors hover:bg-[#ECECEC]">
+              <User className="h-[22px] w-[22px]" strokeWidth={2} />
+              <span className="text-[16px] font-medium leading-none">
+                {t('common.login')}
+              </span>
+            </button>
+
+            {/* Chat Support */}
             <button
               className="flex items-center justify-center w-[52px] h-[52px] bg-[#F5F5F7] rounded-full transition-colors hover:bg-[#ECECEC]"
-              aria-label="Чат поддержки"
+              aria-label={t('common.supportChat')}
             >
               <MessageCircle className="h-[22px] w-[22px] text-[#1A1A1A]" strokeWidth={2} />
             </button>
@@ -151,7 +176,7 @@ export function Header({ onMenuClick, cartCount = 0 }: HeaderProps) {
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 onFocus={() => setSearchFocused(true)}
-                placeholder="Искать в Самокате"
+                placeholder={t('common.searchPlaceholder')}
                 className="flex-1 bg-transparent px-[16px] text-[15px] text-[#1A1A1A] placeholder-[#9E9E9E] outline-none border-none focus:ring-0"
               />
             </div>

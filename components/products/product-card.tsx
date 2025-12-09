@@ -11,11 +11,18 @@
  * - Large product name (15px, semi-bold)
  * - Light pink price pill with strikethrough + current price + plus icon
  * - Smooth hover lift effect
+ *
+ * Features:
+ * - Full Arabic/English localization
+ * - Dynamic currency formatting (EGP for Store 1)
+ * - RTL support
  */
 
 import Image from 'next/image';
-import { useLocalization } from '@/lib/hooks/use-tenant';
+import { useTenant } from '@/lib/hooks/use-tenant';
+import { useTranslations } from '@/lib/hooks/use-translations';
 import { cn } from '@/lib/utils';
+import { formatPrice } from '@/lib/utils/format';
 
 interface ProductCardProps {
   id: number;
@@ -54,10 +61,12 @@ export function ProductCard({
   onClick,
   className,
 }: ProductCardProps) {
-  const { isRTL } = useLocalization();
+  const { tenant, locale } = useTenant();
+  const { isRTL, localize } = useTranslations();
 
-  const displayName = isRTL ? nameAr : name;
-  const displayPromo = isRTL ? promoTextAr : promoText;
+  const displayName = localize(name, nameAr);
+  const displayPromo = localize(promoText || '', promoTextAr || '');
+  const displayBadge = badge ? localize(badge.text, badge.textAr) : '';
   const hasDiscount = originalPrice && originalPrice > price;
 
   const handleAddClick = (e: React.MouseEvent) => {
@@ -86,6 +95,7 @@ export function ProductCard({
           fill
           className="object-cover transition-transform duration-300 ease-out group-hover:scale-[1.03]"
           sizes="(max-width: 768px) 50vw, 25vw"
+          unoptimized
         />
 
         {/* Discount Badge - DARK background (Samokat style) */}
@@ -102,7 +112,7 @@ export function ProductCard({
               badge.variant === 'new' && 'bg-[#6C5CE7]'
             )}
           >
-            {isRTL ? badge.textAr : badge.text}
+            {displayBadge}
           </div>
         )}
       </div>
@@ -144,18 +154,24 @@ export function ProductCard({
           >
             {/* Original price (strikethrough) */}
             {hasDiscount && (
-              <span className="text-[11px] text-[#BEBEBE] line-through font-normal mr-[3px]">
-                {originalPrice}
+              <span className={cn(
+                "text-[11px] text-[#BEBEBE] line-through font-normal",
+                isRTL ? "ml-[3px]" : "mr-[3px]"
+              )}>
+                {formatPrice(originalPrice, tenant.currency, locale)}
               </span>
             )}
 
             {/* Current price */}
             <span className="text-[13px] font-bold text-[#1A1A1A]">
-              {price} ₽
+              {formatPrice(price, tenant.currency, locale)}
             </span>
 
             {/* Plus icon */}
-            <span className="ml-[3px] flex items-center justify-center">
+            <span className={cn(
+              "flex items-center justify-center",
+              isRTL ? "mr-[3px]" : "ml-[3px]"
+            )}>
               <svg
                 width="14"
                 height="14"

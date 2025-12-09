@@ -110,6 +110,10 @@ export const store1Config: TenantConfig = {
     decimalPlaces: 2,
   },
 
+  // Location Settings
+  defaultCity: 'Cairo',
+  defaultCityAr: 'القاهرة',
+
   // Contact
   contact: {
     phone: '+20123456789',

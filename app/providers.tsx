@@ -5,12 +5,15 @@
  *
  * Wraps the app with all necessary client-side providers:
  * - TanStack Query for server state
+ * - Tenant context for multi-store support
+ * - API client for backend communication
  * - Zustand stores are auto-initialized
  */
 
 import { useState, type ReactNode } from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { TenantProvider } from '@/lib/hooks/use-tenant';
+import { ApiClientProvider } from '@/lib/api/provider';
 import type { TenantConfig } from '@/types/tenant';
 
 interface ProvidersProps {
@@ -46,7 +49,9 @@ export function Providers({ children, tenant, locale }: ProvidersProps) {
   return (
     <QueryClientProvider client={queryClient}>
       <TenantProvider tenant={tenant} locale={locale}>
-        {children}
+        <ApiClientProvider>
+          {children}
+        </ApiClientProvider>
       </TenantProvider>
     </QueryClientProvider>
   );

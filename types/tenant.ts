@@ -125,6 +125,10 @@ export interface TenantConfig {
   supportedLocales: ('en' | 'ar')[];
   currency: TenantCurrency;
 
+  // Location Settings
+  defaultCity?: string;
+  defaultCityAr?: string;
+
   // Contact & Social
   contact?: TenantContact;
   social?: TenantSocial;
