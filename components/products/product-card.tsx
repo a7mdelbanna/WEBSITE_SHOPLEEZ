@@ -11,18 +11,22 @@
  * - Large product name (15px, semi-bold)
  * - Light pink price pill with strikethrough + current price + plus icon
  * - Smooth hover lift effect
+ * - Unit selection toggle (big/small unit)
  *
  * Features:
  * - Full Arabic/English localization
  * - Dynamic currency formatting (EGP for Store 1)
  * - RTL support
+ * - Unit selection with smooth animation
  */
 
 import Image from 'next/image';
+import { useState } from 'react';
 import { useTenant } from '@/lib/hooks/use-tenant';
 import { useTranslations } from '@/lib/hooks/use-translations';
 import { cn } from '@/lib/utils';
 import { formatPrice } from '@/lib/utils/format';
+import type { UnitInfo } from '@/types/product';
 
 interface ProductCardProps {
   id: number;
@@ -40,9 +44,14 @@ interface ProductCardProps {
     variant: 'discount' | 'tag' | 'new';
   };
   isAvailable?: boolean;
-  onAddToCart?: () => void;
+  onAddToCart?: (unitType?: 'big' | 'small') => void;
   onClick?: () => void;
   className?: string;
+  // Unit support
+  bigUnit?: UnitInfo;
+  smallUnit?: UnitInfo;
+  bigUnitImageUrl?: string;
+  smallUnitImageUrl?: string;
 }
 
 export function ProductCard({
@@ -60,18 +69,40 @@ export function ProductCard({
   onAddToCart,
   onClick,
   className,
+  bigUnit,
+  smallUnit,
+  bigUnitImageUrl,
+  smallUnitImageUrl,
 }: ProductCardProps) {
   const { tenant, locale } = useTenant();
-  const { isRTL, localize } = useTranslations();
+  const { isRTL, localize, t } = useTranslations();
+
+  // Unit selection state - default to small unit if available
+  const hasMultipleUnits = !!(bigUnit && smallUnit && bigUnit.price !== smallUnit.price);
+  const [selectedUnit, setSelectedUnit] = useState<'small' | 'big'>('small');
+
+  // Get current unit info based on selection
+  const currentUnit = selectedUnit === 'big' ? bigUnit : smallUnit;
+  const currentPrice = currentUnit?.price || price;
+  const currentImage = selectedUnit === 'big' ? (bigUnitImageUrl || image) : (smallUnitImageUrl || image);
 
   const displayName = localize(name, nameAr);
   const displayPromo = localize(promoText || '', promoTextAr || '');
   const displayBadge = badge ? localize(badge.text, badge.textAr) : '';
-  const hasDiscount = originalPrice && originalPrice > price;
+  const hasDiscount = originalPrice && originalPrice > currentPrice;
+
+  // Get unit names for display
+  const smallUnitName = smallUnit ? localize(smallUnit.name, smallUnit.nameAr) : t('product.smallUnit');
+  const bigUnitName = bigUnit ? localize(bigUnit.name, bigUnit.nameAr) : t('product.bigUnit');
 
   const handleAddClick = (e: React.MouseEvent) => {
     e.stopPropagation();
-    onAddToCart?.();
+    onAddToCart?.(selectedUnit);
+  };
+
+  const handleUnitToggle = (e: React.MouseEvent, unit: 'small' | 'big') => {
+    e.stopPropagation();
+    setSelectedUnit(unit);
   };
 
   return (
@@ -81,8 +112,6 @@ export function ProductCard({
         'product-card group relative flex flex-col',
         'bg-white rounded-[20px]',
         'cursor-pointer overflow-hidden',
-        'transition-all duration-300 ease-out',
-        'hover:shadow-lg hover:-translate-y-[2px]',
         !isAvailable && 'opacity-60',
         className
       )}
@@ -90,10 +119,10 @@ export function ProductCard({
       {/* Image container - gray background, fully rounded corners */}
       <div className="relative aspect-square overflow-hidden bg-[#F5F5F7] rounded-[16px] m-[6px] mb-0">
         <Image
-          src={image}
+          src={currentImage}
           alt={displayName}
           fill
-          className="object-cover transition-transform duration-300 ease-out group-hover:scale-[1.03]"
+          className="object-cover"
           sizes="(max-width: 768px) 50vw, 25vw"
           unoptimized
         />
@@ -117,28 +146,66 @@ export function ProductCard({
         )}
       </div>
 
-      {/* Content section - ultra compact for small cards */}
-      <div className="flex flex-col p-[6px] pt-[5px] h-[95px] bg-white">
+      {/* Content section - consistent height for all cards */}
+      <div className="flex flex-col p-[6px] pt-[5px] bg-white h-[105px]">
         {/* Product name - 11px, 2 lines */}
-        <h3 className="text-[11px] font-medium text-[#1A1A1A] leading-[1.3] line-clamp-2 h-[30px] mb-[2px]">
+        <h3 className="text-[11px] font-medium text-[#1A1A1A] leading-[1.3] line-clamp-2 h-[30px] mb-[4px]">
           {displayName}
         </h3>
 
-        {/* Weight / Volume - smaller, gray */}
-        <div className="h-[13px] mb-[4px]">
-          {weight && (
-            <span className="text-[10px] text-[#8E8E93]">
-              {weight}
-            </span>
-          )}
-          {displayPromo && !weight && (
-            <span className="text-[10px] text-[#FF4B12] truncate">
-              {displayPromo}
-            </span>
+        {/* Unit Section - Always visible for ALL cards */}
+        <div className="h-[20px] mb-[6px] flex items-center justify-center">
+          {hasMultipleUnits ? (
+            /* Text Toggle with Underline - Variant B */
+            <div className="flex items-center gap-[8px]">
+              <button
+                onClick={(e) => handleUnitToggle(e, 'small')}
+                style={{ fontSize: '12px' }}
+                className={cn(
+                  "font-medium transition-all duration-200 relative pb-[2px]",
+                  selectedUnit === 'small'
+                    ? "text-[#FF4B12]"
+                    : "text-[#999] hover:text-[#666]"
+                )}
+              >
+                {smallUnitName}
+                {selectedUnit === 'small' && (
+                  <span className="absolute bottom-0 left-0 right-0 h-[2px] bg-[#FF4B12] rounded-full" />
+                )}
+              </button>
+              <span style={{ fontSize: '13px' }} className="text-[#E0E0E0]">|</span>
+              <button
+                onClick={(e) => handleUnitToggle(e, 'big')}
+                style={{ fontSize: '12px' }}
+                className={cn(
+                  "font-medium transition-all duration-200 relative pb-[2px]",
+                  selectedUnit === 'big'
+                    ? "text-[#FF4B12]"
+                    : "text-[#999] hover:text-[#666]"
+                )}
+              >
+                {bigUnitName}
+                {selectedUnit === 'big' && (
+                  <span className="absolute bottom-0 left-0 right-0 h-[2px] bg-[#FF4B12] rounded-full" />
+                )}
+              </button>
+            </div>
+          ) : (
+            /* Single unit display - using button element for consistent rendering */
+            <div className="flex items-center gap-[8px]">
+              <button
+                type="button"
+                style={{ fontSize: '12px' }}
+                className="font-medium text-[#FF4B12] relative pb-[2px] cursor-default"
+              >
+                {bigUnitName || smallUnitName || weight || ''}
+                <span className="absolute bottom-0 left-0 right-0 h-[2px] bg-[#FF4B12] rounded-full" />
+              </button>
+            </div>
           )}
         </div>
 
-        {/* Price Button - ultra compact for small cards */}
+        {/* Price Button */}
         <div className="mt-auto">
           <button
             onClick={handleAddClick}
@@ -164,7 +231,7 @@ export function ProductCard({
 
             {/* Current price */}
             <span className="text-[13px] font-bold text-[#1A1A1A]">
-              {formatPrice(price, tenant.currency, locale)}
+              {formatPrice(currentPrice, tenant.currency, locale)}
             </span>
 
             {/* Plus icon */}

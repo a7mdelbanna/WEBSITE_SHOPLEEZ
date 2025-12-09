@@ -32,24 +32,59 @@ export const homeQueryKeys = {
  * Normalize widget item from API response
  */
 function normalizeWidgetItem(item: Record<string, unknown>): ProductSummary {
+  // Extract unit info
+  const bigUnit = item.bigUnit as Record<string, unknown> | undefined;
+  const smallUnit = item.smallUnit as Record<string, unknown> | undefined;
+
+  // Get prices - prefer smallUnitPrice for display, fallback to bigUnitPrice
+  const smallUnitPrice = item.smallUnitPrice as number | undefined;
+  const bigUnitPrice = item.bigUnitPrice as number | undefined;
+  const displayPrice = smallUnitPrice || bigUnitPrice || 0;
+
+  // Get image - prefer small unit image
+  const smallUnitImageUrl = item.itemImageForSmallUnitUrl as string | undefined;
+  const bigUnitImageUrl = item.itemImageForBigUnitUrl as string | undefined;
+  const displayImage = smallUnitImageUrl || bigUnitImageUrl || item.imageUrl as string || item.mainImage as string || '';
+
   return {
     id: item.id as number || item.itemId as number,
     itemId: item.itemId as number,
     name: (item.nameEN || item.nameEn || item.name || '') as string,
     nameAr: (item.nameAR || item.nameAr || '') as string,
     nameEn: (item.nameEN || item.nameEn || item.name || '') as string,
-    price: (item.sellPrice || item.price || 0) as number,
+    price: displayPrice,
     originalPrice: (item.beforeDiscount || item.originalPrice) as number | undefined,
     discountPrice: (item.sellPrice || item.discountPrice) as number | undefined,
     discountPercent: (item.discountPercent || item.discountPercentage) as number | undefined,
-    imageUrl: (item.itemImageForSmallUnitUrl || item.imageUrl || item.mainImage || '') as string,
-    mainImage: (item.itemImageForSmallUnitUrl || item.mainImage || item.imageUrl || '') as string,
+    imageUrl: displayImage,
+    mainImage: displayImage,
     volume: (item.volumeEN || item.volume || '') as string | undefined,
     weight: (item.weight || '') as string | undefined,
     brandName: (item.companyNameEN || item.brandName || '') as string | undefined,
     brandNameAr: (item.companyNameAR || item.brandNameAr || '') as string | undefined,
     categoryName: (item.categoryNameEN || item.categoryName || '') as string | undefined,
     categoryNameAr: (item.categoryNameAR || item.categoryNameAr || '') as string | undefined,
+    // Unit support
+    bigUnitPrice,
+    smallUnitPrice,
+    bigUnitImageUrl,
+    smallUnitImageUrl,
+    bigUnit: bigUnit ? {
+      id: bigUnit.id as number,
+      name: (bigUnit.nameEN || bigUnit.name || '') as string,
+      nameAr: (bigUnit.nameAR || bigUnit.nameAr || '') as string,
+      amount: bigUnit.amount as number || 1,
+      price: bigUnitPrice || 0,
+      imageUrl: bigUnitImageUrl,
+    } : undefined,
+    smallUnit: smallUnit ? {
+      id: smallUnit.id as number,
+      name: (smallUnit.nameEN || smallUnit.name || '') as string,
+      nameAr: (smallUnit.nameAR || smallUnit.nameAr || '') as string,
+      amount: smallUnit.amount as number || 1,
+      price: smallUnitPrice || 0,
+      imageUrl: smallUnitImageUrl,
+    } : undefined,
   };
 }
 
@@ -57,15 +92,23 @@ function normalizeWidgetItem(item: Record<string, unknown>): ProductSummary {
  * Normalize discount item from API response
  */
 function normalizeDiscountItem(item: Record<string, unknown>): DiscountItem {
+  // Get prices - prefer smallUnitPrice for display, fallback to bigUnitPrice
+  const smallUnitPrice = item.smallUnitPrice as number | undefined;
+  const bigUnitPrice = item.bigUnitPrice as number | undefined;
+  const displayPrice = smallUnitPrice || bigUnitPrice || item.sellPrice as number || item.price as number || 0;
+
+  // Get image - prefer small unit image
+  const displayImage = (item.itemImageForSmallUnitUrl || item.itemImageForBigUnitUrl || item.imageUrl || '') as string;
+
   return {
     id: item.id as number || item.itemId as number,
     itemId: item.itemId as number,
     name: (item.nameEN || item.nameEn || item.name || '') as string,
     nameAr: (item.nameAR || item.nameAr || '') as string,
-    price: (item.sellPrice || item.price || 0) as number,
+    price: displayPrice,
     originalPrice: (item.beforeDiscount || item.originalPrice || 0) as number,
     discountPercent: (item.discountPercentage || item.discountPercent || 0) as number,
-    imageUrl: (item.itemImageForSmallUnitUrl || item.imageUrl || '') as string,
+    imageUrl: displayImage,
     discountName: (item.discountNameEN || item.discountName || '') as string,
     discountNameAr: (item.discountNameAR || item.discountNameAr || '') as string,
   };
@@ -140,15 +183,24 @@ export function useHomePage() {
         });
       }
 
-      // Add widgets from widgets array
+      // Add widgets from widgets array - ONLY if they have a name and items
       if (apiData.widgets && Array.isArray(apiData.widgets)) {
         apiData.widgets.forEach((widget: Record<string, unknown>) => {
+          const title = (widget.nameEN || widget.name || '') as string;
+          const titleAr = (widget.nameAR || widget.nameAr || '') as string;
+          const items = (widget.items || []) as Record<string, unknown>[];
+
+          // Skip widgets without names or items
+          if ((!title && !titleAr) || items.length === 0) {
+            return;
+          }
+
           widgetsData.push({
             id: widget.id as number,
-            title: (widget.nameEN || widget.name || '') as string,
-            titleAr: (widget.nameAR || widget.nameAr || '') as string,
+            title,
+            titleAr,
             type: 'custom',
-            items: ((widget.items || []) as Record<string, unknown>[]).map(normalizeWidgetItem),
+            items: items.map(normalizeWidgetItem),
           });
         });
       }

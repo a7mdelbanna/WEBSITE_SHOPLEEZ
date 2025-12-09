@@ -27,6 +27,7 @@ import { ChevronRight } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useTranslations } from '@/lib/hooks/use-translations';
+import { useTenant } from '@/lib/hooks/use-tenant';
 import { useHomePage, useSpecialOffers, useSpotlightItems } from '@/lib/services';
 import { cn } from '@/lib/utils';
 import { isBannersSection, isCompaniesSection, isSpotlightSection } from '@/types/home';
@@ -277,7 +278,7 @@ export default function HomePage() {
           {widgets.map((widget) => (
             widget.items && widget.items.length > 0 && (
               <ProductSection
-                key={widget.id}
+                key={`${widget.type}-${widget.id}`}
                 title={widget.title}
                 titleAr={widget.titleAr}
                 products={widget.items}

@@ -89,9 +89,20 @@ export interface Product {
   carbs?: number;
 }
 
+// Unit info from API
+export interface UnitInfo {
+  id: number;
+  name: string;
+  nameAr: string;
+  amount: number;
+  price: number;
+  imageUrl?: string;
+}
+
 // Simplified product for lists
 export interface ProductSummary {
   id: number;
+  itemId?: number;        // Item ID from API
   name: string;
   nameEn?: string;        // English name (from API)
   nameAr: string;
@@ -114,6 +125,13 @@ export interface ProductSummary {
   brandName?: string;
   brandNameAr?: string;
   hasQuantityDiscount: boolean;
+  // Unit support
+  bigUnit?: UnitInfo;
+  smallUnit?: UnitInfo;
+  bigUnitPrice?: number;
+  smallUnitPrice?: number;
+  bigUnitImageUrl?: string;
+  smallUnitImageUrl?: string;
 }
 
 // Product filter options

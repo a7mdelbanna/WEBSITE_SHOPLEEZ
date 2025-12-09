@@ -116,6 +116,11 @@ export function ProductSection({
                 } : undefined}
                 onAddToCart={() => onAddToCart?.(product.id)}
                 onClick={() => handleProductClick(product)}
+                // Unit support
+                bigUnit={product.bigUnit}
+                smallUnit={product.smallUnit}
+                bigUnitImageUrl={product.bigUnitImageUrl}
+                smallUnitImageUrl={product.smallUnitImageUrl}
               />
             </div>
           ))}
