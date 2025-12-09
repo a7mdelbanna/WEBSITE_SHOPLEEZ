@@ -144,7 +144,7 @@ export function Sidebar({
                   key={sub.id}
                   href={sub.href}
                   onClick={onClose}
-                  className="block py-[6px] text-[13px] text-[#666666] hover:text-[#1A1A1A] transition-colors"
+                  className="block py-[6px] text-[13px] !text-[#666666] hover:!text-[#1A1A1A] transition-colors"
                 >
                   {sub.name}
                 </Link>

@@ -1,133 +1,119 @@
 'use client';
 
 /**
- * Home Page - Exact Samokat Design
+ * Home Page - Exact Samokat Design from Figma
  *
- * Features:
- * - Gray background (#F5F5F5)
- * - White rounded container for main content
- * - Filter tabs as PLAIN TEXT (no borders/pills)
- * - Location widget with map
+ * Sections:
+ * 1. Доставка от 15 минут - Hero cards
+ * 2. Акции - Promotional cards
+ * 3. Выгодная полка - Product deals
  */
 
 import { AppShell } from '@/components/layout';
 import { ProductCard, ProductScroll } from '@/components/products/product-card';
-import { useTenant, useLocalization } from '@/lib/hooks/use-tenant';
-import { SlidersHorizontal } from 'lucide-react';
+import { ChevronRight } from 'lucide-react';
 import Image from 'next/image';
+import Link from 'next/link';
 
-// Products for "Выгодная полка" section (horizontal scroll)
-const DEALS_PRODUCTS = [
+// Hero delivery cards data
+const DELIVERY_CARDS = [
   {
     id: 1,
-    name: 'Мусака Йуми',
-    nameAr: 'Мусака Йуми',
-    image: 'https://images.unsplash.com/photo-1574484284002-952d92456975?w=400&h=400&fit=crop',
-    price: 314,
-    originalPrice: 379,
-    weight: '290 г',
-    promoText: 'Дарим 4 снежинки',
-    promoTextAr: 'Дарим 4 снежинки',
-    badge: { text: 'Комбо', textAr: 'Комбо', variant: 'tag' as const },
+    title: 'Блюда от шефа Василия Емельяненко',
+    image: 'https://images.unsplash.com/photo-1600565193348-f74bd3c7ccdf?w=600&h=400&fit=crop',
+    bgColor: 'bg-gradient-to-br from-amber-700 to-amber-900',
   },
   {
     id: 2,
-    name: 'Котлеты по-грузински Creative Kitchen',
-    nameAr: 'Котлеты по-грузински',
-    image: 'https://images.unsplash.com/photo-1529042410759-befb1204b468?w=400&h=400&fit=crop',
-    price: 349,
-    originalPrice: 499,
-    weight: '270 г',
-    promoText: 'Участвует в акции',
-    promoTextAr: 'Участвует в акции',
-    badge: { text: '-30%', textAr: '-30%', variant: 'discount' as const },
+    title: 'Промокод на 3000 ₽ за перенос номера в Билайн',
+    image: 'https://images.unsplash.com/photo-1607082349566-187342175e2f?w=600&h=400&fit=crop',
+    bgColor: 'bg-gradient-to-br from-slate-700 to-slate-900',
+    badge: 'Реклама',
   },
-];
-
-// Products for "Новинки готовой еды" section (grid)
-const NEW_FOOD_PRODUCTS = [
   {
     id: 3,
-    name: 'Уха Архангельская Самокат',
-    nameAr: 'Уха Архангельская',
-    image: 'https://images.unsplash.com/photo-1547592166-23ac45744acd?w=400&h=400&fit=crop',
-    price: 405,
-    weight: '300 г',
-    promoText: 'Блюдо от шефа',
-    promoTextAr: 'Блюдо от шефа',
+    title: 'Если в ванной мало места',
+    image: 'https://images.unsplash.com/photo-1584622650111-993a426fbf0a?w=600&h=400&fit=crop',
+    bgColor: 'bg-gradient-to-br from-stone-300 to-stone-400',
   },
   {
     id: 4,
-    name: 'Борщ с вишней Самокат',
-    nameAr: 'Борщ с вишней',
-    image: 'https://images.unsplash.com/photo-1547592166-23ac45744acd?w=400&h=400&fit=crop',
-    price: 365,
-    weight: '300 г',
-    promoText: 'Блюдо от шефа',
-    promoTextAr: 'Блюдо от шефа',
+    title: 'Кино, снеки и напитки',
+    image: 'https://images.unsplash.com/photo-1585647347483-22b66260dfff?w=600&h=400&fit=crop',
+    bgColor: 'bg-gradient-to-br from-amber-600 to-amber-800',
+  },
+];
+
+// Promotional campaigns data
+const PROMOTIONS = [
+  {
+    id: 1,
+    title: 'Новогодняя игра, итоги года, призы',
+    image: 'https://images.unsplash.com/photo-1512909006721-3d6018887383?w=400&h=300&fit=crop',
+    bgColor: 'bg-gradient-to-br from-pink-100 to-pink-200',
+  },
+  {
+    id: 2,
+    title: 'Тут товары по низким ценам',
+    badge: 'цены ниже',
+    image: 'https://images.unsplash.com/photo-1573883430060-6a0d21a78583?w=400&h=300&fit=crop',
+    bgColor: 'bg-gradient-to-br from-pink-50 to-pink-100',
+  },
+  {
+    id: 3,
+    title: 'Товары за 99 ₽',
+    image: 'https://images.unsplash.com/photo-1542838132-92c53300491e?w=400&h=300&fit=crop',
+    bgColor: 'bg-gradient-to-br from-lime-100 to-lime-200',
+  },
+  {
+    id: 4,
+    title: 'Скидка 20% на цитрусы и ёлки',
+    image: 'https://images.unsplash.com/photo-1587049352846-4a222e784e38?w=400&h=300&fit=crop',
+    bgColor: 'bg-gradient-to-br from-blue-100 to-blue-200',
   },
   {
     id: 5,
-    name: 'Минтай под соусом бешамель',
-    nameAr: 'Минтай под соусом',
-    image: 'https://images.unsplash.com/photo-1519708227418-c8fd9a32b7a2?w=400&h=400&fit=crop',
-    price: 415,
-    weight: '255 г',
-    promoText: 'Блюдо от шефа',
-    promoTextAr: 'Блюдо от шефа',
+    title: 'Ещё больше скидок',
+    image: 'https://images.unsplash.com/photo-1607082348824-0a96f2a4b9da?w=400&h=300&fit=crop',
+    bgColor: 'bg-gradient-to-br from-purple-100 to-purple-200',
+  },
+];
+
+// Products for "Выгодная полка" section
+const DEALS_PRODUCTS = [
+  {
+    id: 1,
+    name: 'Lapland Emmental',
+    nameAr: 'Lapland Emmental',
+    image: 'https://images.unsplash.com/photo-1486297678162-eb2a19b0a32d?w=400&h=400&fit=crop',
+    price: 299,
+    originalPrice: 399,
+    weight: '200 г',
+    badge: { text: '-25%', textAr: '-25%', variant: 'discount' as const },
   },
   {
-    id: 6,
-    name: 'Кокосовая меренга Самокат',
-    nameAr: 'Кокосовая меренга',
-    image: 'https://images.unsplash.com/photo-1587314168485-3236d6710814?w=400&h=400&fit=crop',
-    price: 169,
-    weight: '50 г',
-  },
-  {
-    id: 7,
-    name: 'Круассан Самокат, с малиной',
-    nameAr: 'Круассан с малиной',
-    image: 'https://images.unsplash.com/photo-1555507036-ab1f4038808a?w=400&h=400&fit=crop',
-    price: 209,
+    id: 2,
+    name: 'Суперлист Розмарин',
+    nameAr: 'Суперлист Розмарин',
+    image: 'https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?w=400&h=400&fit=crop',
+    price: 159,
+    originalPrice: 219,
     weight: '100 г',
+    badge: { text: '-27%', textAr: '-27%', variant: 'discount' as const },
   },
   {
-    id: 8,
-    name: 'Пирожное Чизкейк классический',
-    nameAr: 'Чизкейк классический',
-    image: 'https://images.unsplash.com/photo-1524351199678-941a58a3df50?w=400&h=400&fit=crop',
-    price: 189,
-    weight: '110 г',
-    promoText: 'Дарим 4 снежинки',
-    promoTextAr: 'Дарим 4 снежинки',
-  },
-  {
-    id: 9,
-    name: 'Фиш энд чипс, жареные',
-    nameAr: 'Фиш энд чипс',
-    image: 'https://images.unsplash.com/photo-1579208030886-b937da0925dc?w=400&h=400&fit=crop',
-    price: 269,
-    weight: '120 г',
-    promoText: 'Привезём горячим',
-    promoTextAr: 'Привезём горячим',
-  },
-  {
-    id: 10,
-    name: 'Минибагет с чесночным маслом',
-    nameAr: 'Минибагет',
-    image: 'https://images.unsplash.com/photo-1509440159596-0249088772ff?w=400&h=400&fit=crop',
-    price: 119,
-    weight: '150 г',
-    promoText: 'Привезём горячим',
-    promoTextAr: 'Привезём горячим',
+    id: 3,
+    name: 'Шоколад молочный',
+    nameAr: 'Шоколад молочный',
+    image: 'https://images.unsplash.com/photo-1511381939415-e44015466834?w=400&h=400&fit=crop',
+    price: 89,
+    originalPrice: 129,
+    weight: '90 г',
+    badge: { text: '-31%', textAr: '-31%', variant: 'discount' as const },
   },
 ];
 
 export default function HomePage() {
-  const { tenant } = useTenant();
-  const { t, isRTL } = useLocalization();
-
   const handleAddToCart = (productId: number) => {
     console.log('Add to cart:', productId);
   };
@@ -140,48 +126,97 @@ export default function HomePage() {
     <AppShell cartCount={3}>
       <div className="flex gap-[12px]">
         {/* Main content - white rounded container */}
-        <div className="flex-1 min-w-0 bg-white rounded-[20px] p-[24px]">
-          {/* Breadcrumb */}
-          <nav className="mb-[12px] text-[13px] text-[#999999]">
-            Главная
-          </nav>
+        <div className="flex-1 min-w-0 bg-white rounded-[20px] p-[32px]">
 
-          {/* Page title */}
-          <h1 className="text-[24px] font-bold text-[#1A1A1A] mb-[12px]">
-            Новинки и хиты
-          </h1>
+          {/* "Доставка от 15 минут" Section */}
+          <section className="mb-[48px]">
+            {/* Section Header - Samokat style: light "Доставка" + bold "от 15 минут" */}
+            <div className="pb-[32px]">
+              <h1 className="text-[32px] leading-tight">
+                <span className="text-[#9CA3AF] font-light">Доставка</span>{' '}
+                <span className="text-[#1A1A1A] font-bold">от 15 минут</span>
+              </h1>
+            </div>
 
-          {/* Main filter tabs - PLAIN TEXT, no pills */}
-          <div className="flex items-center gap-[16px] mb-[16px]">
-            <button className="text-[14px] font-medium text-[#1A1A1A] hover:text-[#666666] transition-colors">
-              Новинки готовой еды
-            </button>
-            <button className="text-[14px] font-medium text-[#1A1A1A] hover:text-[#666666] transition-colors">
-              Хиты
-            </button>
-          </div>
+            {/* 4-Column Static Grid - IMAGE ONLY BANNERS */}
+            <div className="grid grid-cols-4 gap-[16px] pt-[8px]">
+              {DELIVERY_CARDS.map((card) => (
+                <Link
+                  key={card.id}
+                  href="#"
+                  className="group relative aspect-[3/4] rounded-[20px] overflow-hidden hover:scale-[1.02] transition-transform"
+                >
+                  {/* Image only - text is baked into the image by designer */}
+                  <Image
+                    src={card.image}
+                    alt={card.title}
+                    fill
+                    className="object-cover"
+                  />
+                  {/* "Реклама" badge - ONLY allowed overlay for sponsored content */}
+                  {card.badge && (
+                    <div className="absolute bottom-[16px] left-[16px] bg-white/85 backdrop-blur-sm px-[12px] py-[6px] rounded-full flex items-center gap-[6px]">
+                      <svg className="w-[14px] h-[14px] text-[#6B7280]" viewBox="0 0 24 24" fill="currentColor">
+                        <circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" strokeWidth="2"/>
+                        <text x="12" y="16" textAnchor="middle" fontSize="12" fill="currentColor">i</text>
+                      </svg>
+                      <span className="text-[#6B7280] text-[12px] font-normal">{card.badge}</span>
+                    </div>
+                  )}
+                </Link>
+              ))}
+            </div>
 
-          {/* Secondary filter row - icon + plain text */}
-          <div className="flex items-center gap-[16px] mb-[28px]">
-            <button className="flex items-center justify-center w-[20px] h-[20px] text-[#1A1A1A] hover:text-[#666666] transition-colors">
-              <SlidersHorizontal className="w-[18px] h-[18px]" />
+            {/* Navigation arrow - positioned outside grid on right */}
+            <button className="absolute right-0 top-1/2 -translate-y-1/2 w-[40px] h-[40px] rounded-full bg-white shadow-md flex items-center justify-center hover:scale-110 transition-transform hidden">
+              <ChevronRight className="w-[20px] h-[20px] text-[#1A1A1A]" strokeWidth={2} />
             </button>
-            <button className="text-[14px] font-medium text-[#1A1A1A] hover:text-[#666666] transition-colors">
-              Цена
-            </button>
-            <button className="text-[14px] font-medium text-[#1A1A1A] hover:text-[#666666] transition-colors">
-              Без сахара
-            </button>
-            <button className="text-[14px] font-medium text-[#1A1A1A] hover:text-[#666666] transition-colors">
-              Неострый вкус
-            </button>
-          </div>
+          </section>
+
+          {/* "Акции" Section */}
+          <section className="mb-[48px]">
+            <div className="flex items-center justify-between mb-[24px]">
+              <h2 className="text-[28px] font-bold text-[#1A1A1A] leading-none">Акции</h2>
+            </div>
+
+            {/* IMAGE ONLY - NO TEXT OVERLAYS */}
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-[12px]">
+              {PROMOTIONS.map((promo) => (
+                <Link
+                  key={promo.id}
+                  href="#"
+                  className="group relative aspect-[3/4] rounded-[20px] overflow-hidden hover:scale-[1.02] transition-transform"
+                >
+                  {/* Image only - text is baked into the image by designer */}
+                  <Image
+                    src={promo.image}
+                    alt={promo.title}
+                    fill
+                    className="object-cover"
+                  />
+                </Link>
+              ))}
+
+              {/* "Больше" button */}
+              <button className="aspect-[3/4] rounded-[20px] bg-white border border-[#E5E5E5] flex flex-col items-center justify-center hover:bg-[#FAFAFA] transition-colors shadow-sm">
+                <span className="text-[17px] font-bold text-[#1A1A1A] mb-[12px]">Больше</span>
+                <div className="w-[40px] h-[40px] rounded-full bg-[#F5F5F5] flex items-center justify-center">
+                  <ChevronRight className="w-[20px] h-[20px] text-[#1A1A1A]" strokeWidth={2.5} />
+                </div>
+              </button>
+            </div>
+          </section>
 
           {/* "Выгодная полка" Section */}
-          <section className="mb-[32px]">
-            <h2 className="text-[20px] font-bold text-[#1A1A1A] mb-[16px]">
-              Выгодная полка
-            </h2>
+          <section className="mb-[48px]">
+            <div className="flex items-center justify-between mb-[24px]">
+              <h2 className="text-[28px] font-bold text-[#1A1A1A] leading-none">Выгодная полка</h2>
+              <Link href="#" className="flex items-center gap-[6px] text-[15px] font-semibold text-[#1A1A1A] hover:text-[#FF4B12] transition-colors">
+                Больше
+                <ChevronRight className="w-[20px] h-[20px]" strokeWidth={2} />
+              </Link>
+            </div>
+
             <ProductScroll>
               {DEALS_PRODUCTS.map((product) => (
                 <div key={product.id} className="w-[180px] shrink-0">
@@ -193,23 +228,6 @@ export default function HomePage() {
                 </div>
               ))}
             </ProductScroll>
-          </section>
-
-          {/* "Новинки готовой еды" Section */}
-          <section className="mb-[32px]">
-            <h2 className="text-[20px] font-bold text-[#1A1A1A] mb-[16px]">
-              Новинки готовой еды
-            </h2>
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-[8px]">
-              {NEW_FOOD_PRODUCTS.map((product) => (
-                <ProductCard
-                  key={product.id}
-                  {...product}
-                  onAddToCart={() => handleAddToCart(product.id)}
-                  onClick={() => handleProductClick(product.id)}
-                />
-              ))}
-            </div>
           </section>
         </div>
 

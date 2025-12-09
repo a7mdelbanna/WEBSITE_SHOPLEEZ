@@ -1,93 +1,182 @@
 @import "tailwindcss";
 
 /**
- * Global CSS with CSS Variables for Theming
+ * Shopleez Design System - Based on Samokat Reference
  *
- * CSS variables are injected by the root layout based on tenant config.
- * This allows for dynamic theming without rebuilding the app.
+ * This file contains all design tokens and global styles
+ * extracted from the Samokat reference design (pixel-perfect clone).
  */
 
 /* ================================
-   Theme CSS Variables (Defaults)
-   These are overridden per-tenant
+   DESIGN TOKENS - Samokat Clone
    ================================ */
 :root {
-  /* Primary Colors */
-  --color-primary: #FF6B6B;
-  --color-primary-hover: #FF5252;
-  --color-primary-light: #FFE5E5;
+  /* === BRAND COLORS === */
+  --color-brand: #FF4B26;
+  --color-brand-hover: #E63E1C;
+  --color-brand-active: #CC3518;
+  --color-brand-light: #FFF0ED;
 
-  /* Secondary Colors */
-  --color-secondary: #4ECDC4;
-  --color-secondary-hover: #3DBDB5;
+  /* Legacy aliases for compatibility */
+  --color-primary: var(--color-brand);
+  --color-primary-hover: var(--color-brand-hover);
+  --color-primary-light: var(--color-brand-light);
 
-  /* Accent Colors */
-  --color-accent: #FF9F43;
-  --color-accent-hover: #FF8C29;
+  /* === BACKGROUND COLORS === */
+  --color-bg-page: #F5F5F7;
+  --color-bg-card: #FFFFFF;
+  --color-bg-input: #F5F5F7;
+  --color-bg-promo-banner: #FFF9E6;
+  --color-bg-dark: #374151;
 
-  /* Background Colors - Samokat uses very light gray */
-  --color-background: #F5F5F7;
-  --color-background-secondary: #FFFFFF;
-  --color-card: #FFFFFF;
+  /* Legacy aliases */
+  --color-background: var(--color-bg-page);
+  --color-background-secondary: var(--color-bg-card);
+  --color-card: var(--color-bg-card);
 
-  /* Text Colors */
-  --color-text-primary: #212529;
-  --color-text-secondary: #6C757D;
-  --color-text-muted: #ADB5BD;
+  /* === TEXT COLORS === */
+  --color-text-primary: #1A1A1A;
+  --color-text-secondary: #6B7280;
+  --color-text-muted: #9CA3AF;
+  --color-text-on-dark: #FFFFFF;
   --color-text-on-primary: #FFFFFF;
+  --color-text-on-image: #FFFFFF;
 
-  /* Border Colors */
-  --color-border: #DEE2E6;
-  --color-border-light: #E9ECEF;
+  /* === BORDER COLORS === */
+  --color-border: #E5E7EB;
+  --color-border-light: #F3F4F6;
 
-  /* Status Colors */
-  --color-success: #28A745;
-  --color-warning: #FFC107;
-  --color-error: #DC3545;
-  --color-info: #17A2B8;
+  /* === STATUS COLORS === */
+  --color-success: #10B981;
+  --color-warning: #F59E0B;
+  --color-error: #EF4444;
+  --color-info: #3B82F6;
 
-  /* Fonts */
-  --font-primary: 'Inter', system-ui, sans-serif;
+  /* === TYPOGRAPHY === */
+  --font-primary: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   --font-arabic: 'Cairo', 'Noto Sans Arabic', sans-serif;
 
-  /* Spacing */
-  --spacing-xs: 0.25rem;
-  --spacing-sm: 0.5rem;
-  --spacing-md: 1rem;
-  --spacing-lg: 1.5rem;
-  --spacing-xl: 2rem;
-  --spacing-2xl: 3rem;
+  /* Font Sizes */
+  --text-xs: 12px;
+  --text-sm: 14px;
+  --text-base: 16px;
+  --text-lg: 18px;
+  --text-xl: 20px;
+  --text-2xl: 24px;
+  --text-3xl: 30px;
+  --text-4xl: 36px;
 
-  /* Border Radius */
-  --radius-sm: 0.25rem;
-  --radius-md: 0.5rem;
-  --radius-lg: 0.75rem;
-  --radius-xl: 1rem;
+  /* Font Weights */
+  --font-light: 300;
+  --font-regular: 400;
+  --font-medium: 500;
+  --font-semibold: 600;
+  --font-bold: 700;
+
+  /* Line Heights */
+  --leading-tight: 1.25;
+  --leading-snug: 1.375;
+  --leading-normal: 1.5;
+  --leading-relaxed: 1.625;
+
+  /* === SPACING (4px base unit) === */
+  --space-0: 0px;
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-10: 40px;
+  --space-12: 48px;
+  --space-16: 64px;
+
+  /* Legacy spacing aliases */
+  --spacing-xs: var(--space-1);
+  --spacing-sm: var(--space-2);
+  --spacing-md: var(--space-4);
+  --spacing-lg: var(--space-6);
+  --spacing-xl: var(--space-8);
+  --spacing-2xl: var(--space-12);
+
+  /* === BORDER RADIUS === */
+  --radius-none: 0px;
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
+  --radius-2xl: 20px;
+  --radius-3xl: 24px;
   --radius-full: 9999px;
 
-  /* Shadows */
-  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
-  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1);
-  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1);
-  --shadow-xl: 0 25px 50px -12px rgb(0 0 0 / 0.25);
+  /* === SHADOWS (minimal - Samokat style) === */
+  --shadow-none: none;
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.07);
+  --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.1);
+  --shadow-xl: 0 25px 50px rgba(0, 0, 0, 0.15);
 
-  /* Transitions */
-  --transition-fast: 150ms ease;
-  --transition-normal: 200ms ease;
-  --transition-slow: 300ms ease;
-
-  /* Z-index layers */
-  --z-dropdown: 100;
-  --z-sticky: 200;
-  --z-modal: 300;
-  --z-toast: 400;
-  --z-tooltip: 500;
-
-  /* Layout - Samokat dimensions */
+  /* === LAYOUT DIMENSIONS === */
   --header-height: 72px;
   --sidebar-width: 260px;
   --sidebar-collapsed-width: 80px;
-  --right-sidebar-width: 300px;
+  --right-panel-width: 320px;
+  --content-padding: 24px;
+  --card-gap: 16px;
+  --section-gap: 32px;
+
+  /* === TRANSITIONS === */
+  --duration-fast: 150ms;
+  --duration-normal: 200ms;
+  --duration-slow: 300ms;
+  --ease-default: ease-out;
+  --ease-bounce: cubic-bezier(0.68, -0.55, 0.265, 1.55);
+
+  /* Legacy aliases */
+  --transition-fast: var(--duration-fast) var(--ease-default);
+  --transition-normal: var(--duration-normal) var(--ease-default);
+  --transition-slow: var(--duration-slow) var(--ease-default);
+
+  /* === Z-INDEX SCALE === */
+  --z-base: 0;
+  --z-dropdown: 100;
+  --z-sticky: 200;
+  --z-sidebar: 300;
+  --z-modal: 400;
+  --z-toast: 500;
+  --z-tooltip: 600;
+  --z-max: 9999;
+
+  /* === PROMO CARD SPECIFIC === */
+  --promo-card-radius: 20px;
+  --promo-card-padding: 20px;
+  --promo-card-min-height: 280px;
+  --promo-card-aspect-ratio: 3/4;
+  --promo-badge-bg: rgba(255, 255, 255, 0.85);
+  --promo-badge-radius: 9999px;
+  --promo-badge-padding: 6px 12px;
+
+  /* === ACTION CARD SPECIFIC === */
+  --action-card-radius: 16px;
+  --action-card-min-height: 180px;
+  --action-card-padding: 16px;
+
+  /* === SIDEBAR SPECIFIC === */
+  --sidebar-icon-size: 40px;
+  --sidebar-item-height: 48px;
+  --sidebar-item-gap: 8px;
+  --sidebar-hover-bg: #F5F5F7;
+  --sidebar-active-bg: #FFF0ED;
+  --sidebar-active-color: #FF4B26;
+
+  /* === BUTTON SPECIFIC === */
+  --btn-height-sm: 32px;
+  --btn-height-md: 40px;
+  --btn-height-lg: 48px;
+  --btn-radius: 8px;
+  --btn-padding-x: 20px;
+  --btn-font-weight: 500;
 }
 
 /* ================================
@@ -95,13 +184,12 @@
    ================================ */
 @theme inline {
   /* Colors */
+  --color-brand: var(--color-brand);
+  --color-brand-hover: var(--color-brand-hover);
+  --color-brand-light: var(--color-brand-light);
   --color-primary: var(--color-primary);
   --color-primary-hover: var(--color-primary-hover);
   --color-primary-light: var(--color-primary-light);
-  --color-secondary: var(--color-secondary);
-  --color-secondary-hover: var(--color-secondary-hover);
-  --color-accent: var(--color-accent);
-  --color-accent-hover: var(--color-accent-hover);
   --color-background: var(--color-background);
   --color-background-secondary: var(--color-background-secondary);
   --color-card: var(--color-card);
@@ -138,11 +226,11 @@ html {
 body {
   margin: 0;
   padding: 0;
-  background-color: var(--color-background);
+  background-color: var(--color-bg-page);
   color: var(--color-text-primary);
   font-family: var(--font-primary);
-  font-size: 16px;
-  line-height: 1.5;
+  font-size: var(--text-base);
+  line-height: var(--leading-normal);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
@@ -154,10 +242,45 @@ html[lang="ar"] body {
 }
 
 /* ================================
+   Typography
+   ================================ */
+h1, h2, h3, h4, h5, h6 {
+  margin: 0;
+  font-weight: var(--font-semibold);
+  line-height: var(--leading-tight);
+  color: var(--color-text-primary);
+}
+
+h1 { font-size: var(--text-4xl); }
+h2 { font-size: var(--text-3xl); }
+h3 { font-size: var(--text-2xl); }
+h4 { font-size: var(--text-xl); }
+h5 { font-size: var(--text-lg); }
+h6 { font-size: var(--text-base); }
+
+p {
+  margin: 0;
+}
+
+/* Section Header Pattern (Samokat Style) */
+.section-header-mixed {
+  font-size: var(--text-3xl);
+  line-height: var(--leading-tight);
+}
+
+.section-header-mixed .light {
+  color: var(--color-text-muted);
+  font-weight: var(--font-light);
+}
+
+.section-header-mixed .bold {
+  color: var(--color-text-primary);
+  font-weight: var(--font-bold);
+}
+
+/* ================================
    RTL Support
    ================================ */
-
-/* Text alignment */
 html[dir="rtl"] {
   text-align: right;
 }
@@ -167,55 +290,46 @@ html[dir="ltr"] {
 }
 
 /* Directional margins and paddings */
-.ms-auto {
-  margin-inline-start: auto;
-}
-
-.me-auto {
-  margin-inline-end: auto;
-}
+.ms-auto { margin-inline-start: auto; }
+.me-auto { margin-inline-end: auto; }
 
 .ps-0 { padding-inline-start: 0; }
-.ps-1 { padding-inline-start: 0.25rem; }
-.ps-2 { padding-inline-start: 0.5rem; }
-.ps-3 { padding-inline-start: 0.75rem; }
-.ps-4 { padding-inline-start: 1rem; }
-.ps-5 { padding-inline-start: 1.25rem; }
-.ps-6 { padding-inline-start: 1.5rem; }
+.ps-1 { padding-inline-start: var(--space-1); }
+.ps-2 { padding-inline-start: var(--space-2); }
+.ps-3 { padding-inline-start: var(--space-3); }
+.ps-4 { padding-inline-start: var(--space-4); }
+.ps-5 { padding-inline-start: var(--space-5); }
+.ps-6 { padding-inline-start: var(--space-6); }
 
 .pe-0 { padding-inline-end: 0; }
-.pe-1 { padding-inline-end: 0.25rem; }
-.pe-2 { padding-inline-end: 0.5rem; }
-.pe-3 { padding-inline-end: 0.75rem; }
-.pe-4 { padding-inline-end: 1rem; }
-.pe-5 { padding-inline-end: 1.25rem; }
-.pe-6 { padding-inline-end: 1.5rem; }
+.pe-1 { padding-inline-end: var(--space-1); }
+.pe-2 { padding-inline-end: var(--space-2); }
+.pe-3 { padding-inline-end: var(--space-3); }
+.pe-4 { padding-inline-end: var(--space-4); }
+.pe-5 { padding-inline-end: var(--space-5); }
+.pe-6 { padding-inline-end: var(--space-6); }
 
 .ms-0 { margin-inline-start: 0; }
-.ms-1 { margin-inline-start: 0.25rem; }
-.ms-2 { margin-inline-start: 0.5rem; }
-.ms-3 { margin-inline-start: 0.75rem; }
-.ms-4 { margin-inline-start: 1rem; }
-.ms-5 { margin-inline-start: 1.25rem; }
-.ms-6 { margin-inline-start: 1.5rem; }
+.ms-1 { margin-inline-start: var(--space-1); }
+.ms-2 { margin-inline-start: var(--space-2); }
+.ms-3 { margin-inline-start: var(--space-3); }
+.ms-4 { margin-inline-start: var(--space-4); }
+.ms-5 { margin-inline-start: var(--space-5); }
+.ms-6 { margin-inline-start: var(--space-6); }
 
 .me-0 { margin-inline-end: 0; }
-.me-1 { margin-inline-end: 0.25rem; }
-.me-2 { margin-inline-end: 0.5rem; }
-.me-3 { margin-inline-end: 0.75rem; }
-.me-4 { margin-inline-end: 1rem; }
-.me-5 { margin-inline-end: 1.25rem; }
-.me-6 { margin-inline-end: 1.5rem; }
+.me-1 { margin-inline-end: var(--space-1); }
+.me-2 { margin-inline-end: var(--space-2); }
+.me-3 { margin-inline-end: var(--space-3); }
+.me-4 { margin-inline-end: var(--space-4); }
+.me-5 { margin-inline-end: var(--space-5); }
+.me-6 { margin-inline-end: var(--space-6); }
 
 /* RTL-aware positioning */
 .start-0 { inset-inline-start: 0; }
 .end-0 { inset-inline-end: 0; }
-.start-1 { inset-inline-start: 0.25rem; }
-.end-1 { inset-inline-end: 0.25rem; }
-.start-2 { inset-inline-start: 0.5rem; }
-.end-2 { inset-inline-end: 0.5rem; }
-.start-4 { inset-inline-start: 1rem; }
-.end-4 { inset-inline-end: 1rem; }
+.start-4 { inset-inline-start: var(--space-4); }
+.end-4 { inset-inline-end: var(--space-4); }
 
 /* RTL-aware borders */
 .border-s { border-inline-start-width: 1px; }
@@ -226,11 +340,6 @@ html[dir="ltr"] {
 /* RTL-aware transforms */
 html[dir="rtl"] .flip-rtl {
   transform: scaleX(-1);
-}
-
-/* RTL-aware flex */
-.flex-row-reverse-rtl {
-  flex-direction: row;
 }
 
 html[dir="rtl"] .flex-row-reverse-rtl {
@@ -246,34 +355,32 @@ html[dir="rtl"] .flex-row-reverse-rtl {
 }
 
 ::-webkit-scrollbar-track {
-  background: var(--color-background);
-  border-radius: 4px;
+  background: var(--color-bg-page);
+  border-radius: var(--radius-sm);
 }
 
 ::-webkit-scrollbar-thumb {
   background: var(--color-border);
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
 }
 
 ::-webkit-scrollbar-thumb:hover {
   background: var(--color-text-muted);
 }
 
-/* Firefox */
 * {
   scrollbar-width: thin;
-  scrollbar-color: var(--color-border) var(--color-background);
+  scrollbar-color: var(--color-border) var(--color-bg-page);
 }
 
 /* ================================
    Focus Styles
    ================================ */
 :focus-visible {
-  outline: 2px solid var(--color-primary);
+  outline: 2px solid var(--color-brand);
   outline-offset: 2px;
 }
 
-/* Remove default focus for mouse users */
 :focus:not(:focus-visible) {
   outline: none;
 }
@@ -282,7 +389,7 @@ html[dir="rtl"] .flex-row-reverse-rtl {
    Selection
    ================================ */
 ::selection {
-  background-color: var(--color-primary-light);
+  background-color: var(--color-brand-light);
   color: var(--color-text-primary);
 }
 
@@ -290,13 +397,13 @@ html[dir="rtl"] .flex-row-reverse-rtl {
    Links
    ================================ */
 a {
-  color: var(--color-primary);
+  color: var(--color-brand);
   text-decoration: none;
-  transition: color var(--transition-fast);
+  transition: color var(--duration-fast) var(--ease-default);
 }
 
 a:hover {
-  color: var(--color-primary-hover);
+  color: var(--color-brand-hover);
 }
 
 /* ================================
@@ -318,7 +425,6 @@ button {
   padding: 0;
 }
 
-/* Remove all default search input styling */
 input[type="search"] {
   -webkit-appearance: none;
   -moz-appearance: none;
@@ -340,26 +446,6 @@ input[type="search"]:focus {
   outline: none !important;
   border: none !important;
   box-shadow: none !important;
-}
-
-/* ================================
-   Typography
-   ================================ */
-h1, h2, h3, h4, h5, h6 {
-  margin: 0;
-  font-weight: 600;
-  line-height: 1.25;
-}
-
-h1 { font-size: 2rem; }
-h2 { font-size: 1.5rem; }
-h3 { font-size: 1.25rem; }
-h4 { font-size: 1.125rem; }
-h5 { font-size: 1rem; }
-h6 { font-size: 0.875rem; }
-
-p {
-  margin: 0;
 }
 
 /* ================================
@@ -400,7 +486,7 @@ p {
 
 /* Text gradient */
 .text-gradient {
-  background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
+  background: linear-gradient(135deg, var(--color-brand), var(--color-info));
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -408,9 +494,496 @@ p {
 
 /* Glass effect */
 .glass {
-  background: rgba(255, 255, 255, 0.8);
+  background: rgba(255, 255, 255, 0.85);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
+}
+
+/* ================================
+   Component: Promo Banners (Samokat Style)
+   IMAGE-ONLY BANNERS - NO TEXT OVERLAY
+   ================================ */
+
+/* Promo Section Container */
+.promo-section {
+  padding: var(--content-padding);
+}
+
+/* Promo Section Header */
+.promo-section-header {
+  margin-bottom: var(--space-6);
+}
+
+/* Promo Grid - STATIC GRID, NO SCROLL, NO CAROUSEL */
+.promo-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--card-gap);
+}
+
+/* For 3-column layout */
+.promo-grid-3 {
+  grid-template-columns: repeat(3, 1fr);
+}
+
+/*
+ * PROMO BANNER - IMAGE ONLY
+ * Text is baked into the image by the designer.
+ * Only allowed overlay: "Реклама" badge for sponsored content.
+ */
+.promo-banner {
+  position: relative;
+  border-radius: var(--promo-card-radius);
+  overflow: hidden;
+  cursor: pointer;
+  transition: transform var(--duration-normal) var(--ease-default);
+}
+
+/* Aspect ratio variants */
+.promo-banner--portrait {
+  aspect-ratio: 3/4;
+}
+
+.promo-banner--landscape {
+  aspect-ratio: 16/10;
+}
+
+.promo-banner--square {
+  aspect-ratio: 1/1;
+}
+
+/* Default aspect ratio */
+.promo-banner:not([class*="--"]) {
+  aspect-ratio: 3/4;
+}
+
+/* Banner Image - MUST fill entire card */
+.promo-banner img,
+.promo-banner-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+/* Hover effect */
+.promo-banner:hover {
+  transform: scale(1.02);
+}
+
+.promo-banner:active {
+  transform: scale(0.98);
+}
+
+/* "Реклама" Badge - ONLY allowed overlay element */
+.promo-badge {
+  position: absolute;
+  bottom: var(--space-4);
+  left: var(--space-4);
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  background: var(--promo-badge-bg);
+  padding: var(--promo-badge-padding);
+  border-radius: var(--promo-badge-radius);
+  font-size: var(--text-xs);
+  font-weight: var(--font-regular);
+  color: var(--color-text-secondary);
+  z-index: 2;
+}
+
+html[dir="rtl"] .promo-badge {
+  left: auto;
+  right: var(--space-4);
+}
+
+.promo-badge-icon {
+  width: 14px;
+  height: 14px;
+  opacity: 0.7;
+}
+
+/* Navigation Arrow - for carousel navigation (if needed externally) */
+.promo-nav-arrow {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 40px;
+  height: 40px;
+  background: var(--color-bg-card);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: transform var(--duration-fast) var(--ease-default);
+  z-index: 2;
+  box-shadow: var(--shadow-md);
+}
+
+.promo-nav-arrow--next {
+  right: var(--space-4);
+}
+
+.promo-nav-arrow--prev {
+  left: var(--space-4);
+}
+
+html[dir="rtl"] .promo-nav-arrow--next {
+  right: auto;
+  left: var(--space-4);
+}
+
+html[dir="rtl"] .promo-nav-arrow--prev {
+  left: auto;
+  right: var(--space-4);
+}
+
+html[dir="rtl"] .promo-nav-arrow svg {
+  transform: scaleX(-1);
+}
+
+.promo-nav-arrow:hover {
+  transform: translateY(-50%) scale(1.1);
+}
+
+.promo-nav-arrow svg {
+  width: 20px;
+  height: 20px;
+  color: var(--color-text-primary);
+}
+
+/* ================================
+   Component: Action Cards (Smaller Grid)
+   ================================ */
+
+.action-section {
+  padding: var(--content-padding);
+  padding-top: 0;
+}
+
+.action-header {
+  font-size: var(--text-2xl);
+  font-weight: var(--font-bold);
+  color: var(--color-text-primary);
+  margin-bottom: var(--space-5);
+}
+
+.action-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: var(--card-gap);
+}
+
+.action-card {
+  position: relative;
+  border-radius: var(--action-card-radius);
+  overflow: hidden;
+  min-height: var(--action-card-min-height);
+  padding: var(--action-card-padding);
+  background-size: cover;
+  background-position: center;
+  cursor: pointer;
+  transition: transform var(--duration-normal) var(--ease-default);
+}
+
+.action-card:hover {
+  transform: scale(1.02);
+}
+
+.action-card-title {
+  font-size: var(--text-base);
+  font-weight: var(--font-semibold);
+  line-height: var(--leading-snug);
+}
+
+/* More Card Variant */
+.action-card.more {
+  background: var(--color-bg-card);
+  border: 1px solid var(--color-border);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.more-arrow {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: var(--color-bg-page);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* ================================
+   Component: Sidebar (Samokat Style)
+   ================================ */
+
+.sidebar {
+  width: var(--sidebar-width);
+  background: var(--color-bg-card);
+  padding: var(--space-4);
+  height: calc(100vh - var(--header-height));
+  overflow-y: auto;
+}
+
+.sidebar-item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-lg);
+  cursor: pointer;
+  transition: background-color var(--duration-fast) var(--ease-default);
+}
+
+.sidebar-item:hover {
+  background: var(--sidebar-hover-bg);
+}
+
+.sidebar-item.active {
+  background: var(--sidebar-active-bg);
+}
+
+.sidebar-item.active .sidebar-item-text {
+  color: var(--sidebar-active-color);
+}
+
+.sidebar-item-icon {
+  width: var(--sidebar-icon-size);
+  height: var(--sidebar-icon-size);
+  border-radius: 50%;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+.sidebar-item-text {
+  font-size: var(--text-sm);
+  font-weight: var(--font-medium);
+  color: var(--color-text-primary);
+}
+
+/* ================================
+   Component: Right Panel
+   ================================ */
+
+.right-panel {
+  width: var(--right-panel-width);
+  padding: var(--space-6);
+}
+
+/* City Selector Card */
+.city-selector {
+  background: var(--color-bg-card);
+  border-radius: var(--radius-xl);
+  padding: var(--space-5);
+}
+
+.city-selector-title {
+  font-size: var(--text-lg);
+  font-weight: var(--font-semibold);
+  color: var(--color-text-primary);
+  margin-bottom: var(--space-2);
+}
+
+.city-selector-subtitle {
+  font-size: var(--text-sm);
+  color: var(--color-text-secondary);
+  margin-bottom: var(--space-4);
+}
+
+.city-selector-buttons {
+  display: flex;
+  gap: var(--space-3);
+}
+
+/* Map Preview */
+.map-preview {
+  margin-top: var(--space-4);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  height: 200px;
+}
+
+.map-preview img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* ================================
+   Component: Buttons (Samokat Style)
+   ================================ */
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  height: var(--btn-height-md);
+  padding: 0 var(--btn-padding-x);
+  border-radius: var(--btn-radius);
+  font-size: var(--text-sm);
+  font-weight: var(--btn-font-weight);
+  transition: all var(--duration-fast) var(--ease-default);
+  cursor: pointer;
+  border: none;
+}
+
+.btn-sm {
+  height: var(--btn-height-sm);
+  padding: 0 var(--space-4);
+  font-size: var(--text-xs);
+}
+
+.btn-lg {
+  height: var(--btn-height-lg);
+  padding: 0 var(--space-6);
+  font-size: var(--text-base);
+}
+
+/* Primary Button */
+.btn-primary {
+  background: var(--color-brand);
+  color: var(--color-text-on-primary);
+}
+
+.btn-primary:hover {
+  background: var(--color-brand-hover);
+}
+
+.btn-primary:active {
+  background: var(--color-brand-active);
+}
+
+.btn-primary:disabled {
+  background: #FCA5A5;
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Secondary/Outline Button */
+.btn-secondary {
+  background: var(--color-bg-card);
+  color: var(--color-text-primary);
+  border: 1px solid var(--color-border);
+}
+
+.btn-secondary:hover {
+  background: var(--color-bg-input);
+}
+
+.btn-secondary:active {
+  background: var(--color-border-light);
+}
+
+.btn-secondary:disabled {
+  background: var(--color-bg-input);
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* ================================
+   Component: Header (Samokat Style)
+   ================================ */
+
+.header {
+  height: var(--header-height);
+  background: var(--color-bg-card);
+  display: flex;
+  align-items: center;
+  padding: 0 var(--space-6);
+  position: sticky;
+  top: 0;
+  z-index: var(--z-sticky);
+}
+
+.header-logo {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.header-logo-circle {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--color-brand);
+}
+
+.header-logo-text {
+  font-size: var(--text-xl);
+  font-weight: var(--font-medium);
+  color: var(--color-brand);
+}
+
+.header-search {
+  flex: 1;
+  max-width: 400px;
+  margin: 0 var(--space-8);
+}
+
+.header-search-input {
+  width: 100%;
+  height: 44px;
+  background: var(--color-bg-input);
+  border-radius: var(--radius-lg);
+  padding: 0 var(--space-4);
+  padding-left: var(--space-10);
+  font-size: var(--text-sm);
+  color: var(--color-text-primary);
+}
+
+.header-search-input::placeholder {
+  color: var(--color-text-muted);
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  margin-left: auto;
+}
+
+html[dir="rtl"] .header-actions {
+  margin-left: 0;
+  margin-right: auto;
+}
+
+/* ================================
+   Component: Promo Banner (Top)
+   ================================ */
+
+.promo-banner {
+  background: var(--color-bg-promo-banner);
+  padding: var(--space-3) var(--space-6);
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.promo-banner-text {
+  font-size: var(--text-sm);
+  color: var(--color-text-primary);
+  flex: 1;
+}
+
+.promo-banner-close {
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  opacity: 0.6;
+  transition: opacity var(--duration-fast) var(--ease-default);
+}
+
+.promo-banner-close:hover {
+  opacity: 1;
 }
 
 /* ================================
@@ -467,22 +1040,61 @@ p {
 }
 
 /* Animation classes */
-.animate-fade-in { animation: fadeIn var(--transition-normal) ease-out; }
-.animate-fade-out { animation: fadeOut var(--transition-normal) ease-out; }
-.animate-slide-in-right { animation: slideInFromRight var(--transition-slow) ease-out; }
-.animate-slide-in-left { animation: slideInFromLeft var(--transition-slow) ease-out; }
-.animate-slide-in-bottom { animation: slideInFromBottom var(--transition-slow) ease-out; }
-.animate-slide-in-top { animation: slideInFromTop var(--transition-slow) ease-out; }
-.animate-scale-in { animation: scaleIn var(--transition-normal) ease-out; }
+.animate-fade-in { animation: fadeIn var(--duration-normal) var(--ease-default); }
+.animate-fade-out { animation: fadeOut var(--duration-normal) var(--ease-default); }
+.animate-slide-in-right { animation: slideInFromRight var(--duration-slow) var(--ease-default); }
+.animate-slide-in-left { animation: slideInFromLeft var(--duration-slow) var(--ease-default); }
+.animate-slide-in-bottom { animation: slideInFromBottom var(--duration-slow) var(--ease-default); }
+.animate-slide-in-top { animation: slideInFromTop var(--duration-slow) var(--ease-default); }
+.animate-scale-in { animation: scaleIn var(--duration-normal) var(--ease-default); }
 .animate-spin { animation: spin 1s linear infinite; }
 .animate-pulse { animation: pulse 2s ease-in-out infinite; }
 .animate-bounce { animation: bounce 1s ease-in-out infinite; }
 
 /* RTL-aware animations */
 html[dir="rtl"] .animate-slide-in-right {
-  animation: slideInFromLeft var(--transition-slow) ease-out;
+  animation: slideInFromLeft var(--duration-slow) var(--ease-default);
 }
 
 html[dir="rtl"] .animate-slide-in-left {
-  animation: slideInFromRight var(--transition-slow) ease-out;
+  animation: slideInFromRight var(--duration-slow) var(--ease-default);
+}
+
+/* ================================
+   Responsive Breakpoints
+   ================================ */
+
+/* Tablet */
+@media (max-width: 1279px) {
+  .promo-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .action-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .right-panel {
+    display: none;
+  }
+}
+
+/* Mobile */
+@media (max-width: 767px) {
+  :root {
+    --header-height: 60px;
+    --content-padding: 16px;
+  }
+
+  .promo-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .action-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .sidebar {
+    display: none;
+  }
 }
