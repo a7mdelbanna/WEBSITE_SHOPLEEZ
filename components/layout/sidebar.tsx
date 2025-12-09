@@ -88,13 +88,20 @@ export function Sidebar({
   const featuredSections = getFeaturedSections(t);
 
   /**
-   * Get localized category name
+   * Get localized category name with proper fallback
+   * - Arabic locale: use nameAr first, fallback to name
+   * - English locale: use name first, fallback to nameAr
    */
   const getCategoryName = (category: Category | CategoryNavItem): string => {
-    if ('nameAr' in category && locale === 'ar') {
-      return category.nameAr || category.name;
+    const name = category.name || '';
+    const nameAr = 'nameAr' in category ? category.nameAr : '';
+
+    if (locale === 'ar') {
+      // Arabic: prefer nameAr, fallback to name
+      return nameAr || name || 'Unnamed Category';
     }
-    return category.name;
+    // English: prefer name, fallback to nameAr
+    return name || nameAr || 'Unnamed Category';
   };
 
   return (

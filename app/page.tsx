@@ -11,11 +11,11 @@
  *
  * Sections:
  * 1. Hero Section - Delivery info + promo banners
- * 2. Brands - Circular logo grid
- * 3. Popular Categories - Marquee scroll
- * 4. Special Offers - Product scroll
- * 5. Widget Sections - Recently Added, Best Selling, etc.
- * 6. Active Discounts - Products on discount
+ * 2. Special Offers - Marquee scroll
+ * 3. Brands - Circular logo grid
+ * 4. Widget Sections - Recently Added, Best Selling, etc.
+ * 5. Active Discounts - Products on discount
+ * (Empty sections are hidden automatically)
  */
 
 import { AppShell } from '@/components/layout';
@@ -27,20 +27,18 @@ import { ChevronRight } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useTranslations } from '@/lib/hooks/use-translations';
-import { useTenant } from '@/lib/hooks/use-tenant';
 import { useHomePage, useSpecialOffers, useSpotlightItems } from '@/lib/services';
 import { cn } from '@/lib/utils';
-import { isBannersSection, isCategoriesSection, isCompaniesSection, isSpecialOffersSection, isSpotlightSection } from '@/types/home';
+import { isBannersSection, isCompaniesSection, isSpotlightSection } from '@/types/home';
 
 export default function HomePage() {
   const { t, isRTL, localize } = useTranslations();
-  const { tenant } = useTenant();
   const { isOpen, selectedProduct, openModal, closeModal } = useProductDetailModal();
 
   // Fetch home page data from API
   const { data: homeData, isLoading: isLoadingHome } = useHomePage();
   const { data: specialOffers, isLoading: isLoadingOffers } = useSpecialOffers();
-  const { data: spotlightItems, isLoading: isLoadingSpotlight } = useSpotlightItems();
+  const { data: spotlightItems } = useSpotlightItems();
 
   const handleAddToCart = (productId: number) => {
     console.log('Add to cart:', productId);
@@ -52,15 +50,11 @@ export default function HomePage() {
 
   // Extract sections from home data using type guards
   const bannersSection = homeData?.orderedSections?.find(isBannersSection);
-  const categoriesSection = homeData?.orderedSections?.find(isCategoriesSection);
   const companiesSection = homeData?.orderedSections?.find(isCompaniesSection);
-  const specialOffersSection = homeData?.orderedSections?.find(isSpecialOffersSection);
   const spotlightSection = homeData?.orderedSections?.find(isSpotlightSection);
 
   const heroBanners = bannersSection?.data || [];
-  const categories = categoriesSection?.data || homeData?.categories || [];
   const companies = companiesSection?.data || homeData?.companies || [];
-  const specialOffersProducts = specialOffersSection?.data || [];
   const spotlightProducts = spotlightSection?.data || [];
 
   // Get widgets and discounts from home data
@@ -138,177 +132,109 @@ export default function HomePage() {
             </button>
           </section>
 
-          {/* Special Offers Section - Bento Grid */}
-          <section className="mb-[56px]">
-            {/* Section Header with "See All" link */}
-            <div className="flex items-center justify-between mb-[32px]">
-              <h2 className="text-[28px] font-bold text-[#1A1A1A] leading-none">
-                {t('home.specialOffers')}
-              </h2>
-              <Link
-                href="/offers"
-                className={cn(
-                  "flex items-center gap-[6px] text-[15px] font-semibold text-[#FF4B12] hover:text-[#E63E1C] transition-colors group",
-                  isRTL && "flex-row-reverse"
-                )}
-              >
-                {t('common.seeAll')}
-                <ChevronRight className={cn("w-[18px] h-[18px] group-hover:translate-x-1 transition-transform", isRTL && "rotate-180 group-hover:-translate-x-1")} strokeWidth={2.5} />
-              </Link>
-            </div>
-
-            {/* Bento Grid Layout */}
-            {isLoadingOffers ? (
-              <div className="grid grid-cols-4 gap-[16px] auto-rows-[180px]">
-                <Skeleton className="col-span-2 row-span-2 rounded-[20px]" />
-                <Skeleton className="col-span-1 row-span-1 rounded-[16px]" />
-                <Skeleton className="col-span-1 row-span-1 rounded-[16px]" />
-                <Skeleton className="col-span-2 row-span-1 rounded-[16px]" />
+          {/* Special Offers Section - Marquee Scroll */}
+          {(isLoadingOffers || (specialOffers && specialOffers.length > 0)) && (
+            <section className="mb-[56px]">
+              {/* Section Header with "See All" link */}
+              <div className="flex items-center justify-between mb-[32px]">
+                <h2 className="text-[28px] font-bold text-[#1A1A1A] leading-none">
+                  {t('home.specialOffers')}
+                </h2>
+                <Link
+                  href="/offers"
+                  className={cn(
+                    "flex items-center gap-[6px] text-[15px] font-semibold text-[#FF4B12] hover:text-[#E63E1C] transition-colors group",
+                    isRTL && "flex-row-reverse"
+                  )}
+                >
+                  {t('common.seeAll')}
+                  <ChevronRight className={cn("w-[18px] h-[18px] group-hover:translate-x-1 transition-transform", isRTL && "rotate-180 group-hover:-translate-x-1")} strokeWidth={2.5} />
+                </Link>
               </div>
-            ) : specialOffers && specialOffers.length > 0 ? (
-              <div className="bento-grid grid grid-cols-4 gap-[16px] auto-rows-[180px]">
-                {specialOffers.slice(0, 6).map((product, index) => {
-                  // Determine grid class based on position
-                  const gridClasses = [
-                    'col-span-2 row-span-2', // Large featured
-                    'col-span-1 row-span-1',
-                    'col-span-1 row-span-1',
-                    'col-span-2 row-span-1', // Wide
-                    'col-span-1 row-span-1',
-                    'col-span-1 row-span-1',
-                  ];
-                  const productName = localize(product.nameEn || product.name, product.nameAr);
 
-                  return (
-                    <Link
-                      key={product.id}
-                      href={`/product/${product.id}`}
-                      className={cn(
-                        "bento-card group relative animate-fade-in-up",
-                        gridClasses[index] || 'col-span-1 row-span-1'
-                      )}
-                      style={{
-                        animationDelay: `${index * 100}ms`,
-                        animationFillMode: 'both'
-                      }}
-                    >
-                      <Image
-                        src={product.imageUrl || product.mainImage || 'https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=800&h=800&fit=crop'}
-                        alt={productName}
-                        fill
-                        className="object-cover"
-                        unoptimized
-                      />
-                      <div className="bento-shine" />
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/10 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                      {/* Discount badge */}
-                      {product.discountPercent && product.discountPercent > 0 && (
-                        <div className={cn(
-                          "absolute top-[12px] bg-[#FF4B12] text-white px-[10px] py-[4px] rounded-[8px] text-[13px] font-bold",
-                          isRTL ? "right-[12px]" : "left-[12px]"
-                        )}>
-                          {`-${product.discountPercent}%`}
-                        </div>
-                      )}
-                    </Link>
-                  );
-                })}
-              </div>
-            ) : (
-              <div className="text-center py-[48px] text-[#9CA3AF]">
-                {t('common.noOffers')}
-              </div>
-            )}
-          </section>
-
-          {/* Popular Categories Section - Marquee Scroll */}
-          <section className="mb-[56px]">
-            {/* Section Header */}
-            <div className="flex items-center justify-between mb-[32px]">
-              <h2 className="text-[28px] font-bold text-[#1A1A1A] leading-none">
-                {t('home.popularCategories')}
-              </h2>
-              <Link
-                href="/categories"
-                className={cn(
-                  "flex items-center gap-[6px] text-[15px] font-semibold text-[#FF4B12] hover:text-[#E63E1C] transition-colors group",
-                  isRTL && "flex-row-reverse"
-                )}
-              >
-                {t('categories.allCategories')}
-                <ChevronRight className={cn("w-[18px] h-[18px] group-hover:translate-x-1 transition-transform", isRTL && "rotate-180 group-hover:-translate-x-1")} strokeWidth={2.5} />
-              </Link>
-            </div>
-
-            {/* Category Cards - Marquee Style */}
-            {isLoadingHome ? (
-              <div className="flex gap-[16px] overflow-hidden">
-                {[1, 2, 3, 4, 5].map((i) => (
-                  <Skeleton key={i} className="w-[280px] h-[160px] rounded-[16px] shrink-0" />
-                ))}
-              </div>
-            ) : categories.length > 0 ? (
-              <div className="marquee-container">
-                <div className="marquee-track">
-                  {/* First set */}
-                  {categories.map((category) => {
-                    const categoryName = localize(category.name, category.nameAr || '');
-                    const categoryImage = category.imageUrl || category.iconUrl || 'https://images.unsplash.com/photo-1607082349566-187342175e2f?w=400&h=250&fit=crop';
-                    return (
-                      <Link
-                        key={category.id}
-                        href={`/category/${category.id}`}
-                        className="marquee-card w-[280px] h-[160px]"
-                      >
-                        <Image
-                          src={categoryImage}
-                          alt={categoryName}
-                          fill
-                          className="object-cover"
-                          unoptimized
-                        />
-                        {/* Category name overlay */}
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent flex items-end p-[16px]">
-                          <span className="text-white text-[16px] font-semibold">
-                            {categoryName}
-                          </span>
-                        </div>
-                      </Link>
-                    );
-                  })}
-                  {/* Duplicate for seamless loop */}
-                  {categories.map((category) => {
-                    const categoryName = localize(category.name, category.nameAr || '');
-                    const categoryImage = category.imageUrl || category.iconUrl || 'https://images.unsplash.com/photo-1607082349566-187342175e2f?w=400&h=250&fit=crop';
-                    return (
-                      <Link
-                        key={`dup-${category.id}`}
-                        href={`/category/${category.id}`}
-                        className="marquee-card w-[280px] h-[160px]"
-                      >
-                        <Image
-                          src={categoryImage}
-                          alt={categoryName}
-                          fill
-                          className="object-cover"
-                          unoptimized
-                        />
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent flex items-end p-[16px]">
-                          <span className="text-white text-[16px] font-semibold">
-                            {categoryName}
-                          </span>
-                        </div>
-                      </Link>
-                    );
-                  })}
+              {/* Offers Cards - Marquee Style */}
+              {isLoadingOffers ? (
+                <div className="flex gap-[16px] overflow-hidden">
+                  {[1, 2, 3, 4, 5].map((i) => (
+                    <Skeleton key={i} className="w-[280px] h-[160px] rounded-[16px] shrink-0" />
+                  ))}
                 </div>
-              </div>
-            ) : (
-              <div className="text-center py-[48px] text-[#9CA3AF]">
-                {t('common.noCategories')}
-              </div>
-            )}
-          </section>
+              ) : (
+                <div className="marquee-container">
+                  <div className="marquee-track">
+                    {/* First set */}
+                    {specialOffers?.map((product) => {
+                      const productName = localize(product.nameEn || product.name, product.nameAr);
+                      const productImage = product.imageUrl || product.mainImage || 'https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=400&h=250&fit=crop';
+                      return (
+                        <Link
+                          key={product.id}
+                          href={`/product/${product.id}`}
+                          className="marquee-card w-[280px] h-[160px]"
+                        >
+                          <Image
+                            src={productImage}
+                            alt={productName}
+                            fill
+                            className="object-cover"
+                            unoptimized
+                          />
+                          {/* Product name overlay */}
+                          <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent flex items-end p-[16px]">
+                            <span className="text-white text-[16px] font-semibold">
+                              {productName}
+                            </span>
+                          </div>
+                          {/* Discount badge */}
+                          {product.discountPercent && product.discountPercent > 0 && (
+                            <div className={cn(
+                              "absolute top-[12px] bg-[#FF4B12] text-white px-[10px] py-[4px] rounded-[8px] text-[13px] font-bold",
+                              isRTL ? "right-[12px]" : "left-[12px]"
+                            )}>
+                              {`-${product.discountPercent}%`}
+                            </div>
+                          )}
+                        </Link>
+                      );
+                    })}
+                    {/* Duplicate for seamless loop */}
+                    {specialOffers?.map((product) => {
+                      const productName = localize(product.nameEn || product.name, product.nameAr);
+                      const productImage = product.imageUrl || product.mainImage || 'https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=400&h=250&fit=crop';
+                      return (
+                        <Link
+                          key={`dup-${product.id}`}
+                          href={`/product/${product.id}`}
+                          className="marquee-card w-[280px] h-[160px]"
+                        >
+                          <Image
+                            src={productImage}
+                            alt={productName}
+                            fill
+                            className="object-cover"
+                            unoptimized
+                          />
+                          <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent flex items-end p-[16px]">
+                            <span className="text-white text-[16px] font-semibold">
+                              {productName}
+                            </span>
+                          </div>
+                          {product.discountPercent && product.discountPercent > 0 && (
+                            <div className={cn(
+                              "absolute top-[12px] bg-[#FF4B12] text-white px-[10px] py-[4px] rounded-[8px] text-[13px] font-bold",
+                              isRTL ? "right-[12px]" : "left-[12px]"
+                            )}>
+                              {`-${product.discountPercent}%`}
+                            </div>
+                          )}
+                        </Link>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+            </section>
+          )}
 
           {/* Top Brands Section - Circular Logos */}
           <section className="mb-[48px]">
@@ -336,12 +262,11 @@ export default function HomePage() {
             />
           </section>
 
-          {/* Spotlight Section - Featured Products */}
-          {(isLoadingSpotlight || (spotlightProducts && spotlightProducts.length > 0)) && (
+          {/* Spotlight Section - Featured Products (only show if has items) */}
+          {spotlightProducts && spotlightProducts.length > 0 && (
             <ProductSection
               title={t('home.spotlight')}
               products={spotlightProducts}
-              isLoading={isLoadingSpotlight || isLoadingHome}
               seeAllLink="/spotlight"
               onProductClick={handleProductClick}
               onAddToCart={handleAddToCart}
@@ -413,12 +338,11 @@ export default function HomePage() {
             </section>
           )}
 
-          {/* Deals Shelf Section - Fallback to spotlight API */}
+          {/* Deals Shelf Section - Fallback to spotlight API (only show if has items) */}
           {spotlightItems && spotlightItems.length > 0 && (
             <ProductSection
               title={t('home.dealsShelf')}
               products={spotlightItems}
-              isLoading={isLoadingSpotlight}
               seeAllLink="/deals"
               onProductClick={handleProductClick}
               onAddToCart={handleAddToCart}
