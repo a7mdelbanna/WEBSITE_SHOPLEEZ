@@ -10,9 +10,10 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { Search, User, Menu, X, MessageCircle, Globe } from 'lucide-react';
+import { Search, User, Menu, X, MessageCircle, Globe, LogOut } from 'lucide-react';
 import { useTenant } from '@/lib/hooks/use-tenant';
 import { useTranslations } from '@/lib/hooks/use-translations';
+import { useAuth } from '@/lib/contexts/auth-context';
 import { cn } from '@/lib/utils';
 
 interface HeaderProps {
@@ -23,6 +24,7 @@ interface HeaderProps {
 export function Header({ onMenuClick, cartCount = 0 }: HeaderProps) {
   const { tenant, locale, setLocale } = useTenant();
   const { t, isRTL, localize } = useTranslations();
+  const { isAuthenticated, user, openLoginModal, logout } = useAuth();
   const [searchQuery, setSearchQuery] = useState('');
   const [searchFocused, setSearchFocused] = useState(false);
 
@@ -148,13 +150,41 @@ export function Header({ onMenuClick, cartCount = 0 }: HeaderProps) {
               </span>
             </button>
 
-            {/* Login Button */}
-            <button className="flex h-[48px] items-center gap-[10px] rounded-full bg-[#F5F5F7] px-[20px] text-[#1A1A1A] transition-colors hover:bg-[#ECECEC]">
-              <User className="h-[20px] w-[20px]" strokeWidth={2} />
-              <span className="text-[15px] font-medium leading-none">
-                {t('common.login')}
-              </span>
-            </button>
+            {/* Login/User Button */}
+            {isAuthenticated && user ? (
+              // Logged in - show user name with logout option
+              <div className="flex items-center gap-[8px]">
+                <div className="flex h-[48px] items-center gap-[10px] rounded-full bg-[#F5F5F7] px-[20px] text-[#1A1A1A]">
+                  <div
+                    className="w-[28px] h-[28px] rounded-full flex items-center justify-center text-white text-[12px] font-bold"
+                    style={{ backgroundColor: 'var(--color-primary)' }}
+                  >
+                    {user.firstName?.charAt(0)?.toUpperCase() || <User className="h-[16px] w-[16px]" />}
+                  </div>
+                  <span className="text-[15px] font-medium leading-none max-w-[100px] truncate">
+                    {user.firstName || t('common.login')}
+                  </span>
+                </div>
+                <button
+                  onClick={logout}
+                  className="flex items-center justify-center w-[40px] h-[40px] rounded-full hover:bg-[#F5F5F7] transition-colors"
+                  title={t('common.logout')}
+                >
+                  <LogOut className="h-[18px] w-[18px] text-[#6B7280]" strokeWidth={2} />
+                </button>
+              </div>
+            ) : (
+              // Not logged in - show login button
+              <button
+                onClick={openLoginModal}
+                className="flex h-[48px] items-center gap-[10px] rounded-full bg-[#F5F5F7] px-[20px] text-[#1A1A1A] transition-colors hover:bg-[#ECECEC]"
+              >
+                <User className="h-[20px] w-[20px]" strokeWidth={2} />
+                <span className="text-[15px] font-medium leading-none">
+                  {t('common.login')}
+                </span>
+              </button>
+            )}
 
             {/* Chat Support */}
             <button

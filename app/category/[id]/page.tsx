@@ -18,6 +18,7 @@ import { AppShell } from '@/components/layout';
 import { ProductCard, ProductGrid, ProductGridSkeleton } from '@/components/products/product-card';
 import { CategoryFilters } from '@/components/category/category-filters';
 import { useTranslations } from '@/lib/hooks/use-translations';
+import { useAuth } from '@/lib/contexts/auth-context';
 import { useCategories } from '@/lib/services/categories';
 import { useProductsSimple } from '@/lib/services/products';
 import { cn } from '@/lib/utils';
@@ -172,8 +173,27 @@ export default function CategoryPage({ params }: CategoryPageProps) {
 
 /**
  * Location Widget - Samokat style
+ * Requires authentication for location confirmation
  */
 function LocationWidget({ isRTL, t }: { isRTL: boolean; t: (key: string) => string }) {
+  const { requireAuth } = useAuth();
+
+  const handleYesClick = () => {
+    // Require auth before confirming location
+    requireAuth(() => {
+      // TODO: Confirm location logic
+      console.log('Location confirmed');
+    });
+  };
+
+  const handleNoClick = () => {
+    // Require auth before changing location
+    requireAuth(() => {
+      // TODO: Open location selector
+      console.log('Change location');
+    });
+  };
+
   return (
     <div className="sticky top-20 bg-white rounded-2xl p-4 shadow-sm border border-[var(--color-border-light)]">
       <div className="flex items-start gap-3 mb-4">
@@ -198,12 +218,16 @@ function LocationWidget({ isRTL, t }: { isRTL: boolean; t: (key: string) => stri
 
       <div className="flex gap-2">
         <button
-          className="flex-1 h-10 rounded-full text-white text-sm font-medium transition-colors"
+          onClick={handleYesClick}
+          className="flex-1 h-10 rounded-full text-white text-sm font-medium transition-colors hover:opacity-90"
           style={{ backgroundColor: 'var(--color-primary)' }}
         >
           {t('location.yesCorrect')}
         </button>
-        <button className="flex-1 h-10 rounded-full bg-[#F0F0F0] text-[var(--color-text-primary)] text-sm font-medium hover:bg-[#E8E8E8] transition-colors">
+        <button
+          onClick={handleNoClick}
+          className="flex-1 h-10 rounded-full bg-[#F0F0F0] text-[var(--color-text-primary)] text-sm font-medium hover:bg-[#E8E8E8] transition-colors"
+        >
           {t('location.noDifferent')}
         </button>
       </div>

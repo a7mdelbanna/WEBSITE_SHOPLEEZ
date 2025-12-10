@@ -24,6 +24,7 @@ import Image from 'next/image';
 import { useState } from 'react';
 import { useTenant } from '@/lib/hooks/use-tenant';
 import { useTranslations } from '@/lib/hooks/use-translations';
+import { useAuth } from '@/lib/contexts/auth-context';
 import { cn } from '@/lib/utils';
 import { formatPrice } from '@/lib/utils/format';
 import type { UnitInfo } from '@/types/product';
@@ -76,6 +77,7 @@ export function ProductCard({
 }: ProductCardProps) {
   const { tenant, locale } = useTenant();
   const { isRTL, localize, t } = useTranslations();
+  const { requireAuth } = useAuth();
 
   // Unit selection state - default to small unit if available
   const hasMultipleUnits = !!(bigUnit && smallUnit && bigUnit.price !== smallUnit.price);
@@ -106,7 +108,11 @@ export function ProductCard({
 
   const handleAddClick = (e: React.MouseEvent) => {
     e.stopPropagation();
-    onAddToCart?.(selectedUnit);
+    // Check if user is authenticated before adding to cart
+    // If not authenticated, the login modal will open
+    requireAuth(() => {
+      onAddToCart?.(selectedUnit);
+    });
   };
 
   const handleUnitToggle = (e: React.MouseEvent, unit: 'small' | 'big') => {
@@ -222,7 +228,7 @@ export function ProductCard({
             className={cn(
               'inline-flex items-center justify-center',
               'h-[32px] px-[8px] rounded-full',
-              'bg-[#FFEAE8] hover:bg-[#FFE0DD]',
+              'bg-[#F0F0F0] hover:bg-[#E8E8E8]',
               'transition-colors duration-200',
               'disabled:opacity-50 disabled:cursor-not-allowed',
               'whitespace-nowrap'
@@ -257,7 +263,7 @@ export function ProductCard({
               >
                 <path
                   d="M7 2.5V11.5M2.5 7H11.5"
-                  stroke="#F27D7D"
+                  stroke="#1A1A1A"
                   strokeWidth="1.5"
                   strokeLinecap="round"
                 />
