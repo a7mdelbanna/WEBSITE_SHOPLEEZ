@@ -59,7 +59,7 @@ export function Header({ onMenuClick, cartCount = 0 }: HeaderProps) {
 
       {/* Floating search when focused - breaks out of header */}
       {searchFocused && (
-        <div className="fixed top-0 left-0 right-0 z-50 flex justify-center items-center pt-[12px] px-[12px]">
+        <div className="fixed top-0 left-0 right-0 z-50 flex justify-center items-center pt-[14px] px-[12px]">
           <form onSubmit={handleSearch} className="w-full max-w-[640px]">
             <div className="flex h-[48px] items-center rounded-full bg-white shadow-[0_8px_32px_rgba(0,0,0,0.12)] px-[20px]">
               <Search className="h-[20px] w-[20px] shrink-0 text-[#9E9E9E]" />
@@ -87,7 +87,7 @@ export function Header({ onMenuClick, cartCount = 0 }: HeaderProps) {
       )}
 
       <header className="sticky top-0 mx-[12px] bg-white shadow-[0_1px_3px_rgba(0,0,0,0.08)] rounded-b-[20px] z-30">
-        <div className="flex h-[64px] items-center justify-between px-[20px]">
+        <div className="flex h-[76px] items-center justify-between px-[24px]">
           {/* Left: Logo */}
           <div className="flex items-center shrink-0">
             {/* Mobile menu button */}
@@ -103,11 +103,11 @@ export function Header({ onMenuClick, cartCount = 0 }: HeaderProps) {
             </button>
 
             {/* Logo */}
-            <Link href="/" className="flex items-center gap-[12px]">
-              <div className="w-[36px] h-[36px] rounded-full bg-[var(--color-brand)] flex items-center justify-center flex-shrink-0">
-                <div className="w-[18px] h-[18px] rounded-full border-[3px] border-white" />
+            <Link href="/" className="flex items-center gap-[10px]">
+              <div className="w-[40px] h-[40px] rounded-full bg-[var(--color-brand)] flex items-center justify-center flex-shrink-0">
+                <div className="w-[20px] h-[20px] rounded-full border-[3px] border-white" />
               </div>
-              <span className="hidden text-[20px] font-bold text-[var(--color-brand)] lg:block tracking-[-0.02em] leading-none">
+              <span className="hidden text-[22px] font-bold text-[var(--color-brand)] lg:block tracking-[-0.02em] leading-none">
                 {storeName}
               </span>
             </Link>
@@ -135,11 +135,11 @@ export function Header({ onMenuClick, cartCount = 0 }: HeaderProps) {
           </form>
 
           {/* Right: Language + Login + Chat */}
-          <div className="flex items-center gap-[12px] shrink-0">
+          <div className="flex items-center gap-[10px] shrink-0">
             {/* Language Toggle */}
             <button
               onClick={toggleLocale}
-              className="flex h-[40px] items-center gap-[6px] rounded-full bg-[#F5F5F7] px-[16px] text-[#1A1A1A] transition-colors hover:bg-[#ECECEC]"
+              className="flex h-[44px] items-center gap-[6px] rounded-full bg-[#F5F5F7] px-[16px] text-[#1A1A1A] transition-colors hover:bg-[#ECECEC]"
               title={locale === 'ar' ? 'Switch to English' : 'التبديل للعربية'}
             >
               <Globe className="h-[18px] w-[18px]" strokeWidth={2} />
@@ -149,27 +149,27 @@ export function Header({ onMenuClick, cartCount = 0 }: HeaderProps) {
             </button>
 
             {/* Login Button */}
-            <button className="flex h-[52px] items-center gap-[10px] rounded-full bg-[#F5F5F7] px-[24px] text-[#1A1A1A] transition-colors hover:bg-[#ECECEC]">
-              <User className="h-[22px] w-[22px]" strokeWidth={2} />
-              <span className="text-[16px] font-medium leading-none">
+            <button className="flex h-[48px] items-center gap-[10px] rounded-full bg-[#F5F5F7] px-[20px] text-[#1A1A1A] transition-colors hover:bg-[#ECECEC]">
+              <User className="h-[20px] w-[20px]" strokeWidth={2} />
+              <span className="text-[15px] font-medium leading-none">
                 {t('common.login')}
               </span>
             </button>
 
             {/* Chat Support */}
             <button
-              className="flex items-center justify-center w-[52px] h-[52px] bg-[#F5F5F7] rounded-full transition-colors hover:bg-[#ECECEC]"
+              className="flex items-center justify-center w-[48px] h-[48px] bg-[#F5F5F7] rounded-full transition-colors hover:bg-[#ECECEC]"
               aria-label={t('common.supportChat')}
             >
-              <MessageCircle className="h-[22px] w-[22px] text-[#1A1A1A]" strokeWidth={2} />
+              <MessageCircle className="h-[20px] w-[20px] text-[#1A1A1A]" strokeWidth={2} />
             </button>
           </div>
         </div>
 
         {/* Mobile search bar */}
-        <div className="px-[20px] pb-[16px] md:hidden">
+        <div className="px-[24px] pb-[16px] md:hidden">
           <form onSubmit={handleSearch}>
-            <div className="flex h-[48px] items-center rounded-full bg-[#F7F7F7] px-[20px]">
+            <div className="flex h-[44px] items-center rounded-full bg-[#F7F7F7] px-[18px]">
               <Search className="h-[18px] w-[18px] shrink-0 text-[#9E9E9E]" />
               <input
                 type="search"
@@ -177,7 +177,7 @@ export function Header({ onMenuClick, cartCount = 0 }: HeaderProps) {
                 onChange={(e) => setSearchQuery(e.target.value)}
                 onFocus={() => setSearchFocused(true)}
                 placeholder={t('common.searchPlaceholder')}
-                className="flex-1 bg-transparent px-[16px] text-[15px] text-[#1A1A1A] placeholder-[#9E9E9E] outline-none border-none focus:ring-0"
+                className="flex-1 bg-transparent px-[14px] text-[15px] text-[#1A1A1A] placeholder-[#9E9E9E] outline-none border-none focus:ring-0"
               />
             </div>
           </form>
