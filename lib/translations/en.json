@@ -32,7 +32,17 @@
     "noCategories": "No categories available",
     "noBrands": "No brands available",
     "noProducts": "No products available",
-    "allBrands": "All Brands"
+    "allBrands": "All Brands",
+    "all": "All",
+    "home": "Home"
+  },
+  "category": {
+    "filters": "Filters",
+    "price": "Price",
+    "brand": "Brand",
+    "offers": "Offers",
+    "popularIn": "Popular in",
+    "allProducts": "All Products"
   },
   "header": {
     "logoAlt": "Shopleez Logo",

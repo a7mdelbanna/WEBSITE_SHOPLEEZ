@@ -5,8 +5,6 @@
  *
  * Features:
  * - Category images (40x40 rounded)
- * - Parent categories with images
- * - Subcategories as text-only links (indented)
  * - White container with rounded corners (from AppShell)
  * - API integration for dynamic categories
  * - RTL support
@@ -27,39 +25,6 @@ interface SidebarProps {
 }
 
 /**
- * Featured sections data (store-specific, could be from API in future)
- */
-const getFeaturedSections = (t: (key: string) => string) => [
-  {
-    id: 'featured',
-    name: t('sidebar.pickedForYou'),
-    image: 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=80&h=80&fit=crop',
-    href: '/featured',
-  },
-  {
-    id: 'store-brand',
-    name: t('sidebar.fromStore'),
-    image: 'https://images.unsplash.com/photo-1565958011703-44f9829ba187?w=80&h=80&fit=crop',
-    href: '/brand',
-  },
-  {
-    id: 'ready-food',
-    name: t('sidebar.readyFood'),
-    image: 'https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?w=80&h=80&fit=crop',
-    href: '/ready-food',
-    subcategories: [
-      { id: 'new-hits', name: t('sidebar.newAndHits'), href: '/ready-food/new' },
-      { id: 'all-ready', name: t('sidebar.allReadyFood'), href: '/ready-food/all' },
-      { id: 'combo', name: t('sidebar.comboSets'), href: '/ready-food/combo' },
-      { id: 'hot', name: t('sidebar.hotItems'), href: '/ready-food/hot' },
-      { id: 'street', name: t('sidebar.streetFood'), href: '/ready-food/street' },
-      { id: 'desserts', name: t('sidebar.dessertsAndPastries'), href: '/ready-food/desserts' },
-      { id: 'drinks', name: t('sidebar.drinks'), href: '/ready-food/drinks' },
-    ],
-  },
-];
-
-/**
  * Category skeleton for loading state
  */
 function CategorySkeleton() {
@@ -76,16 +41,13 @@ export function Sidebar({
   activeCategoryId,
   onClose,
 }: SidebarProps) {
-  const { t, isRTL, locale } = useTranslations();
+  const { t, locale } = useTranslations();
 
   // Fetch categories from API if not provided via props
   const { data: apiCategories, isLoading } = useCategories();
 
   // Use prop categories if provided, otherwise use API categories
   const categories = propCategories || apiCategories;
-
-  // Get featured sections with translations
-  const featuredSections = getFeaturedSections(t);
 
   /**
    * Get localized category name with proper fallback
@@ -106,54 +68,6 @@ export function Sidebar({
 
   return (
     <nav className="py-[8px]">
-      {/* Featured sections */}
-      {featuredSections.map((section) => (
-        <div key={section.id}>
-          <Link
-            href={section.href}
-            onClick={onClose}
-            className="flex items-center gap-[12px] px-[16px] py-[6px] transition-colors hover:bg-[#F5F5F5]"
-          >
-            {/* Section image - 40x40 rounded */}
-            <div className="w-[40px] h-[40px] rounded-[10px] overflow-hidden bg-[#F5F5F5] shrink-0">
-              <Image
-                src={section.image}
-                alt={section.name}
-                width={40}
-                height={40}
-                className="w-full h-full object-cover"
-                unoptimized
-              />
-            </div>
-            <span className="text-[14px] font-medium text-[#1A1A1A] leading-[1.2]">
-              {section.name}
-            </span>
-          </Link>
-
-          {/* Subcategories - text only, indented */}
-          {section.subcategories && (
-            <div className={cn(
-              "py-[4px]",
-              isRTL ? "pr-[68px]" : "pl-[68px]"
-            )}>
-              {section.subcategories.map((sub) => (
-                <Link
-                  key={sub.id}
-                  href={sub.href}
-                  onClick={onClose}
-                  className="block py-[6px] text-[13px] !text-[#666666] hover:!text-[#1A1A1A] transition-colors"
-                >
-                  {sub.name}
-                </Link>
-              ))}
-            </div>
-          )}
-        </div>
-      ))}
-
-      {/* Divider */}
-      <div className="my-[8px] mx-[16px] border-t border-[#F0F0F0]" />
-
       {/* Section title */}
       <div className="px-[16px] py-[8px]">
         <span className="text-[12px] font-semibold text-[#9CA3AF] uppercase tracking-wide">
@@ -186,11 +100,11 @@ export function Sidebar({
             onClick={onClose}
             className={cn(
               'flex items-center gap-[12px] px-[16px] py-[6px] transition-colors',
-              isActive ? 'bg-[#F5F5F5]' : 'hover:bg-[#F5F5F5]'
+              'hover:bg-[var(--color-bg-input)]'
             )}
           >
             {/* Category image - 40x40 rounded */}
-            <div className="w-[40px] h-[40px] rounded-[10px] overflow-hidden bg-[#F5F5F5] shrink-0">
+            <div className="w-[40px] h-[40px] rounded-[10px] overflow-hidden bg-[var(--color-bg-input)] shrink-0">
               <Image
                 src={categoryImage}
                 alt={categoryName}
@@ -200,7 +114,14 @@ export function Sidebar({
                 unoptimized
               />
             </div>
-            <span className="text-[14px] font-medium text-[#1A1A1A] leading-[1.2]">
+            <span
+              className={cn(
+                'text-[14px] font-bold leading-[1.2]',
+                isActive
+                  ? 'text-[#BDBDBD]'
+                  : 'text-[var(--color-text-primary)]'
+              )}
+            >
               {categoryName}
             </span>
           </Link>

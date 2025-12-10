@@ -340,11 +340,65 @@ export function useProductsSimple(filters?: ProductFilters, enabled = true) {
           pageSize: filters?.pageSize || 20,
         },
       });
-      // Return just items if paginated, or data directly if array
-      return Array.isArray(data) ? data : data.items || [];
+      // API returns { result: {...}, data: [...] } - extract the array
+      const items = data.data || data.items || data || [];
+      // Normalize product items
+      return Array.isArray(items) ? items.map(normalizeProductItem) : [];
     },
     enabled,
     staleTime: 2 * 60 * 1000,
     gcTime: 10 * 60 * 1000,
   });
+}
+
+/**
+ * Normalize product item from API response to ProductSummary
+ */
+function normalizeProductItem(item: Record<string, unknown>): ProductSummary {
+  const bigUnitPrice = item.bigUnitPrice as number | undefined;
+  const smallUnitPrice = item.smallUnitPrice as number | undefined;
+  const displayPrice = smallUnitPrice || bigUnitPrice || 0;
+  const displayImage = (item.itemImageForSmallUnitUrl || item.itemImageForBigUnitUrl || item.imageUrl || '') as string;
+
+  return {
+    id: item.id as number,
+    itemId: item.id as number,
+    name: (item.nameEN || item.name || item.nameAR || '') as string,
+    nameAr: (item.nameAR || item.nameAr || '') as string,
+    nameEn: (item.nameEN || item.name || '') as string,
+    price: displayPrice,
+    originalPrice: undefined,
+    discountPrice: undefined,
+    discountPercent: undefined,
+    imageUrl: displayImage,
+    mainImage: displayImage,
+    volume: undefined,
+    weight: undefined,
+    brandName: ((item.company as Record<string, unknown>)?.nameEN || (item.company as Record<string, unknown>)?.nameAr || '') as string,
+    brandNameAr: ((item.company as Record<string, unknown>)?.nameAr || '') as string,
+    categoryName: ((item.category as Record<string, unknown>)?.nameEN || '') as string,
+    categoryNameAr: ((item.category as Record<string, unknown>)?.nameAR || '') as string,
+    isAvailable: (item.isActive as boolean) ?? true,
+    isNew: false,
+    categoryId: ((item.category as Record<string, unknown>)?.id as number) || (item.categoryId as number) || 0,
+    hasQuantityDiscount: false,
+    bigUnitPrice,
+    smallUnitPrice,
+    bigUnitImageUrl: item.itemImageForBigUnitUrl as string | undefined,
+    smallUnitImageUrl: item.itemImageForSmallUnitUrl as string | undefined,
+    bigUnit: item.bigUnit ? {
+      id: (item.bigUnit as Record<string, unknown>).id as number,
+      name: ((item.bigUnit as Record<string, unknown>).nameEN || (item.bigUnit as Record<string, unknown>).nameAR || '') as string,
+      nameAr: ((item.bigUnit as Record<string, unknown>).nameAR || '') as string,
+      amount: (item.bigUnit as Record<string, unknown>).amount as number || 1,
+      price: bigUnitPrice || 0,
+    } : undefined,
+    smallUnit: item.smallUnit ? {
+      id: (item.smallUnit as Record<string, unknown>).id as number,
+      name: ((item.smallUnit as Record<string, unknown>).nameEN || (item.smallUnit as Record<string, unknown>).nameAR || '') as string,
+      nameAr: ((item.smallUnit as Record<string, unknown>).nameAR || '') as string,
+      amount: (item.smallUnit as Record<string, unknown>).amount as number || 1,
+      price: smallUnitPrice || 0,
+    } : undefined,
+  };
 }

@@ -32,7 +32,17 @@
     "noCategories": "لا توجد فئات متاحة",
     "noBrands": "لا توجد علامات تجارية متاحة",
     "noProducts": "لا توجد منتجات متاحة",
-    "allBrands": "كل العلامات التجارية"
+    "allBrands": "كل العلامات التجارية",
+    "all": "الكل",
+    "home": "الرئيسية"
+  },
+  "category": {
+    "filters": "فلاتر",
+    "price": "السعر",
+    "brand": "العلامة التجارية",
+    "offers": "عروض",
+    "popularIn": "الأكثر شعبية في",
+    "allProducts": "جميع المنتجات"
   },
   "header": {
     "logoAlt": "شعار شوبليز",
@@ -77,7 +87,7 @@
     "streetFood": "أكل الشارع",
     "dessertsAndPastries": "حلويات ومعجنات",
     "drinks": "مشروبات",
-    "categories": "الفئات"
+    "categories": "الاقسام"
   },
   "product": {
     "usage": "طريقة الاستخدام",
