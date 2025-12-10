@@ -112,7 +112,12 @@
     "discount": "Discount",
     "pricePerUnit": "Price per unit",
     "originalPrice": "Original Price",
-    "savings": "You save"
+    "savings": "You save",
+    "nutritionInfo": "Nutrition Information",
+    "calories": "Calories",
+    "protein": "Protein",
+    "fat": "Fat",
+    "carbs": "Carbs"
   },
   "categories": {
     "vegetables": "Vegetables & Fruits",

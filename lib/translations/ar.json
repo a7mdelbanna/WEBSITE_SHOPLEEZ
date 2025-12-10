@@ -112,7 +112,12 @@
     "discount": "خصم",
     "pricePerUnit": "السعر للوحدة",
     "originalPrice": "السعر الأصلي",
-    "savings": "وفرت"
+    "savings": "وفرت",
+    "nutritionInfo": "المعلومات الغذائية",
+    "calories": "سعرات",
+    "protein": "بروتين",
+    "fat": "دهون",
+    "carbs": "كربوهيدرات"
   },
   "categories": {
     "vegetables": "خضروات وفواكه",

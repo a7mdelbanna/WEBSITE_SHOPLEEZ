@@ -92,25 +92,64 @@ function normalizeWidgetItem(item: Record<string, unknown>): ProductSummary {
  * Normalize discount item from API response
  */
 function normalizeDiscountItem(item: Record<string, unknown>): DiscountItem {
-  // Get prices - prefer smallUnitPrice for display, fallback to bigUnitPrice
-  const smallUnitPrice = item.smallUnitPrice as number | undefined;
-  const bigUnitPrice = item.bigUnitPrice as number | undefined;
-  const displayPrice = smallUnitPrice || bigUnitPrice || item.sellPrice as number || item.price as number || 0;
+  // Extract unit info - API uses nameAR (uppercase) not nameAr
+  const bigUnit = item.bigUnit as Record<string, unknown> | undefined;
+  const smallUnit = item.smallUnit as Record<string, unknown> | undefined;
 
-  // Get image - prefer small unit image
-  const displayImage = (item.itemImageForSmallUnitUrl || item.itemImageForBigUnitUrl || item.imageUrl || '') as string;
+  // Get prices from API - use directly without modification
+  const rawSmallPrice = item.smallUnitPrice as number | undefined;
+  const rawBigPrice = item.bigUnitPrice as number | undefined;
+  const smallUnitPrice = rawSmallPrice ? Math.round(rawSmallPrice) : undefined;
+  const bigUnitPrice = rawBigPrice ? Math.round(rawBigPrice) : undefined;
+
+  // Display price: prefer small unit, fallback to big unit
+  const displayPrice = smallUnitPrice || bigUnitPrice || Math.round(item.sellPrice as number || item.price as number || 0);
+
+  // Get images for each unit
+  const smallUnitImageUrl = item.itemImageForSmallUnitUrl as string | undefined;
+  const bigUnitImageUrl = item.itemImageForBigUnitUrl as string | undefined;
+  const displayImage = (smallUnitImageUrl || bigUnitImageUrl || item.imageUrl || '') as string;
+
+  // Original price
+  const rawOriginalPrice = (item.beforeDiscount || item.originalPrice || 0) as number;
+  const originalPrice = Math.round(rawOriginalPrice);
+
+  // Extract unit names - API uses nameAR (uppercase)
+  const bigUnitName = bigUnit ? (bigUnit.nameAR || bigUnit.nameAr || bigUnit.nameEN || bigUnit.name || '') as string : '';
+  const smallUnitName = smallUnit ? (smallUnit.nameAR || smallUnit.nameAr || smallUnit.nameEN || smallUnit.name || '') as string : '';
 
   return {
     id: item.id as number || item.itemId as number,
-    itemId: item.itemId as number,
+    itemId: item.itemId as number || item.id as number,
     name: (item.nameEN || item.nameEn || item.name || '') as string,
     nameAr: (item.nameAR || item.nameAr || '') as string,
     price: displayPrice,
-    originalPrice: (item.beforeDiscount || item.originalPrice || 0) as number,
-    discountPercent: (item.discountPercentage || item.discountPercent || 0) as number,
+    originalPrice,
+    discountPercent: Math.round((item.discountPercentage || item.discountPercent || 0) as number),
     imageUrl: displayImage,
     discountName: (item.discountNameEN || item.discountName || '') as string,
     discountNameAr: (item.discountNameAR || item.discountNameAr || '') as string,
+    // Unit support - extract actual unit names from API (nameAR uppercase)
+    bigUnitPrice,
+    smallUnitPrice,
+    bigUnitImageUrl,
+    smallUnitImageUrl,
+    bigUnit: bigUnit ? {
+      id: bigUnit.id as number,
+      name: bigUnitName,
+      nameAr: bigUnitName, // Use same name since API only provides nameAR
+      amount: bigUnit.amount as number || 1,
+      price: bigUnitPrice || 0,
+      imageUrl: bigUnitImageUrl,
+    } : undefined,
+    smallUnit: smallUnit ? {
+      id: smallUnit.id as number,
+      name: smallUnitName,
+      nameAr: smallUnitName, // Use same name since API only provides nameAR
+      amount: smallUnit.amount as number || 1,
+      price: smallUnitPrice || 0,
+      imageUrl: smallUnitImageUrl,
+    } : undefined,
   };
 }
 

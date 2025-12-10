@@ -12,7 +12,20 @@ export function formatPrice(
   currency: TenantCurrency,
   locale: 'en' | 'ar' = 'en'
 ): string {
-  const formattedAmount = amount.toFixed(currency.decimalPlaces);
+  // Use configured decimal places (default to 0 for whole number prices)
+  const decimalPlaces = currency.decimalPlaces ?? 0;
+
+  // Round to integer for 0 decimal places, otherwise use proper rounding
+  let formattedAmount: string;
+  if (decimalPlaces === 0) {
+    // For whole numbers, use Math.round to ensure clean integer
+    formattedAmount = String(Math.round(amount));
+  } else {
+    // For decimal places, use proper rounding and toFixed
+    const roundedAmount = Math.round(amount * Math.pow(10, decimalPlaces)) / Math.pow(10, decimalPlaces);
+    formattedAmount = roundedAmount.toFixed(decimalPlaces);
+  }
+
   const symbol = locale === 'ar' ? currency.symbol : currency.symbolEn;
 
   if (currency.position === 'before') {

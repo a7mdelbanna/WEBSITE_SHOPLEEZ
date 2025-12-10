@@ -87,6 +87,14 @@ export interface Product {
   protein?: number;
   fat?: number;
   carbs?: number;
+
+  // Extended unit info for detail view
+  bigUnitPrice?: number;
+  smallUnitPrice?: number;
+  bigUnitName?: string;
+  smallUnitName?: string;
+  bigUnitImageUrl?: string;
+  smallUnitImageUrl?: string;
 }
 
 // Unit info from API

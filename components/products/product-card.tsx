@@ -83,7 +83,13 @@ export function ProductCard({
 
   // Get current unit info based on selection
   const currentUnit = selectedUnit === 'big' ? bigUnit : smallUnit;
-  const currentPrice = currentUnit?.price || price;
+
+  // Calculate current price - use simple logic like other widgets:
+  // For multiple units: use selected unit price
+  // Otherwise: use the price prop (which is already correctly calculated in the service)
+  const currentPrice = hasMultipleUnits && currentUnit
+    ? currentUnit.price
+    : price;
   const currentImage = selectedUnit === 'big' ? (bigUnitImageUrl || image) : (smallUnitImageUrl || image);
 
   const displayName = localize(name, nameAr);
@@ -91,9 +97,12 @@ export function ProductCard({
   const displayBadge = badge ? localize(badge.text, badge.textAr) : '';
   const hasDiscount = originalPrice && originalPrice > currentPrice;
 
-  // Get unit names for display
-  const smallUnitName = smallUnit ? localize(smallUnit.name, smallUnit.nameAr) : t('product.smallUnit');
-  const bigUnitName = bigUnit ? localize(bigUnit.name, bigUnit.nameAr) : t('product.bigUnit');
+  // Get unit names for display - use actual names from API, fallback to translations only if no unit data
+  const smallUnitName = smallUnit?.nameAr || smallUnit?.name || (smallUnit ? '' : t('product.smallUnit'));
+  const bigUnitName = bigUnit?.nameAr || bigUnit?.name || (bigUnit ? '' : t('product.bigUnit'));
+
+  // For single unit display, determine which unit name to show
+  const singleUnitDisplayName = bigUnit?.nameAr || bigUnit?.name || smallUnit?.nameAr || smallUnit?.name || weight || '';
 
   const handleAddClick = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -198,7 +207,7 @@ export function ProductCard({
                 style={{ fontSize: '12px' }}
                 className="font-medium text-[#FF4B12] relative pb-[2px] cursor-default"
               >
-                {bigUnitName || smallUnitName || weight || ''}
+                {singleUnitDisplayName || t('product.bigUnit')}
                 <span className="absolute bottom-0 left-0 right-0 h-[2px] bg-[#FF4B12] rounded-full" />
               </button>
             </div>

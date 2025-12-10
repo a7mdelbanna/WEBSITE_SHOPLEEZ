@@ -107,7 +107,7 @@ export const store1Config: TenantConfig = {
     symbol: 'ج.م',
     symbolEn: 'EGP',
     position: 'after',
-    decimalPlaces: 2,
+    decimalPlaces: 0, // EGP typically shown without decimals
   },
 
   // Location Settings

@@ -289,54 +289,31 @@ export default function HomePage() {
             )
           ))}
 
-          {/* Active Discounts Section */}
+          {/* Active Discounts Section - Use ProductSection like other widgets */}
           {discounts && discounts.length > 0 && (
-            <section className="mb-[48px]">
-              <div className="flex items-center justify-between mb-[20px]">
-                <h2 className="text-[24px] font-bold text-[#1A1A1A] leading-none">
-                  {t('home.activeDiscounts')}
-                </h2>
-                <Link
-                  href="/discounts"
-                  className={cn(
-                    "flex items-center gap-[4px] text-[14px] font-medium text-[#FF4B12] hover:text-[#E63E1C] transition-colors",
-                    isRTL && "flex-row-reverse"
-                  )}
-                >
-                  {t('common.seeAll')}
-                  <ChevronRight className={cn("w-[16px] h-[16px]", isRTL && "rotate-180")} strokeWidth={2} />
-                </Link>
-              </div>
-
-              <ProductScroll>
-                {discounts.map((item) => (
-                  <div key={item.id} className="w-[140px] shrink-0 snap-start">
-                    <ProductCard
-                      id={item.id}
-                      name={item.name}
-                      nameAr={item.nameAr}
-                      image={item.imageUrl}
-                      price={item.price}
-                      originalPrice={item.originalPrice}
-                      badge={{
-                        text: `-${item.discountPercent}%`,
-                        textAr: `${item.discountPercent}%-`,
-                        variant: 'discount' as const,
-                      }}
-                      onAddToCart={() => handleAddToCart(item.id)}
-                      onClick={() => handleProductClick({
-                        id: item.id,
-                        name: item.name,
-                        nameAr: item.nameAr,
-                        image: item.imageUrl,
-                        price: item.price,
-                        originalPrice: item.originalPrice,
-                      })}
-                    />
-                  </div>
-                ))}
-              </ProductScroll>
-            </section>
+            <ProductSection
+              title={t('home.activeDiscounts')}
+              products={discounts.map(item => ({
+                id: item.id,
+                name: item.name,
+                nameEn: item.name,
+                nameAr: item.nameAr,
+                price: item.price,
+                originalPrice: item.originalPrice || undefined,
+                discountPercent: item.discountPercent > 0 ? item.discountPercent : undefined,
+                imageUrl: item.imageUrl,
+                mainImage: item.imageUrl,
+                bigUnit: item.bigUnit,
+                smallUnit: item.smallUnit,
+                bigUnitPrice: item.bigUnitPrice,
+                smallUnitPrice: item.smallUnitPrice,
+                bigUnitImageUrl: item.bigUnitImageUrl,
+                smallUnitImageUrl: item.smallUnitImageUrl,
+              }))}
+              seeAllLink="/discounts"
+              onProductClick={handleProductClick}
+              onAddToCart={handleAddToCart}
+            />
           )}
 
           {/* Deals Shelf Section - Fallback to spotlight API (only show if has items) */}

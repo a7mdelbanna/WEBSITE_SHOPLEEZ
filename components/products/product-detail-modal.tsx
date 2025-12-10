@@ -10,15 +10,29 @@
  * 2. RIGHT COLUMN: Details + STICKY add-to-cart bar (right column width only)
  * 3. Collapsible sections with fade-out gradient when collapsed
  * 4. Full Arabic/English localization support
+ * 5. Fetches full product data and related products from API
  */
 
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
-import { X, Share2, ChevronDown, ChevronUp } from 'lucide-react';
+import { X, Share2, ChevronDown, ChevronUp, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useTranslations } from '@/lib/hooks/use-translations';
 import { useTenant, useCurrency } from '@/lib/hooks/use-tenant';
 import { formatPrice } from '@/lib/utils/format';
+import { useProductById, useRelatedProducts } from '@/lib/services/products';
+
+/**
+ * Unit info for modal display
+ */
+interface ProductUnitInfo {
+  id: number;
+  name: string;
+  nameAr: string;
+  amount: number;
+  price: number;
+  imageUrl?: string;
+}
 
 export interface ProductDetailData {
   id: number;
@@ -55,6 +69,13 @@ export interface ProductDetailData {
   applicationArea?: string;
   applicationAreaAr?: string;
   relatedProducts?: RelatedProduct[];
+  // Unit support
+  bigUnit?: ProductUnitInfo;
+  smallUnit?: ProductUnitInfo;
+  bigUnitPrice?: number;
+  smallUnitPrice?: number;
+  bigUnitImageUrl?: string;
+  smallUnitImageUrl?: string;
 }
 
 interface RelatedProduct {
@@ -131,8 +152,21 @@ export function ProductDetailModal({
   onAddToCart,
 }: ProductDetailModalProps) {
   const [expandedSections, setExpandedSections] = useState<Set<string>>(new Set());
+  const [selectedUnit, setSelectedUnit] = useState<'small' | 'big'>('small');
   const { t, locale, isRTL } = useTranslations();
   const currency = useCurrency();
+
+  // Fetch full product details from API
+  const { data: fullProduct, isLoading: isLoadingProduct } = useProductById(
+    product?.id || 0,
+    isOpen && !!product?.id
+  );
+
+  // Fetch related products from API
+  const { data: relatedProducts, isLoading: isLoadingRelated } = useRelatedProducts(
+    product?.id || 0,
+    isOpen && !!product?.id
+  );
 
   useEffect(() => {
     if (isOpen) {
@@ -155,9 +189,82 @@ export function ProductDetailModal({
     return () => window.removeEventListener('keydown', handleEscape);
   }, [isOpen, onClose]);
 
+  // Reset selected unit when product changes
+  useEffect(() => {
+    setSelectedUnit('small');
+  }, [product?.id]);
+
   if (!isOpen || !product) return null;
 
-  const hasDiscount = product.originalPrice && product.originalPrice > product.price;
+  // Merge API data with passed product data (API takes precedence)
+  // Extract unit names from passed product's unit objects if available
+  const passedBigUnitName = product.bigUnit
+    ? (locale === 'ar' ? (product.bigUnit.nameAr || product.bigUnit.name) : product.bigUnit.name)
+    : undefined;
+  const passedSmallUnitName = product.smallUnit
+    ? (locale === 'ar' ? (product.smallUnit.nameAr || product.smallUnit.name) : product.smallUnit.name)
+    : undefined;
+
+  const displayProduct = {
+    ...product,
+    // Use unit names from passed product if available
+    bigUnitName: passedBigUnitName,
+    smallUnitName: passedSmallUnitName,
+    ...(fullProduct ? {
+      name: fullProduct.name,
+      nameAr: fullProduct.nameAr,
+      description: fullProduct.description,
+      descriptionAr: fullProduct.descriptionAr,
+      image: fullProduct.mainImage || product.image,
+      price: fullProduct.price,
+      brand: fullProduct.companyName,
+      brandAr: fullProduct.companyNameAr,
+      productType: fullProduct.categoryName,
+      productTypeAr: fullProduct.categoryNameAr,
+      // Unit info - override with API data if available
+      bigUnitPrice: fullProduct.bigUnitPrice,
+      smallUnitPrice: fullProduct.smallUnitPrice,
+      bigUnitName: fullProduct.bigUnitName || passedBigUnitName,
+      smallUnitName: fullProduct.smallUnitName || passedSmallUnitName,
+      bigUnitImageUrl: fullProduct.bigUnitImageUrl,
+      smallUnitImageUrl: fullProduct.smallUnitImageUrl,
+      // Nutrition
+      calories: fullProduct.calories,
+      protein: fullProduct.protein,
+      fat: fullProduct.fat,
+      carbs: fullProduct.carbs,
+    } : {}),
+    // Add related products from API
+    relatedProducts: relatedProducts?.map(rp => ({
+      id: rp.id,
+      name: rp.name || rp.nameEn || '',
+      nameAr: rp.nameAr,
+      image: rp.imageUrl || rp.mainImage || '',
+      price: rp.price,
+      originalPrice: rp.originalPrice,
+      weight: rp.volume || rp.weight,
+      badge: rp.discountPercent ? {
+        text: `-${rp.discountPercent}%`,
+        textAr: `${rp.discountPercent}%-`,
+        variant: 'discount' as const,
+      } : undefined,
+    })) || product.relatedProducts,
+  };
+
+  // Get current price based on selected unit
+  const hasMultipleUnits = displayProduct.bigUnitPrice && displayProduct.smallUnitPrice &&
+    displayProduct.bigUnitPrice !== displayProduct.smallUnitPrice;
+  const currentPrice = selectedUnit === 'big'
+    ? (displayProduct.bigUnitPrice || displayProduct.price)
+    : (displayProduct.smallUnitPrice || displayProduct.price);
+  const currentImage = selectedUnit === 'big'
+    ? (displayProduct.bigUnitImageUrl || displayProduct.image)
+    : (displayProduct.smallUnitImageUrl || displayProduct.image);
+  const currentUnitName = selectedUnit === 'big'
+    ? displayProduct.bigUnitName
+    : displayProduct.smallUnitName;
+
+  const hasDiscount = displayProduct.originalPrice && displayProduct.originalPrice > currentPrice;
 
   const toggleSection = (section: string) => {
     setExpandedSections((prev) => {
@@ -175,18 +282,20 @@ export function ProductDetailModal({
     onAddToCart?.(product.id);
   };
 
-  // Localized getters
-  const getName = () => locale === 'ar' ? (product.nameAr || product.name) : product.name;
-  const getDescription = () => locale === 'ar' ? (product.descriptionAr || product.description) : product.description;
-  const getUsage = () => locale === 'ar' ? (product.usageAr || product.usage) : product.usage;
-  const getComposition = () => locale === 'ar' ? (product.compositionAr || product.composition) : product.composition;
-  const getHighlights = () => locale === 'ar' ? (product.highlightsAr || product.highlights) : product.highlights;
-  const getBadgeText = () => locale === 'ar' ? (product.badge?.textAr || product.badge?.text) : product.badge?.text;
-  const getStorageConditions = () => locale === 'ar' ? (product.storageConditionsAr || product.storageConditions) : product.storageConditions;
-  const getManufacturer = () => locale === 'ar' ? (product.manufacturerAr || product.manufacturer) : product.manufacturer;
-  const getProductType = () => locale === 'ar' ? (product.productTypeAr || product.productType) : product.productType;
-  const getBrand = () => locale === 'ar' ? (product.brandAr || product.brand) : product.brand;
-  const getApplicationArea = () => locale === 'ar' ? (product.applicationAreaAr || product.applicationArea) : product.applicationArea;
+  // Localized getters - use displayProduct which has merged API data
+  const getName = () => locale === 'ar' ? (displayProduct.nameAr || displayProduct.name) : displayProduct.name;
+  const getDescription = () => locale === 'ar' ? (displayProduct.descriptionAr || displayProduct.description) : displayProduct.description;
+  const getUsage = () => locale === 'ar' ? (displayProduct.usageAr || displayProduct.usage) : displayProduct.usage;
+  const getComposition = () => locale === 'ar' ? (displayProduct.compositionAr || displayProduct.composition) : displayProduct.composition;
+  const getHighlights = () => locale === 'ar' ? (displayProduct.highlightsAr || displayProduct.highlights) : displayProduct.highlights;
+  const getBadgeText = () => locale === 'ar' ? (displayProduct.badge?.textAr || displayProduct.badge?.text) : displayProduct.badge?.text;
+  const getStorageConditions = () => locale === 'ar' ? (displayProduct.storageConditionsAr || displayProduct.storageConditions) : displayProduct.storageConditions;
+  const getManufacturer = () => locale === 'ar' ? (displayProduct.manufacturerAr || displayProduct.manufacturer) : displayProduct.manufacturer;
+  const getProductType = () => locale === 'ar' ? (displayProduct.productTypeAr || displayProduct.productType) : displayProduct.productType;
+  const getBrand = () => locale === 'ar' ? (displayProduct.brandAr || displayProduct.brand) : displayProduct.brand;
+  const getApplicationArea = () => locale === 'ar' ? (displayProduct.applicationAreaAr || displayProduct.applicationArea) : displayProduct.applicationArea;
+  const getSmallUnitName = () => displayProduct.smallUnitName || t('product.smallUnit');
+  const getBigUnitName = () => displayProduct.bigUnitName || t('product.bigUnit');
 
   const getRelatedName = (related: RelatedProduct) => locale === 'ar' ? (related.nameAr || related.name) : related.name;
   const getRelatedBadgeText = (related: RelatedProduct) => locale === 'ar' ? (related.badge?.textAr || related.badge?.text) : related.badge?.text;
@@ -228,27 +337,34 @@ export function ProductDetailModal({
             {/* LEFT COLUMN - Image + Related Products (scrolls independently) */}
             <div className="w-full md:w-[480px] shrink-0 p-[16px] space-y-[16px] overflow-y-auto">
 
-              {/* Block 1: Image Card - ONLY image + badge */}
+              {/* Block 1: Image Card - with unit toggle */}
               <div className="relative bg-[#F5F5F5] rounded-[24px] overflow-hidden">
                   {/* Discount badge */}
-                  {product.badge && (
+                  {displayProduct.badge && (
                     <div
                       className={cn(
                         'absolute top-[16px] px-[12px] py-[6px] rounded-[8px] text-[13px] font-semibold text-white z-10',
                         isRTL ? 'right-[16px]' : 'left-[16px]',
-                        product.badge.variant === 'discount' && 'bg-[#1F1F1F]',
-                        product.badge.variant === 'tag' && 'bg-[#00B894]',
-                        product.badge.variant === 'new' && 'bg-[#6C5CE7]'
+                        displayProduct.badge.variant === 'discount' && 'bg-[#1F1F1F]',
+                        displayProduct.badge.variant === 'tag' && 'bg-[#00B894]',
+                        displayProduct.badge.variant === 'new' && 'bg-[#6C5CE7]'
                       )}
                     >
                       {getBadgeText()}
                     </div>
                   )}
 
+                  {/* Loading indicator */}
+                  {isLoadingProduct && (
+                    <div className="absolute inset-0 flex items-center justify-center bg-white/50 z-20">
+                      <Loader2 className="w-[32px] h-[32px] text-[#FF4B12] animate-spin" />
+                    </div>
+                  )}
+
                   {/* Product image */}
                   <div className="relative aspect-square p-[32px]">
                     <Image
-                      src={product.image}
+                      src={currentImage}
                       alt={getName()}
                       fill
                       className="object-contain"
@@ -257,74 +373,157 @@ export function ProductDetailModal({
                       unoptimized
                     />
                   </div>
+
+                  {/* Premium Unit Toggle - Segmented Control with Prices */}
+                  {hasMultipleUnits && (
+                    <div className="absolute bottom-[16px] left-1/2 -translate-x-1/2 w-[calc(100%-48px)] max-w-[320px]">
+                      <div className="relative flex bg-white/95 backdrop-blur-md rounded-[16px] p-[4px] shadow-xl border border-white/20">
+                        {/* Sliding Background */}
+                        <div
+                          className={cn(
+                            "absolute top-[4px] bottom-[4px] w-[calc(50%-2px)] rounded-[12px] bg-gradient-to-r from-[#FF4B12] to-[#FF6B3D] shadow-md transition-all duration-300 ease-out",
+                            selectedUnit === 'big'
+                              ? (isRTL ? "left-[4px]" : "left-[calc(50%+2px)]")
+                              : (isRTL ? "left-[calc(50%+2px)]" : "left-[4px]")
+                          )}
+                        />
+
+                        {/* Small Unit Option */}
+                        <button
+                          onClick={() => setSelectedUnit('small')}
+                          className={cn(
+                            "relative flex-1 flex flex-col items-center py-[10px] px-[8px] rounded-[12px] transition-all duration-300 z-10",
+                            selectedUnit === 'small' ? "text-white" : "text-[#666]"
+                          )}
+                        >
+                          <span className={cn(
+                            "text-[13px] font-semibold transition-colors duration-300",
+                            selectedUnit === 'small' ? "text-white" : "text-[#1A1A1A]"
+                          )}>
+                            {getSmallUnitName()}
+                          </span>
+                          <span className={cn(
+                            "text-[12px] font-bold mt-[2px] transition-colors duration-300",
+                            selectedUnit === 'small' ? "text-white/90" : "text-[#FF4B12]"
+                          )}>
+                            {formatPrice(displayProduct.smallUnitPrice || displayProduct.price, currency, locale)}
+                          </span>
+                        </button>
+
+                        {/* Big Unit Option */}
+                        <button
+                          onClick={() => setSelectedUnit('big')}
+                          className={cn(
+                            "relative flex-1 flex flex-col items-center py-[10px] px-[8px] rounded-[12px] transition-all duration-300 z-10",
+                            selectedUnit === 'big' ? "text-white" : "text-[#666]"
+                          )}
+                        >
+                          <span className={cn(
+                            "text-[13px] font-semibold transition-colors duration-300",
+                            selectedUnit === 'big' ? "text-white" : "text-[#1A1A1A]"
+                          )}>
+                            {getBigUnitName()}
+                          </span>
+                          <span className={cn(
+                            "text-[12px] font-bold mt-[2px] transition-colors duration-300",
+                            selectedUnit === 'big' ? "text-white/90" : "text-[#FF4B12]"
+                          )}>
+                            {formatPrice(displayProduct.bigUnitPrice || displayProduct.price, currency, locale)}
+                          </span>
+                        </button>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Single unit indicator - Clean pill design */}
+                  {!hasMultipleUnits && currentUnitName && (
+                    <div className="absolute bottom-[16px] left-1/2 -translate-x-1/2">
+                      <div className="bg-white/95 backdrop-blur-md rounded-[12px] px-[20px] py-[10px] shadow-xl border border-white/20">
+                        <span className="text-[13px] font-semibold text-[#1A1A1A]">
+                          {currentUnitName}
+                        </span>
+                      </div>
+                    </div>
+                  )}
                 </div>
 
                 {/* Block 2: Related Products - SEPARATE from image */}
-                {product.relatedProducts && product.relatedProducts.length > 0 && (
-                  <div>
-                    <h3 className={cn(
-                      "text-[16px] font-bold text-[#1A1A1A] mb-[12px] px-[4px]",
-                      isRTL && "text-right"
-                    )}>
+                {displayProduct.relatedProducts && displayProduct.relatedProducts.length > 0 && (
+                  <div style={{ marginTop: '16px' }}>
+                    <h3
+                      className={cn(
+                        "text-[16px] font-bold text-[#1A1A1A]",
+                        isRTL && "text-right"
+                      )}
+                      style={{ marginBottom: '16px' }}
+                    >
                       {t('product.relatedProducts')}
                     </h3>
-                    <div className="flex gap-[10px] overflow-x-auto pb-[8px] scrollbar-hide">
-                      {product.relatedProducts.map((related) => (
-                        <div
-                          key={related.id}
-                          className="w-[140px] shrink-0 bg-white rounded-[16px] border border-[#F0F0F0] overflow-hidden"
-                        >
-                          {/* Card image */}
-                          <div className="relative aspect-square bg-[#FAFAFA] rounded-t-[16px]">
-                            <Image
-                              src={related.image}
-                              alt={getRelatedName(related)}
-                              fill
-                              className="object-contain p-[12px]"
-                              sizes="140px"
-                              unoptimized
-                            />
-                            {related.badge && (
-                              <div className={cn(
-                                "absolute bottom-[8px] px-[8px] py-[3px] rounded-[6px] bg-[#1F1F1F] text-[11px] font-semibold text-white",
-                                isRTL ? "right-[8px]" : "left-[8px]"
-                              )}>
-                                {getRelatedBadgeText(related)}
-                              </div>
-                            )}
-                          </div>
-                          {/* Card content */}
-                          <div className="p-[10px] pt-[8px]">
-                            <p className={cn(
-                              "text-[12px] text-[#1A1A1A] leading-[1.3] line-clamp-2 h-[32px] mb-[4px]",
-                              isRTL && "text-right"
-                            )}>
-                              {getRelatedName(related)}
-                            </p>
-                            <p className={cn(
-                              "text-[11px] text-[#999] mb-[6px]",
-                              isRTL && "text-right"
-                            )}>
-                              {related.weight}
-                            </p>
-                            {/* Price row */}
-                            <div className={cn("flex items-center", isRTL && "justify-end")}>
-                              <div className="flex items-center gap-[4px] bg-[#FFF0F0] rounded-full px-[10px] py-[4px]">
-                                {related.originalPrice && (
-                                  <span className="text-[11px] text-[#BEBEBE] line-through">
-                                    {formatPrice(related.originalPrice, currency, locale)}
-                                  </span>
+                    {isLoadingRelated ? (
+                      <div className="flex items-center justify-center" style={{ padding: '24px 0' }}>
+                        <Loader2 className="w-[24px] h-[24px] text-[#FF4B12] animate-spin" />
+                      </div>
+                    ) : (
+                      <div className="flex overflow-x-auto scrollbar-hide" style={{ gap: '12px', paddingBottom: '12px' }}>
+                        {displayProduct.relatedProducts.map((related) => (
+                          <div
+                            key={related.id}
+                            className="shrink-0 bg-white rounded-[16px] border border-[#F0F0F0] overflow-hidden"
+                            style={{ width: '160px' }}
+                          >
+                            {/* Card image */}
+                            <div className="relative aspect-square bg-[#FAFAFA] rounded-t-[16px]">
+                              <Image
+                                src={related.image}
+                                alt={getRelatedName(related)}
+                                fill
+                                className="object-contain"
+                                style={{ padding: '16px' }}
+                                sizes="160px"
+                                unoptimized
+                              />
+                              {related.badge && (
+                                <div className={cn(
+                                  "absolute px-[8px] py-[3px] rounded-[6px] bg-[#1F1F1F] text-[11px] font-semibold text-white",
+                                  isRTL ? "right-[8px]" : "left-[8px]"
+                                )} style={{ bottom: '10px' }}>
+                                  {getRelatedBadgeText(related)}
+                                </div>
+                              )}
+                            </div>
+                            {/* Card content */}
+                            <div style={{ padding: '12px', paddingTop: '10px' }}>
+                              <p
+                                className={cn(
+                                  "text-[13px] text-[#1A1A1A] leading-[1.3] line-clamp-2",
+                                  isRTL && "text-right"
                                 )}
-                                <span className="text-[13px] font-semibold text-[#1A1A1A]">
-                                  {formatPrice(related.price, currency, locale)}
-                                </span>
-                                <span className="text-[#FF6B6B] text-[14px] ml-[2px]">+</span>
+                                style={{ height: '34px', marginBottom: '8px' }}
+                              >
+                                {getRelatedName(related)}
+                              </p>
+                              {/* Price row */}
+                              <div className={cn("flex items-center", isRTL && "justify-end")}>
+                                <div
+                                  className="flex items-center bg-[#FFF0F0] rounded-full"
+                                  style={{ gap: '6px', padding: '6px 12px' }}
+                                >
+                                  {related.originalPrice && (
+                                    <span className="text-[11px] text-[#BEBEBE] line-through">
+                                      {formatPrice(related.originalPrice, currency, locale)}
+                                    </span>
+                                  )}
+                                  <span className="text-[14px] font-semibold text-[#1A1A1A]">
+                                    {formatPrice(related.price, currency, locale)}
+                                  </span>
+                                  <span className="text-[#FF6B6B] text-[16px]">+</span>
+                                </div>
                               </div>
                             </div>
                           </div>
-                        </div>
-                      ))}
-                    </div>
+                        ))}
+                      </div>
+                    )}
                   </div>
                 )}
               </div>
@@ -337,12 +536,27 @@ export function ProductDetailModal({
                 isRTL ? "pl-[32px]" : "pr-[32px]"
               )}>
                   {/* Product name */}
-                  <h1 className={cn(
-                    "text-[22px] font-bold text-[#1A1A1A] leading-[1.25] mb-[4px]",
-                    isRTL ? "text-right pl-[32px]" : "pr-[32px]"
-                  )}>
+                  <h1
+                    className={cn(
+                      "text-[22px] font-bold text-[#1A1A1A] leading-[1.25]",
+                      isRTL ? "text-right pl-[32px]" : "pr-[32px]"
+                    )}
+                    style={{ marginBottom: '20px' }}
+                  >
                     {getName()}
                   </h1>
+
+                  {/* Share button - grey pill */}
+                  <button
+                    className={cn(
+                      "inline-flex items-center gap-[8px] rounded-full bg-[#F5F5F5] text-[13px] text-[#1A1A1A] hover:bg-[#EBEBEB] transition-colors",
+                      isRTL && "flex-row-reverse"
+                    )}
+                    style={{ height: '40px', paddingLeft: '18px', paddingRight: '18px', marginBottom: '24px' }}
+                  >
+                    <Share2 className="w-[16px] h-[16px]" />
+                    {t('product.share')}
+                  </button>
 
                   {/* Volume - lighter, smaller */}
                   {product.volume && (
@@ -368,15 +582,6 @@ export function ProductDetailModal({
                       ))}
                     </ul>
                   )}
-
-                  {/* Share button - grey pill */}
-                  <button className={cn(
-                    "inline-flex items-center gap-[6px] h-[34px] px-[14px] rounded-full bg-[#F5F5F5] text-[13px] text-[#1A1A1A] hover:bg-[#EBEBEB] transition-colors mb-[18px]",
-                    isRTL && "flex-row-reverse"
-                  )}>
-                    <Share2 className="w-[14px] h-[14px]" />
-                    {t('product.share')}
-                  </button>
 
                   {/* Description */}
                   {getDescription() && (
@@ -453,21 +658,60 @@ export function ProductDetailModal({
                       </div>
                     )}
                   </div>
+
+                  {/* Nutrition Info */}
+                  {(displayProduct.calories || displayProduct.protein || displayProduct.fat || displayProduct.carbs) && (
+                    <div className="border-t border-[#F0F0F0] pt-[14px] mt-[4px]">
+                      <h4 className={cn(
+                        "text-[14px] font-semibold text-[#1A1A1A] mb-[12px]",
+                        isRTL && "text-right"
+                      )}>
+                        {t('product.nutritionInfo')}
+                      </h4>
+                      <div className="grid grid-cols-4 gap-[8px]">
+                        {displayProduct.calories !== undefined && displayProduct.calories > 0 && (
+                          <div className="bg-[#F5F5F7] rounded-[12px] p-[12px] text-center">
+                            <p className="text-[18px] font-bold text-[#1A1A1A]">{displayProduct.calories}</p>
+                            <p className="text-[11px] text-[#999]">{t('product.calories')}</p>
+                          </div>
+                        )}
+                        {displayProduct.protein !== undefined && displayProduct.protein > 0 && (
+                          <div className="bg-[#F5F5F7] rounded-[12px] p-[12px] text-center">
+                            <p className="text-[18px] font-bold text-[#1A1A1A]">{displayProduct.protein}g</p>
+                            <p className="text-[11px] text-[#999]">{t('product.protein')}</p>
+                          </div>
+                        )}
+                        {displayProduct.fat !== undefined && displayProduct.fat > 0 && (
+                          <div className="bg-[#F5F5F7] rounded-[12px] p-[12px] text-center">
+                            <p className="text-[18px] font-bold text-[#1A1A1A]">{displayProduct.fat}g</p>
+                            <p className="text-[11px] text-[#999]">{t('product.fat')}</p>
+                          </div>
+                        )}
+                        {displayProduct.carbs !== undefined && displayProduct.carbs > 0 && (
+                          <div className="bg-[#F5F5F7] rounded-[12px] p-[12px] text-center">
+                            <p className="text-[18px] font-bold text-[#1A1A1A]">{displayProduct.carbs}g</p>
+                            <p className="text-[11px] text-[#999]">{t('product.carbs')}</p>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  )}
                 </div>
 
               {/* STICKY Add to Cart bar - FULL WIDTH of right column */}
               <div className="sticky bottom-0 left-0 right-0 bg-white px-[16px] py-[16px] z-10">
-                {/* Full-width pink pill button */}
+                {/* Full-width primary color pill button */}
                 <button
                   onClick={handleAddToCart}
-                  className="w-full h-[56px] rounded-full bg-[#F95C78] hover:bg-[#E84D69] text-white text-[18px] font-semibold flex items-center justify-center gap-[8px] transition-colors"
+                  className="w-full h-[56px] rounded-full text-white text-[18px] font-semibold flex items-center justify-center gap-[8px] transition-colors"
+                  style={{ background: 'linear-gradient(to right, #FF4B12, #FF6B3D)' }}
                 >
                   {hasDiscount && (
                     <span className="text-[16px] text-white/60 line-through">
-                      {formatPrice(product.originalPrice!, currency, locale)}
+                      {formatPrice(displayProduct.originalPrice!, currency, locale)}
                     </span>
                   )}
-                  <span>{formatPrice(product.price, currency, locale)}</span>
+                  <span>{formatPrice(currentPrice, currency, locale)}</span>
                   <span className={cn("text-[24px] font-normal", isRTL ? "mr-[6px]" : "ml-[6px]")}>+</span>
                 </button>
               </div>

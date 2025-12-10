@@ -20,6 +20,18 @@ export interface WidgetData {
 }
 
 /**
+ * Discount item unit info
+ */
+export interface DiscountUnitInfo {
+  id: number;
+  name: string;
+  nameAr: string;
+  amount: number;
+  price: number;
+  imageUrl?: string;
+}
+
+/**
  * Discount item structure
  */
 export interface DiscountItem {
@@ -33,6 +45,13 @@ export interface DiscountItem {
   imageUrl: string;
   discountName: string;
   discountNameAr: string;
+  // Unit support
+  bigUnit?: DiscountUnitInfo;
+  smallUnit?: DiscountUnitInfo;
+  bigUnitPrice?: number;
+  smallUnitPrice?: number;
+  bigUnitImageUrl?: string;
+  smallUnitImageUrl?: string;
 }
 
 /**

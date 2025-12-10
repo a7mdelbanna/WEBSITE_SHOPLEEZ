@@ -71,6 +71,116 @@ export function useProducts(filters?: ProductFilters) {
 }
 
 /**
+ * Product detail response from API
+ */
+export interface ProductDetailResponse {
+  id: number;
+  code: string;
+  nameEN: string;
+  nameAR: string;
+  descriptionEN: string;
+  descriptionAR: string;
+  itemImageForBigUnitUrl: string;
+  itemImageForSmallUnitUrl: string;
+  bigUnit: {
+    nameEN?: string;
+    nameAR: string;
+    amount: number;
+    id: number;
+  };
+  bigUnitPrice: number;
+  smallUnit: {
+    nameEN?: string;
+    nameAR: string;
+    amount: number;
+    id: number;
+  };
+  smallUnitPrice: number;
+  calories: number;
+  protein: number;
+  fat: number;
+  carbohydrates: number;
+  expiration: number;
+  expirationType: string;
+  category: {
+    id: number;
+    nameEN: string;
+    nameAR: string;
+  };
+  company: {
+    id: number;
+    nameAr: string;
+    nameEN?: string;
+  };
+  tags: Array<{ id: number; nameAR?: string; nameEN?: string }>;
+  flavours: Array<{ id: number; nameAR?: string; nameEN?: string; isAvailable?: boolean }>;
+  isActive: boolean;
+}
+
+/**
+ * Normalize product detail from API response
+ */
+function normalizeProductDetail(item: ProductDetailResponse): Product {
+  return {
+    id: item.id,
+    name: item.nameEN || item.nameAR,
+    nameAr: item.nameAR,
+    description: item.descriptionEN || undefined,
+    descriptionAr: item.descriptionAR || undefined,
+    mainImage: item.itemImageForSmallUnitUrl || item.itemImageForBigUnitUrl,
+    images: [],
+    price: item.smallUnitPrice || item.bigUnitPrice,
+    discountPrice: undefined,
+    units: [
+      ...(item.smallUnit ? [{
+        id: item.smallUnit.id,
+        name: item.smallUnit.nameEN || item.smallUnit.nameAR,
+        nameAr: item.smallUnit.nameAR,
+        quantity: item.smallUnit.amount,
+        price: item.smallUnitPrice,
+      }] : []),
+      ...(item.bigUnit && item.bigUnitPrice !== item.smallUnitPrice ? [{
+        id: item.bigUnit.id,
+        name: item.bigUnit.nameEN || item.bigUnit.nameAR,
+        nameAr: item.bigUnit.nameAR,
+        quantity: item.bigUnit.amount,
+        price: item.bigUnitPrice,
+      }] : []),
+    ],
+    defaultUnitId: item.smallUnit?.id || item.bigUnit?.id || 0,
+    flavors: item.flavours?.map(f => ({
+      id: f.id,
+      name: f.nameEN || f.nameAR || '',
+      nameAr: f.nameAR || '',
+      isAvailable: f.isAvailable ?? true,
+    })) || [],
+    hasFlavors: (item.flavours?.length || 0) > 0,
+    quantityDiscounts: [],
+    hasQuantityDiscount: false,
+    categoryId: item.category?.id || 0,
+    categoryName: item.category?.nameEN || '',
+    categoryNameAr: item.category?.nameAR || '',
+    companyId: item.company?.id,
+    companyName: item.company?.nameEN || item.company?.nameAr,
+    companyNameAr: item.company?.nameAr,
+    isAvailable: item.isActive,
+    isNew: false,
+    isFeatured: false,
+    calories: item.calories || undefined,
+    protein: item.protein || undefined,
+    fat: item.fat || undefined,
+    carbs: item.carbohydrates || undefined,
+    // Extended fields for modal
+    bigUnitPrice: item.bigUnitPrice,
+    smallUnitPrice: item.smallUnitPrice,
+    bigUnitName: item.bigUnit?.nameAR,
+    smallUnitName: item.smallUnit?.nameAR,
+    bigUnitImageUrl: item.itemImageForBigUnitUrl,
+    smallUnitImageUrl: item.itemImageForSmallUnitUrl,
+  };
+}
+
+/**
  * Fetch a single product by ID
  */
 export function useProductById(itemId: number, enabled = true) {
@@ -81,12 +191,65 @@ export function useProductById(itemId: number, enabled = true) {
     queryFn: async () => {
       const url = buildEndpoint(API_ENDPOINTS.products.getById, { itemId });
       const { data } = await apiClient.get(url);
-      return data;
+      const apiData = data.data || data;
+      return normalizeProductDetail(apiData);
     },
     enabled: enabled && itemId > 0,
     staleTime: 2 * 60 * 1000,
     gcTime: 10 * 60 * 1000,
   });
+}
+
+/**
+ * Normalize related product from API response
+ */
+function normalizeRelatedProduct(item: Record<string, unknown>): ProductSummary {
+  const bigUnitPrice = item.bigUnitPrice as number | undefined;
+  const smallUnitPrice = item.smallUnitPrice as number | undefined;
+  const displayPrice = smallUnitPrice || bigUnitPrice || 0;
+  const displayImage = (item.itemImageForSmallUnitUrl || item.itemImageForBigUnitUrl || '') as string;
+
+  return {
+    id: item.id as number,
+    itemId: item.id as number,
+    name: (item.nameEN || item.nameAR || '') as string,
+    nameAr: (item.nameAR || '') as string,
+    nameEn: (item.nameEN || '') as string,
+    price: displayPrice,
+    originalPrice: undefined,
+    discountPrice: undefined,
+    discountPercent: undefined,
+    imageUrl: displayImage,
+    mainImage: displayImage,
+    volume: undefined,
+    weight: undefined,
+    brandName: ((item.company as Record<string, unknown>)?.nameEN || (item.company as Record<string, unknown>)?.nameAr || '') as string,
+    brandNameAr: ((item.company as Record<string, unknown>)?.nameAr || '') as string,
+    categoryName: ((item.category as Record<string, unknown>)?.nameEN || '') as string,
+    categoryNameAr: ((item.category as Record<string, unknown>)?.nameAR || '') as string,
+    isAvailable: (item.isActive as boolean) ?? true,
+    isNew: false,
+    categoryId: ((item.category as Record<string, unknown>)?.id as number) || 0,
+    hasQuantityDiscount: false,
+    bigUnitPrice,
+    smallUnitPrice,
+    bigUnitImageUrl: item.itemImageForBigUnitUrl as string | undefined,
+    smallUnitImageUrl: item.itemImageForSmallUnitUrl as string | undefined,
+    bigUnit: item.bigUnit ? {
+      id: (item.bigUnit as Record<string, unknown>).id as number,
+      name: ((item.bigUnit as Record<string, unknown>).nameEN || (item.bigUnit as Record<string, unknown>).nameAR || '') as string,
+      nameAr: ((item.bigUnit as Record<string, unknown>).nameAR || '') as string,
+      amount: (item.bigUnit as Record<string, unknown>).amount as number || 1,
+      price: bigUnitPrice || 0,
+    } : undefined,
+    smallUnit: item.smallUnit ? {
+      id: (item.smallUnit as Record<string, unknown>).id as number,
+      name: ((item.smallUnit as Record<string, unknown>).nameEN || (item.smallUnit as Record<string, unknown>).nameAR || '') as string,
+      nameAr: ((item.smallUnit as Record<string, unknown>).nameAR || '') as string,
+      amount: (item.smallUnit as Record<string, unknown>).amount as number || 1,
+      price: smallUnitPrice || 0,
+    } : undefined,
+  };
 }
 
 /**
@@ -100,7 +263,8 @@ export function useRelatedProducts(itemId: number, enabled = true) {
     queryFn: async () => {
       const url = buildEndpoint(API_ENDPOINTS.products.getRelated, { itemId });
       const { data } = await apiClient.get(url);
-      return data;
+      const items = data.data || data || [];
+      return Array.isArray(items) ? items.map(normalizeRelatedProduct) : [];
     },
     enabled: enabled && itemId > 0,
     staleTime: 5 * 60 * 1000,
