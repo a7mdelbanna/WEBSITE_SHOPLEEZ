@@ -151,7 +151,7 @@ export function Header({ onMenuClick, cartCount = 0 }: HeaderProps) {
             </button>
 
             {/* Login/User Button */}
-            {isAuthenticated && user ? (
+            {isAuthenticated ? (
               // Logged in - show user name with logout option
               <div className="flex items-center gap-[8px]">
                 <div className="flex h-[48px] items-center gap-[10px] rounded-full bg-[#F5F5F7] px-[20px] text-[#1A1A1A]">
@@ -159,10 +159,10 @@ export function Header({ onMenuClick, cartCount = 0 }: HeaderProps) {
                     className="w-[28px] h-[28px] rounded-full flex items-center justify-center text-white text-[12px] font-bold"
                     style={{ backgroundColor: 'var(--color-primary)' }}
                   >
-                    {user.firstName?.charAt(0)?.toUpperCase() || <User className="h-[16px] w-[16px]" />}
+                    {user?.firstName?.charAt(0)?.toUpperCase() || <User className="h-[16px] w-[16px]" />}
                   </div>
                   <span className="text-[15px] font-medium leading-none max-w-[100px] truncate">
-                    {user.firstName || t('common.login')}
+                    {user?.firstName || (isRTL ? 'مرحباً' : 'Welcome')}
                   </span>
                 </div>
                 <button

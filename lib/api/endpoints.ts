@@ -8,12 +8,17 @@
 export const API_ENDPOINTS = {
   // ============== Authentication ==============
   auth: {
+    // OTP-based authentication (Twilio)
     loginByPhone: '/RetailAPI/Auth/AuthenticateByPhoneNumberTwilio/{storeId}',
     generateOtp: '/RetailAPI/Auth/GenerateOTPTwilio/{storeId}',
     verifyOtp: '/RetailAPI/Auth/VerifyOTPTwilio/{storeId}',
     resendOtp: '/RetailAPI/Auth/ResendOtpTwilio',
     registerUser: '/RetailAPI/Auth/RegisterUserTwilio/{storeId}',
     registerShop: '/RetailAPI/Auth/RegisterShopTwilio/{storeId}',
+    // Password-based authentication (non-Twilio)
+    loginWithPassword: '/RetailAPI/Auth/AuthenticateByPhoneNumber/{storeId}',
+    registerUserPassword: '/RetailAPI/Auth/RegisterUser/{storeId}',
+    // Common endpoints
     refreshToken: '/RetailAPI/Auth/RefreshToken/{storeId}',
     changePassword: '/RetailAPI/Auth/ChangePassword/{storeId}',
     getProfile: '/RetailAPI/Auth/GetProfile/{storeId}',

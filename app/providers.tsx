@@ -11,13 +11,32 @@
  * - Zustand stores are auto-initialized
  */
 
-import { useState, type ReactNode } from 'react';
+import { useState, useEffect, type ReactNode } from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { TenantProvider } from '@/lib/hooks/use-tenant';
 import { ApiClientProvider } from '@/lib/api/provider';
-import { AuthProvider } from '@/lib/contexts/auth-context';
+import { AuthProvider, useAuth } from '@/lib/contexts/auth-context';
+import { useProfile } from '@/lib/services/auth';
 import { LoginModal } from '@/components/auth/login-modal';
 import type { TenantConfig } from '@/types/tenant';
+
+/**
+ * Component that automatically fetches user profile when authenticated
+ * This ensures the header shows the user's name after login
+ */
+function AuthProfileFetcher() {
+  const { isAuthenticated, setUser } = useAuth();
+  const { data: profile, isSuccess } = useProfile(isAuthenticated);
+
+  useEffect(() => {
+    if (isSuccess && profile) {
+      console.log('[AuthProfileFetcher] Setting user profile:', profile);
+      setUser(profile);
+    }
+  }, [isSuccess, profile, setUser]);
+
+  return null; // This component doesn't render anything
+}
 
 interface ProvidersProps {
   children: ReactNode;
@@ -54,6 +73,8 @@ export function Providers({ children, tenant, locale }: ProvidersProps) {
       <TenantProvider tenant={tenant} locale={locale}>
         <ApiClientProvider>
           <AuthProvider>
+            {/* Auto-fetch profile when authenticated */}
+            <AuthProfileFetcher />
             {children}
             {/* Global Login Modal - available throughout the app */}
             <LoginModal />

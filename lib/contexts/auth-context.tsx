@@ -51,12 +51,15 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const [user, setUser] = useState<UserProfile | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [loginModalOpen, setLoginModalOpen] = useState(false);
+  // Use state to track auth so React re-renders when it changes
+  const [isAuthenticatedState, setIsAuthenticatedState] = useState(false);
 
   // Check for existing auth on mount
   useEffect(() => {
     const initAuth = async () => {
       try {
         const authenticated = checkAuth();
+        setIsAuthenticatedState(authenticated);
         if (authenticated) {
           // User is authenticated but we don't have profile yet
           // Profile will be fetched separately via useProfile hook
@@ -65,6 +68,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
       } catch (error) {
         console.error('Auth init error:', error);
         clearTokens();
+        setIsAuthenticatedState(false);
       } finally {
         setIsLoading(false);
       }
@@ -74,18 +78,23 @@ export function AuthProvider({ children }: AuthProviderProps) {
   }, []);
 
   // Login - save tokens and set user
+  // Note: Does NOT close modal automatically - modal controls its own visibility
+  // This allows showing success state before closing
   const login = useCallback((tokens: AuthTokens, profile?: UserProfile) => {
+    console.log('[AuthContext] login() called with tokens');
     setTokens(tokens);
+    setIsAuthenticatedState(true); // Update state to trigger re-render
     if (profile) {
       setUser(profile);
     }
-    setLoginModalOpen(false);
+    // Don't close modal here - let the modal show success state first
   }, []);
 
   // Logout - clear everything
   const logout = useCallback(() => {
     clearTokens();
     setUser(null);
+    setIsAuthenticatedState(false);
   }, []);
 
   // Open login modal
@@ -101,8 +110,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
   // Check auth and open modal if not authenticated
   // Returns true if authenticated, false if not
   const requireAuth = useCallback((callback?: () => void): boolean => {
-    const authenticated = checkAuth() || user !== null;
-    if (!authenticated) {
+    if (!isAuthenticatedState) {
       openLoginModal();
       return false;
     }
@@ -110,11 +118,11 @@ export function AuthProvider({ children }: AuthProviderProps) {
       callback();
     }
     return true;
-  }, [user, openLoginModal]);
+  }, [isAuthenticatedState, openLoginModal]);
 
   const value: AuthContextValue = {
     user,
-    isAuthenticated: checkAuth() || user !== null,
+    isAuthenticated: isAuthenticatedState,
     isLoading,
     loginModalOpen,
     openLoginModal,

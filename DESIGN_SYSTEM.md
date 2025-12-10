@@ -82,7 +82,20 @@ All measurements, colors, and specifications must be followed exactly.
 | `--color-warning` | `#F59E0B` | Warning states |
 | `--color-error` | `#EF4444` | Error states |
 
-### 2.5 Promo Banners
+### 2.5 Interactive Tags/Pills Colors
+
+| State | Background | Hover | Text Color | Usage |
+|-------|------------|-------|------------|-------|
+| **Inactive** | `#F0F0F0` | `#E8E8E8` | `#1A1A1A` | Filter tags, price buttons, chips |
+| **Active** | `var(--color-primary)` | - | `#FFFFFF` | Selected filter, active state |
+
+**Usage Examples:**
+- Category filter pills (inactive: gray, active: brand color)
+- Price tags on product cards
+- Subcategory/company filter buttons
+- Any selectable chip/tag component
+
+### 2.6 Promo Banners
 
 **IMPORTANT: Promo banners are IMAGE-ONLY**
 
@@ -677,6 +690,13 @@ transition: background-color 150ms ease-out;
   /* UI */
   --color-border: #E5E7EB;
   --color-border-light: #F3F4F6;
+
+  /* Interactive Tags/Pills */
+  --color-tag-inactive: #F0F0F0;
+  --color-tag-inactive-hover: #E8E8E8;
+  --color-tag-active: var(--color-brand);
+  --color-tag-text: #1A1A1A;
+  --color-tag-text-active: #FFFFFF;
 
   /* Status */
   --color-success: #10B981;

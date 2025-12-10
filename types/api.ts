@@ -74,4 +74,11 @@ export interface ApiError {
   statusCode: number;
   message: string;
   errors?: Record<string, string[]>;
+  // Additional data from the API response (e.g., isVerified, isNewUser)
+  data?: {
+    isVerified?: boolean;
+    isNewUser?: boolean;
+    userId?: number;
+    [key: string]: unknown;
+  };
 }

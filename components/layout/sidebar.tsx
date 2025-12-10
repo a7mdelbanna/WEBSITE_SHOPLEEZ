@@ -88,7 +88,8 @@ export function Sidebar({
 
       {/* Main categories from API */}
       {categories?.map((category) => {
-        const isActive = category.id === activeCategoryId;
+        // Use Number() to handle potential type mismatch (string vs number)
+        const isActive = Number(category.id) === Number(activeCategoryId);
         const categoryName = getCategoryName(category);
         const categoryImage = category.imageUrl || category.iconUrl ||
           `https://images.unsplash.com/photo-1610832958506-aa56368176cf?w=80&h=80&fit=crop`;
@@ -118,7 +119,7 @@ export function Sidebar({
               className={cn(
                 'text-[14px] font-bold leading-[1.2]',
                 isActive
-                  ? 'text-[#BDBDBD]'
+                  ? 'text-[#D0D0D0]'
                   : 'text-[var(--color-text-primary)]'
               )}
             >

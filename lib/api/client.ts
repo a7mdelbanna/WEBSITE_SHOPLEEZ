@@ -178,13 +178,55 @@ export function createApiClient(
       }
 
       // Transform error for consistency
+      // API returns various formats:
+      // 1. { result: { code, message }, data: {...} }
+      // 2. { "Phone Number Not Verified": ["The phone number not veified!!"] }
+      // 3. { message: "..." }
+      const responseData = error.response?.data;
+
+      // Debug log for API errors
+      console.log('API Error Response:', {
+        status: error.response?.status,
+        data: responseData,
+        url: error.config?.url,
+      });
+
+      // Extract error message from various response formats
+      let apiMessage = 'An unexpected error occurred';
+
+      if (responseData) {
+        if (responseData.result?.message) {
+          // Format 1: { result: { message } }
+          apiMessage = responseData.result.message;
+        } else if (responseData.message) {
+          // Format 3: { message }
+          apiMessage = responseData.message;
+        } else if (typeof responseData === 'object') {
+          // Format 2: { "Key": ["message"] } - validation errors
+          const keys = Object.keys(responseData);
+          if (keys.length > 0) {
+            const firstKey = keys[0];
+            const value = responseData[firstKey];
+            if (Array.isArray(value) && value.length > 0) {
+              apiMessage = value[0];
+            } else if (typeof value === 'string') {
+              apiMessage = value;
+            }
+          }
+        }
+      }
+
+      // Fallback to axios error message
+      if (apiMessage === 'An unexpected error occurred' && error.message) {
+        apiMessage = error.message;
+      }
+
       const apiError: ApiError = {
         statusCode: error.response?.status || 500,
-        message:
-          error.response?.data?.message ||
-          error.message ||
-          'An unexpected error occurred',
-        errors: error.response?.data?.errors,
+        message: apiMessage,
+        errors: responseData?.errors,
+        // Preserve the full API response data for detailed error handling
+        data: responseData?.data || responseData,
       };
 
       return Promise.reject(apiError);

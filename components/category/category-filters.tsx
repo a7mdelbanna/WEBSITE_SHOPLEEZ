@@ -145,8 +145,8 @@ export function CategoryFilters({
         <button
           className={cn(
             'flex items-center justify-center h-[44px] w-[44px] rounded-full shrink-0',
-            'bg-white border border-[var(--color-border)] text-[var(--color-text-primary)]',
-            'hover:bg-[var(--color-bg-input)] transition-colors duration-200'
+            'bg-[#F0F0F0] text-[var(--color-text-primary)]',
+            'hover:bg-[#E8E8E8] transition-colors duration-200'
           )}
         >
           <SlidersHorizontal className="w-[20px] h-[20px]" />
@@ -156,8 +156,8 @@ export function CategoryFilters({
         <button
           className={cn(
             'h-[44px] px-[24px] rounded-full shrink-0',
-            'bg-white border border-[var(--color-border)] text-[var(--color-text-primary)]',
-            'hover:bg-[var(--color-bg-input)] transition-colors duration-200',
+            'bg-[#F0F0F0] text-[var(--color-text-primary)]',
+            'hover:bg-[#E8E8E8] transition-colors duration-200',
             'text-[15px] font-medium'
           )}
         >
