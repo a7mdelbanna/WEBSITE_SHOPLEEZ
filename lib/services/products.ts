@@ -28,6 +28,8 @@ export const productQueryKeys = {
     [...productQueryKeys.all, 'barcode', storeId, barcode] as const,
   byCategory: (storeId: number, categoryId: number, filters?: ProductFilters) =>
     [...productQueryKeys.all, 'category', storeId, categoryId, filters] as const,
+  search: (storeId: number, query: string) =>
+    [...productQueryKeys.all, 'search', storeId, query] as const,
 };
 
 /**
@@ -400,5 +402,42 @@ function normalizeProductItem(item: Record<string, unknown>): ProductSummary {
       amount: (item.smallUnit as Record<string, unknown>).amount as number || 1,
       price: smallUnitPrice || 0,
     } : undefined,
+    // Stock & availability validation fields
+    itemAmount: item.itemAmount as number | undefined,
+    isMaximumAmountForUser: item.isMaximumAmountForUser as boolean | undefined,
+    maximumAmountForUser: item.maximumAmountForUser as number | undefined,
   };
+}
+
+/**
+ * Search products by query
+ * Uses GET /RetailAPI/Customer/Item/GetAllItems/{storeId}?searchQuery={query}
+ * Following Flutter implementation with 1-second debounce on the UI side
+ */
+export function useSearchProducts(query: string, enabled = true) {
+  const { apiClient, storeId, buildEndpoint } = useApiClient();
+
+  return useQuery<ProductSummary[]>({
+    queryKey: productQueryKeys.search(storeId, query),
+    queryFn: async () => {
+      if (!query.trim()) return [];
+
+      const url = buildEndpoint(API_ENDPOINTS.products.getAll);
+      const { data } = await apiClient.get(url, {
+        params: {
+          searchQuery: query.trim(),
+          pageNumber: 1,
+          pageSize: 20,
+        },
+      });
+      // API returns { result: {...}, data: [...] } - extract the array
+      const items = data.data || data.items || data || [];
+      // Normalize product items with all stock validation fields
+      return Array.isArray(items) ? items.map(normalizeProductItem) : [];
+    },
+    enabled: enabled && query.trim().length >= 2, // Only search if 2+ characters
+    staleTime: 30 * 1000, // 30 seconds - search results can change
+    gcTime: 5 * 60 * 1000, // 5 minutes
+    placeholderData: (previousData) => previousData, // Keep showing old results while loading new
+  });
 }

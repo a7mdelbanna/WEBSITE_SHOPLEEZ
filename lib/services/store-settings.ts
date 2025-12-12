@@ -32,6 +32,8 @@ export interface StoreSettings {
   workingHoursStart: string;
   workingHoursEnd: string;
   isOpen: boolean;
+  // Address creation mode: ByArea = dropdowns, ByDistance = text inputs
+  deliveryFeeType: 'ByArea' | 'ByDistance';
 }
 
 /**
@@ -72,6 +74,8 @@ export function useStoreSettings() {
         workingHoursStart: settings.workingHoursStart || '08:00',
         workingHoursEnd: settings.workingHoursEnd || '22:00',
         isOpen: settings.isOpen ?? true,
+        // Address mode: ByArea = dropdowns, ByDistance = text inputs (default to ByArea)
+        deliveryFeeType: settings.deliveryFeeType === 'ByDistance' ? 'ByDistance' : 'ByArea',
       };
     },
     staleTime: 5 * 60 * 1000, // 5 minutes - settings don't change frequently

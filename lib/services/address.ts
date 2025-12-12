@@ -3,11 +3,19 @@
 /**
  * Address Service
  *
- * React Query hooks for address management matching Flutter app flow:
+ * React Query hooks for address management matching Flutter app flow EXACTLY:
  * - Get cities list
  * - Get areas by city
- * - Create address (by area)
+ * - Create address (4 endpoints based on mode + user type)
  * - Confirm address location (with lat/lng)
+ *
+ * Modes (from store settings deliveryFeeType):
+ * - ByArea: City/Area dropdowns
+ * - ByDistance: City/Area text inputs
+ *
+ * User Types:
+ * - Customer: Has building/floor/apartment fields
+ * - Shop: Has detailed address only
  */
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
@@ -16,6 +24,9 @@ import { API_ENDPOINTS } from '@/lib/api/endpoints';
 import { buildUrl } from '@/lib/api/client';
 
 // ============== Types ==============
+
+export type AddressMode = 'ByArea' | 'ByDistance';
+export type UserType = 'Customer' | 'Shop';
 
 export interface City {
   id: number;
@@ -32,17 +43,25 @@ export interface Area {
   cityId?: number;
 }
 
+/**
+ * Request body for creating address
+ * Fields are included conditionally based on mode and user type
+ */
 export interface AddAddressRequest {
+  // Required fields
   addressName: string;
   cityId: string;
   areaId: string;
   street: string;
-  detailedAddress: string;
+  isForMe: boolean;
+  // Optional fields
+  detailedAddress?: string;
+  deliveryNotes?: string;
+  // Customer-only fields (building, floor, apartment)
   building?: string;
   floor?: string;
   apartment?: string;
-  isForMe: boolean;
-  deliveryNotes?: string;
+  // "For Someone Else" recipient fields (when isForMe = false)
   name?: string;
   lastName?: string;
   phone?: string;
@@ -152,25 +171,92 @@ export function useGetValidAddressId() {
 }
 
 /**
- * Create customer address by area
+ * Helper to build request body based on mode
+ * ByArea uses: areaId, cityId (numeric IDs from dropdown selection)
+ * ByDistance uses: areaName, cityName (can be text strings from text input)
  */
-export function useCreateAddress() {
+function buildAddressRequestBody(
+  data: AddAddressRequest,
+  addressId: number,
+  mode: AddressMode,
+  userType: UserType
+): Record<string, unknown> {
+  const base: Record<string, unknown> = {
+    id: addressId,
+    addressName: data.addressName,
+    street: data.street,
+    detailedAddress: data.detailedAddress || '',
+    deliveryNotes: data.deliveryNotes || '',
+    isForMe: data.isForMe,
+  };
+
+  // City/Area fields differ by mode
+  if (mode === 'ByArea') {
+    // ByArea mode: parse IDs from stringified numbers (e.g., "45" -> 45)
+    base.cityId = parseInt(data.cityId, 10);
+    base.areaId = parseInt(data.areaId, 10);
+  } else {
+    // ByDistance mode: can be either numeric IDs or text strings
+    // Check if values are numeric, otherwise send as text
+    const cityValue = parseInt(data.cityId, 10);
+    const areaValue = parseInt(data.areaId, 10);
+    base.cityName = isNaN(cityValue) ? data.cityId : cityValue;
+    base.areaName = isNaN(areaValue) ? data.areaId : areaValue;
+  }
+
+  // Customer-only fields
+  if (userType === 'Customer') {
+    base.building = data.building || '';
+    base.floor = data.floor || '';
+    base.apartment = data.apartment || '';
+  }
+
+  // Recipient fields (when not for me)
+  if (!data.isForMe) {
+    base.name = data.name || '';
+    base.lastName = data.lastName || '';
+    base.phone = data.phone || '';
+  }
+
+  return base;
+}
+
+/**
+ * Get the correct endpoint based on mode and user type
+ */
+function getCreateAddressEndpoint(mode: AddressMode, userType: UserType): string {
+  if (userType === 'Customer') {
+    return mode === 'ByArea'
+      ? API_ENDPOINTS.addresses.createByArea
+      : API_ENDPOINTS.addresses.createByDistance;
+  } else {
+    return mode === 'ByArea'
+      ? API_ENDPOINTS.addresses.createShopByArea
+      : API_ENDPOINTS.addresses.createShopByDistance;
+  }
+}
+
+/**
+ * Create Customer Address by Area
+ */
+export function useCreateCustomerAddressByArea() {
   const { apiClient, storeId } = useApiClient();
   const queryClient = useQueryClient();
+  const getValidId = useGetValidAddressId();
 
   return useMutation({
     mutationFn: async (data: AddAddressRequest): Promise<{ addressId: number; message?: string }> => {
+      // Get valid address ID first
+      const addressId = await getValidId.mutateAsync();
       const url = buildUrl(API_ENDPOINTS.addresses.createByArea, storeId);
-      console.log('[Address] Creating address:', data);
-      const response = await apiClient.post(url, data);
+      const body = buildAddressRequestBody(data, addressId, 'ByArea', 'Customer');
+
+      console.log('[Address] Creating customer address (ByArea):', body);
+      const response = await apiClient.post(url, body);
       console.log('[Address] Create response:', response.data);
 
-      // Extract addressId from response
-      const responseData = response.data?.data || response.data;
-      const addressId = responseData?.addressId || responseData?.id || responseData;
-
       return {
-        addressId: Number(addressId),
+        addressId,
         message: response.data?.result?.message,
       };
     },
@@ -178,6 +264,101 @@ export function useCreateAddress() {
       queryClient.invalidateQueries({ queryKey: ['addresses'] });
     },
   });
+}
+
+/**
+ * Create Customer Address by Distance
+ */
+export function useCreateCustomerAddressByDistance() {
+  const { apiClient, storeId } = useApiClient();
+  const queryClient = useQueryClient();
+  const getValidId = useGetValidAddressId();
+
+  return useMutation({
+    mutationFn: async (data: AddAddressRequest): Promise<{ addressId: number; message?: string }> => {
+      const addressId = await getValidId.mutateAsync();
+      const url = buildUrl(API_ENDPOINTS.addresses.createByDistance, storeId);
+      const body = buildAddressRequestBody(data, addressId, 'ByDistance', 'Customer');
+
+      console.log('[Address] Creating customer address (ByDistance):', body);
+      const response = await apiClient.post(url, body);
+      console.log('[Address] Create response:', response.data);
+
+      return {
+        addressId,
+        message: response.data?.result?.message,
+      };
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['addresses'] });
+    },
+  });
+}
+
+/**
+ * Create Shop Address by Area
+ */
+export function useCreateShopAddressByArea() {
+  const { apiClient, storeId } = useApiClient();
+  const queryClient = useQueryClient();
+  const getValidId = useGetValidAddressId();
+
+  return useMutation({
+    mutationFn: async (data: AddAddressRequest): Promise<{ addressId: number; message?: string }> => {
+      const addressId = await getValidId.mutateAsync();
+      const url = buildUrl(API_ENDPOINTS.addresses.createShopByArea, storeId);
+      const body = buildAddressRequestBody(data, addressId, 'ByArea', 'Shop');
+
+      console.log('[Address] Creating shop address (ByArea):', body);
+      const response = await apiClient.post(url, body);
+      console.log('[Address] Create response:', response.data);
+
+      return {
+        addressId,
+        message: response.data?.result?.message,
+      };
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['addresses'] });
+    },
+  });
+}
+
+/**
+ * Create Shop Address by Distance
+ */
+export function useCreateShopAddressByDistance() {
+  const { apiClient, storeId } = useApiClient();
+  const queryClient = useQueryClient();
+  const getValidId = useGetValidAddressId();
+
+  return useMutation({
+    mutationFn: async (data: AddAddressRequest): Promise<{ addressId: number; message?: string }> => {
+      const addressId = await getValidId.mutateAsync();
+      const url = buildUrl(API_ENDPOINTS.addresses.createShopByDistance, storeId);
+      const body = buildAddressRequestBody(data, addressId, 'ByDistance', 'Shop');
+
+      console.log('[Address] Creating shop address (ByDistance):', body);
+      const response = await apiClient.post(url, body);
+      console.log('[Address] Create response:', response.data);
+
+      return {
+        addressId,
+        message: response.data?.result?.message,
+      };
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['addresses'] });
+    },
+  });
+}
+
+/**
+ * Legacy: Create address (uses customer + ByArea by default)
+ * @deprecated Use useCreateCustomerAddressByArea, useCreateCustomerAddressByDistance, etc.
+ */
+export function useCreateAddress() {
+  return useCreateCustomerAddressByArea();
 }
 
 /**

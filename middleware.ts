@@ -16,6 +16,7 @@ const TENANT_DOMAINS: Record<string, { tenantId: string; storeId: number }> = {
   'store1.shopleez.com': { tenantId: 'store1', storeId: 1 },
   'localhost:3000': { tenantId: 'store1', storeId: 1 },
   'localhost:3001': { tenantId: 'store1', storeId: 1 },
+  'localhost:8080': { tenantId: 'store1', storeId: 1 },
 
   // Store 20 - Alam El-Gomla
   'alamelgomla.shopleez.com': { tenantId: 'store20', storeId: 20 },

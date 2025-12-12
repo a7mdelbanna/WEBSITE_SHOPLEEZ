@@ -34,7 +34,8 @@
     "noProducts": "No products available",
     "allBrands": "All Brands",
     "all": "All",
-    "home": "Home"
+    "home": "Home",
+    "cart": "Shopping Cart"
   },
   "category": {
     "filters": "Filters",
@@ -120,6 +121,7 @@
     "bigUnit": "Big Unit",
     "smallUnit": "Small Unit",
     "discount": "Discount",
+    "maxQuantityReached": "Maximum quantity reached",
     "pricePerUnit": "Price per unit",
     "originalPrice": "Original Price",
     "savings": "You save",

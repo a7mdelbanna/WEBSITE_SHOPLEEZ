@@ -42,10 +42,13 @@ import {
 import {
   useCities,
   useAreas,
-  useCreateAddress,
+  useCreateCustomerAddressByArea,
+  useCreateCustomerAddressByDistance,
   useConfirmLocation,
   type City,
   type Area,
+  type AddressMode,
+  type AddAddressRequest,
 } from '@/lib/services/address';
 import { cn } from '@/lib/utils';
 
@@ -83,12 +86,26 @@ export function LoginModal() {
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
 
-  // Address state
+  // Address state (matching Flutter add_new_address module EXACTLY)
+  const [addressMode, setAddressMode] = useState<AddressMode>('ByArea');
+  const [addressName, setAddressName] = useState('');
   const [selectedCity, setSelectedCity] = useState<City | null>(null);
   const [selectedArea, setSelectedArea] = useState<Area | null>(null);
+  const [cityText, setCityText] = useState(''); // For ByDistance mode
+  const [areaText, setAreaText] = useState(''); // For ByDistance mode
   const [street, setStreet] = useState('');
   const [detailedAddress, setDetailedAddress] = useState('');
+  const [building, setBuilding] = useState('');
+  const [floor, setFloor] = useState('');
+  const [apartment, setApartment] = useState('');
+  const [deliveryNotes, setDeliveryNotes] = useState('');
   const [addressId, setAddressId] = useState<number | null>(null);
+
+  // "For Someone Else" toggle state (matching Flutter)
+  const [isForOther, setIsForOther] = useState(false);
+  const [recipientName, setRecipientName] = useState('');
+  const [recipientLastName, setRecipientLastName] = useState('');
+  const [recipientPhone, setRecipientPhone] = useState('');
 
   // Location state (for confirm-location step)
   const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
@@ -105,12 +122,20 @@ export function LoginModal() {
   const verifyOtp = useVerifyOtp();
   const resendOtp = useResendOtp();
   const registerUser = useRegisterUser();
-  const createAddress = useCreateAddress();
+  const createAddressByArea = useCreateCustomerAddressByArea();
+  const createAddressByDistance = useCreateCustomerAddressByDistance();
   const confirmLocation = useConfirmLocation();
 
   // Queries
   const { data: cities = [], isLoading: citiesLoading } = useCities();
   const { data: areas = [], isLoading: areasLoading } = useAreas(selectedCity?.id || null);
+
+  // Set address mode from store settings
+  useEffect(() => {
+    if (storeSettings?.deliveryFeeType) {
+      setAddressMode(storeSettings.deliveryFeeType);
+    }
+  }, [storeSettings?.deliveryFeeType]);
 
   // Reset state when modal closes
   useEffect(() => {
@@ -125,11 +150,25 @@ export function LoginModal() {
         setShowConfirmPassword(false);
         setFirstName('');
         setLastName('');
+        // Reset address state
+        setAddressName('');
         setSelectedCity(null);
         setSelectedArea(null);
+        setCityText('');
+        setAreaText('');
         setStreet('');
         setDetailedAddress('');
+        setBuilding('');
+        setFloor('');
+        setApartment('');
+        setDeliveryNotes('');
         setAddressId(null);
+        // Reset "for someone else" state
+        setIsForOther(false);
+        setRecipientName('');
+        setRecipientLastName('');
+        setRecipientPhone('');
+        // Reset location state
         setUserLocation(null);
         setError('');
         setResendTimer(0);
@@ -322,35 +361,74 @@ export function LoginModal() {
   };
 
   /**
-   * Step 5: Add Address
-   * Collect city, area, street, detailed address
+   * Step 5: Add Address (matching Flutter add_new_address module EXACTLY)
+   *
+   * Form validation rules from Flutter:
+   * - Always required: addressName, city, area, street
+   * - Required if "For Someone Else": recipientName, recipientLastName, recipientPhone
+   * - Optional: building, floor, apartment, detailedAddress, deliveryNotes
    */
+  const isAddressFormValid = (): boolean => {
+    // Address name required
+    if (!addressName.trim()) return false;
+
+    // City/Area required (different validation for ByArea vs ByDistance)
+    if (addressMode === 'ByArea') {
+      if (!selectedCity || !selectedArea) return false;
+    } else {
+      if (!cityText.trim() || !areaText.trim()) return false;
+    }
+
+    // Street required
+    if (!street.trim()) return false;
+
+    // Recipient fields required if "For Someone Else" is enabled
+    if (isForOther) {
+      if (!recipientName.trim()) return false;
+      if (!recipientLastName.trim()) return false;
+      if (!recipientPhone.trim()) return false;
+    }
+
+    return true;
+  };
+
   const handleAddAddressSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
 
-    if (!selectedCity) {
-      setError(isRTL ? 'يرجى اختيار المدينة' : 'Please select a city');
-      return;
-    }
-    if (!selectedArea) {
-      setError(isRTL ? 'يرجى اختيار المنطقة' : 'Please select an area');
-      return;
-    }
-    if (!detailedAddress.trim()) {
-      setError(isRTL ? 'يرجى إدخال العنوان التفصيلي' : 'Please enter detailed address');
+    if (!isAddressFormValid()) {
+      setError(isRTL ? 'يرجى ملء جميع الحقول المطلوبة' : 'Please fill all required fields');
       return;
     }
 
     try {
-      const result = await createAddress.mutateAsync({
-        addressName: isRTL ? 'عنواني' : 'My address',
-        cityId: String(selectedCity.id),
-        areaId: String(selectedArea.id),
-        street: street.trim() || detailedAddress.trim(),
+      // Build request matching Flutter AddAddressRequest
+      const request: AddAddressRequest = {
+        addressName: addressName.trim(),
+        cityId: addressMode === 'ByArea' ? String(selectedCity!.id) : cityText.trim(),
+        areaId: addressMode === 'ByArea' ? String(selectedArea!.id) : areaText.trim(),
+        street: street.trim(),
         detailedAddress: detailedAddress.trim(),
-        isForMe: true,
-      });
+        isForMe: !isForOther,
+        // Customer-only fields
+        building: building.trim(),
+        floor: floor.trim(),
+        apartment: apartment.trim(),
+        deliveryNotes: deliveryNotes.trim(),
+        // Recipient fields (only included when isForOther is true)
+        ...(isForOther && {
+          name: recipientName.trim(),
+          lastName: recipientLastName.trim(),
+          phone: recipientPhone.trim(),
+        }),
+      };
+
+      console.log('[LoginModal] Creating address with mode:', addressMode, request);
+
+      // Use correct mutation based on mode
+      const result = addressMode === 'ByArea'
+        ? await createAddressByArea.mutateAsync(request)
+        : await createAddressByDistance.mutateAsync(request);
 
       console.log('[LoginModal] Address created:', result);
       setAddressId(result.addressId);
@@ -475,7 +553,7 @@ export function LoginModal() {
     }
   };
 
-  const isLoading = loginByPhone.isPending || verifyOtp.isPending || registerUser.isPending || createAddress.isPending || confirmLocation.isPending;
+  const isLoading = loginByPhone.isPending || verifyOtp.isPending || registerUser.isPending || createAddressByArea.isPending || createAddressByDistance.isPending || confirmLocation.isPending;
   const BackIcon = isRTL ? ArrowRight : ArrowLeft;
 
   // ============== RENDER ==============
@@ -743,39 +821,85 @@ export function LoginModal() {
             </form>
           )}
 
-          {/* Add Address Step */}
+          {/* Add Address Step - Matching Flutter add_new_address EXACTLY */}
           {step === 'add-address' && (
             <form onSubmit={handleAddAddressSubmit} className="space-y-4">
-              {/* City Dropdown */}
-              {renderDropdown(
-                isRTL ? 'المدينة' : 'City',
-                selectedCity,
-                cities,
-                (city) => {
-                  setSelectedCity(city as City);
-                  setSelectedArea(null);
-                },
-                showCityDropdown,
-                setShowCityDropdown,
-                citiesLoading,
-                isRTL ? 'اختر المدينة' : 'Select city'
-              )}
-
-              {/* Area Dropdown */}
-              {renderDropdown(
-                isRTL ? 'المنطقة' : 'Area',
-                selectedArea,
-                areas,
-                (area) => setSelectedArea(area as Area),
-                showAreaDropdown,
-                setShowAreaDropdown,
-                areasLoading,
-                isRTL ? 'اختر المنطقة' : 'Select area'
-              )}
-
-              {/* Street (optional) */}
+              {/* Address Name (Required) */}
               <div>
-                <label className="block text-[14px] font-medium text-[#1A1A1A] mb-2">{isRTL ? 'الشارع (اختياري)' : 'Street (optional)'}</label>
+                <label className="block text-[14px] font-medium text-[#1A1A1A] mb-2">
+                  {isRTL ? 'اسم العنوان' : 'Address Name'} <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  value={addressName}
+                  onChange={(e) => setAddressName(e.target.value)}
+                  placeholder={isRTL ? 'مثال: المنزل، العمل' : 'e.g., Home, Office'}
+                  className="w-full h-[52px] rounded-[16px] bg-[#F0F0F0] px-4 text-[15px] text-[#1A1A1A] placeholder-[#9CA3AF] outline-none focus:ring-2 focus:ring-[var(--color-primary)]"
+                />
+              </div>
+
+              {/* City - Dropdown (ByArea) or Text Input (ByDistance) */}
+              {addressMode === 'ByArea' ? (
+                renderDropdown(
+                  (isRTL ? 'المدينة' : 'City') + ' *',
+                  selectedCity,
+                  cities,
+                  (city) => {
+                    setSelectedCity(city as City);
+                    setSelectedArea(null);
+                  },
+                  showCityDropdown,
+                  setShowCityDropdown,
+                  citiesLoading,
+                  isRTL ? 'اختر المدينة' : 'Select city'
+                )
+              ) : (
+                <div>
+                  <label className="block text-[14px] font-medium text-[#1A1A1A] mb-2">
+                    {isRTL ? 'المدينة' : 'City'} <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    value={cityText}
+                    onChange={(e) => setCityText(e.target.value)}
+                    placeholder={isRTL ? 'أدخل اسم المدينة' : 'Enter city name'}
+                    className="w-full h-[52px] rounded-[16px] bg-[#F0F0F0] px-4 text-[15px] text-[#1A1A1A] placeholder-[#9CA3AF] outline-none focus:ring-2 focus:ring-[var(--color-primary)]"
+                  />
+                </div>
+              )}
+
+              {/* Area - Dropdown (ByArea) or Text Input (ByDistance) */}
+              {addressMode === 'ByArea' ? (
+                renderDropdown(
+                  (isRTL ? 'المنطقة' : 'Area') + ' *',
+                  selectedArea,
+                  areas,
+                  (area) => setSelectedArea(area as Area),
+                  showAreaDropdown,
+                  setShowAreaDropdown,
+                  areasLoading,
+                  isRTL ? 'اختر المنطقة' : 'Select area'
+                )
+              ) : (
+                <div>
+                  <label className="block text-[14px] font-medium text-[#1A1A1A] mb-2">
+                    {isRTL ? 'المنطقة' : 'Area'} <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    value={areaText}
+                    onChange={(e) => setAreaText(e.target.value)}
+                    placeholder={isRTL ? 'أدخل اسم المنطقة' : 'Enter area name'}
+                    className="w-full h-[52px] rounded-[16px] bg-[#F0F0F0] px-4 text-[15px] text-[#1A1A1A] placeholder-[#9CA3AF] outline-none focus:ring-2 focus:ring-[var(--color-primary)]"
+                  />
+                </div>
+              )}
+
+              {/* Street (Required) */}
+              <div>
+                <label className="block text-[14px] font-medium text-[#1A1A1A] mb-2">
+                  {isRTL ? 'الشارع' : 'Street'} <span className="text-red-500">*</span>
+                </label>
                 <input
                   type="text"
                   value={street}
@@ -785,33 +909,141 @@ export function LoginModal() {
                 />
               </div>
 
-              {/* Detailed Address */}
-              <div>
-                <label className="block text-[14px] font-medium text-[#1A1A1A] mb-2">{isRTL ? 'العنوان التفصيلي' : 'Detailed Address'}</label>
-                <div className="relative">
-                  <div className={cn("absolute top-4 text-[#6B7280]", isRTL ? "right-4" : "left-4")}><MapPin className="h-5 w-5" /></div>
-                  <textarea
-                    value={detailedAddress}
-                    onChange={(e) => setDetailedAddress(e.target.value)}
-                    placeholder={isRTL ? 'رقم المبنى، الطابق، شقة، علامة مميزة...' : 'Building number, floor, apartment, landmark...'}
-                    rows={3}
-                    className={cn(
-                      "w-full rounded-[16px] bg-[#F0F0F0] py-3 text-[15px] text-[#1A1A1A] placeholder-[#9CA3AF] outline-none focus:ring-2 focus:ring-[var(--color-primary)] resize-none",
-                      isRTL ? "pr-12 pl-4" : "pl-12 pr-4"
-                    )}
+              {/* Building / Floor / Apartment - Customer only, 3 fields in row */}
+              <div className="flex gap-2">
+                <div className="flex-1">
+                  <label className="block text-[13px] font-medium text-[#1A1A1A] mb-2">
+                    {isRTL ? 'المبنى' : 'Building'}
+                  </label>
+                  <input
+                    type="text"
+                    value={building}
+                    onChange={(e) => setBuilding(e.target.value)}
+                    placeholder={isRTL ? 'رقم' : 'No.'}
+                    className="w-full h-[48px] rounded-[12px] bg-[#F0F0F0] px-3 text-[14px] text-[#1A1A1A] placeholder-[#9CA3AF] outline-none focus:ring-2 focus:ring-[var(--color-primary)]"
                   />
                 </div>
+                <div className="flex-1">
+                  <label className="block text-[13px] font-medium text-[#1A1A1A] mb-2">
+                    {isRTL ? 'الطابق' : 'Floor'}
+                  </label>
+                  <input
+                    type="text"
+                    value={floor}
+                    onChange={(e) => setFloor(e.target.value)}
+                    placeholder={isRTL ? 'رقم' : 'No.'}
+                    className="w-full h-[48px] rounded-[12px] bg-[#F0F0F0] px-3 text-[14px] text-[#1A1A1A] placeholder-[#9CA3AF] outline-none focus:ring-2 focus:ring-[var(--color-primary)]"
+                  />
+                </div>
+                <div className="flex-1">
+                  <label className="block text-[13px] font-medium text-[#1A1A1A] mb-2">
+                    {isRTL ? 'الشقة' : 'Apt'}
+                  </label>
+                  <input
+                    type="text"
+                    value={apartment}
+                    onChange={(e) => setApartment(e.target.value)}
+                    placeholder={isRTL ? 'رقم' : 'No.'}
+                    className="w-full h-[48px] rounded-[12px] bg-[#F0F0F0] px-3 text-[14px] text-[#1A1A1A] placeholder-[#9CA3AF] outline-none focus:ring-2 focus:ring-[var(--color-primary)]"
+                  />
+                </div>
+              </div>
+
+              {/* Detailed Address (Optional) */}
+              <div>
+                <label className="block text-[14px] font-medium text-[#1A1A1A] mb-2">
+                  {isRTL ? 'العنوان التفصيلي' : 'Detailed Address'}
+                </label>
+                <input
+                  type="text"
+                  value={detailedAddress}
+                  onChange={(e) => setDetailedAddress(e.target.value)}
+                  placeholder={isRTL ? 'علامة مميزة، وصف إضافي...' : 'Landmark, additional description...'}
+                  className="w-full h-[52px] rounded-[16px] bg-[#F0F0F0] px-4 text-[15px] text-[#1A1A1A] placeholder-[#9CA3AF] outline-none focus:ring-2 focus:ring-[var(--color-primary)]"
+                />
+              </div>
+
+              {/* Delivery Notes (Optional) */}
+              <div>
+                <label className="block text-[14px] font-medium text-[#1A1A1A] mb-2">
+                  {isRTL ? 'ملاحظات التوصيل' : 'Delivery Notes'}
+                </label>
+                <textarea
+                  value={deliveryNotes}
+                  onChange={(e) => setDeliveryNotes(e.target.value)}
+                  placeholder={isRTL ? 'تعليمات خاصة للتوصيل...' : 'Special delivery instructions...'}
+                  rows={2}
+                  className="w-full rounded-[16px] bg-[#F0F0F0] px-4 py-3 text-[15px] text-[#1A1A1A] placeholder-[#9CA3AF] outline-none focus:ring-2 focus:ring-[var(--color-primary)] resize-none"
+                />
+              </div>
+
+              {/* "For Someone Else" Toggle Section - Matching Flutter */}
+              <div className="bg-[#F3F4F6] rounded-[12px] p-4">
+                <div className="flex items-center justify-between">
+                  <span className="text-[14px] font-medium text-[#1A1A1A]">
+                    {isRTL ? 'هذا العنوان لشخص آخر' : "This is someone else's address"}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => setIsForOther(!isForOther)}
+                    className={cn(
+                      "relative w-[44px] h-[24px] rounded-full transition-colors",
+                      isForOther ? "bg-[var(--color-primary)]" : "bg-[#D1D5DB]"
+                    )}
+                  >
+                    <span
+                      className={cn(
+                        "absolute top-[2px] w-[20px] h-[20px] rounded-full bg-white transition-transform shadow-sm",
+                        isForOther ? (isRTL ? "left-[2px]" : "right-[2px]") : (isRTL ? "right-[2px]" : "left-[2px]")
+                      )}
+                    />
+                  </button>
+                </div>
+
+                {/* Recipient fields - shown when toggle is ON */}
+                {isForOther && (
+                  <div className="mt-4 space-y-3">
+                    <div className="flex gap-2">
+                      <div className="flex-1">
+                        <input
+                          type="text"
+                          value={recipientName}
+                          onChange={(e) => setRecipientName(e.target.value)}
+                          placeholder={isRTL ? 'الاسم الأول *' : 'First Name *'}
+                          className="w-full h-[48px] rounded-[12px] bg-white px-3 text-[14px] text-[#1A1A1A] placeholder-[#9CA3AF] outline-none focus:ring-2 focus:ring-[var(--color-primary)] border border-[#E5E5E5]"
+                        />
+                      </div>
+                      <div className="flex-1">
+                        <input
+                          type="text"
+                          value={recipientLastName}
+                          onChange={(e) => setRecipientLastName(e.target.value)}
+                          placeholder={isRTL ? 'اسم العائلة *' : 'Last Name *'}
+                          className="w-full h-[48px] rounded-[12px] bg-white px-3 text-[14px] text-[#1A1A1A] placeholder-[#9CA3AF] outline-none focus:ring-2 focus:ring-[var(--color-primary)] border border-[#E5E5E5]"
+                        />
+                      </div>
+                    </div>
+                    <input
+                      type="tel"
+                      value={recipientPhone}
+                      onChange={(e) => setRecipientPhone(e.target.value.replace(/\D/g, ''))}
+                      placeholder={isRTL ? 'رقم الهاتف *' : 'Phone Number *'}
+                      dir="ltr"
+                      className="w-full h-[48px] rounded-[12px] bg-white px-3 text-[14px] text-[#1A1A1A] placeholder-[#9CA3AF] outline-none focus:ring-2 focus:ring-[var(--color-primary)] border border-[#E5E5E5]"
+                    />
+                  </div>
+                )}
               </div>
 
               {error && <p className="text-[13px] text-red-500 text-center">{error}</p>}
 
               <button
                 type="submit"
-                disabled={isLoading || !selectedCity || !selectedArea || !detailedAddress.trim()}
+                disabled={isLoading || !isAddressFormValid()}
                 className="w-full h-[52px] rounded-full text-white text-[16px] font-semibold disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                 style={{ backgroundColor: 'var(--color-primary)' }}
               >
-                {isLoading ? <Loader2 className="h-5 w-5 animate-spin" /> : t('common.next')}
+                {isLoading ? <Loader2 className="h-5 w-5 animate-spin" /> : (isRTL ? 'حفظ العنوان' : 'Save Address')}
               </button>
             </form>
           )}

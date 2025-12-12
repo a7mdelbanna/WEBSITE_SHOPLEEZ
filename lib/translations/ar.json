@@ -34,7 +34,8 @@
     "noProducts": "لا توجد منتجات متاحة",
     "allBrands": "كل العلامات التجارية",
     "all": "الكل",
-    "home": "الرئيسية"
+    "home": "الرئيسية",
+    "cart": "سلة التسوق"
   },
   "category": {
     "filters": "فلاتر",
@@ -120,6 +121,7 @@
     "bigUnit": "الوحدة الكبيرة",
     "smallUnit": "الوحدة الصغيرة",
     "discount": "خصم",
+    "maxQuantityReached": "تم الوصول للحد الأقصى",
     "pricePerUnit": "السعر للوحدة",
     "originalPrice": "السعر الأصلي",
     "savings": "وفرت",

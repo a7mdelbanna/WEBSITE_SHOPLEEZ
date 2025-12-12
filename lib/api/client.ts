@@ -167,9 +167,9 @@ export function createApiClient(
         } catch (refreshError) {
           // Refresh failed - logout user
           clearTokens();
-          // Redirect to login
+          // Redirect to home - the login modal will be triggered when user tries authenticated action
           if (typeof window !== 'undefined') {
-            window.location.href = '/login';
+            window.location.href = '/';
           }
           return Promise.reject(refreshError);
         } finally {
@@ -182,7 +182,7 @@ export function createApiClient(
       // 1. { result: { code, message }, data: {...} }
       // 2. { "Phone Number Not Verified": ["The phone number not veified!!"] }
       // 3. { message: "..." }
-      const responseData = error.response?.data;
+      const responseData = error.response?.data as Record<string, unknown> | undefined;
 
       // Debug log for API errors
       console.log('API Error Response:', {
@@ -195,10 +195,11 @@ export function createApiClient(
       let apiMessage = 'An unexpected error occurred';
 
       if (responseData) {
-        if (responseData.result?.message) {
+        const resultObj = responseData.result as { message?: string } | undefined;
+        if (resultObj?.message) {
           // Format 1: { result: { message } }
-          apiMessage = responseData.result.message;
-        } else if (responseData.message) {
+          apiMessage = resultObj.message;
+        } else if (typeof responseData.message === 'string') {
           // Format 3: { message }
           apiMessage = responseData.message;
         } else if (typeof responseData === 'object') {
@@ -224,9 +225,9 @@ export function createApiClient(
       const apiError: ApiError = {
         statusCode: error.response?.status || 500,
         message: apiMessage,
-        errors: responseData?.errors,
+        errors: responseData?.errors as Record<string, string[]> | undefined,
         // Preserve the full API response data for detailed error handling
-        data: responseData?.data || responseData,
+        data: (responseData?.data || responseData) as Record<string, unknown> | undefined,
       };
 
       return Promise.reject(apiError);

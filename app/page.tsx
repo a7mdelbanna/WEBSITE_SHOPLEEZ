@@ -29,8 +29,12 @@ import Link from 'next/link';
 import { useTranslations } from '@/lib/hooks/use-translations';
 import { useTenant } from '@/lib/hooks/use-tenant';
 import { useHomePage, useSpecialOffers, useSpotlightItems } from '@/lib/services';
+// LOCAL-FIRST: Cart operations handled by ProductSection via local cart store
+// No API calls here - only toast notifications
+import { toast } from '@/lib/stores/toast-store';
 import { cn } from '@/lib/utils';
 import { isBannersSection, isCompaniesSection, isSpotlightSection } from '@/types/home';
+import type { ProductSummary } from '@/types/product';
 
 export default function HomePage() {
   const { t, isRTL, localize } = useTranslations();
@@ -41,8 +45,20 @@ export default function HomePage() {
   const { data: specialOffers, isLoading: isLoadingOffers } = useSpecialOffers();
   const { data: spotlightItems } = useSpotlightItems();
 
-  const handleAddToCart = (productId: number) => {
-    console.log('Add to cart:', productId);
+  // LOCAL-FIRST: Handle add to cart notification only
+  // Actual cart operations are handled by ProductSection via local cart store
+  // NO API CALLS - following Flutter Order Flow Documentation
+  const handleAddToCart = (_product: ProductSummary, _unitType?: 'big' | 'small') => {
+    // ProductSection has already added to local cart
+    // This callback is only for toast notifications
+    toast.success('Added to cart', 'تمت الإضافة إلى السلة');
+  };
+
+  // Handler for ProductDetailModal (different signature)
+  const handleModalAddToCart = (_productId: number) => {
+    // Modal add to cart - just show toast for now
+    // Full modal cart integration would need its own local store hook
+    toast.success('Added to cart', 'تمت الإضافة إلى السلة');
   };
 
   const handleProductClick = (product: ProductDetailData) => {
@@ -56,20 +72,21 @@ export default function HomePage() {
 
   const heroBanners = bannersSection?.data || [];
   const companies = companiesSection?.data || homeData?.companies || [];
-  const spotlightProducts = spotlightSection?.data || [];
+  // Map SpotlightItem[] to ProductSummary[] by extracting the nested item property
+  const spotlightProducts = (spotlightSection?.data || []).map(spotlight => spotlight.item);
 
   // Get widgets and discounts from home data
   const widgets = homeData?.widgets || [];
   const discounts = homeData?.discounts || [];
 
   return (
-    <AppShell cartCount={3}>
+    <AppShell>
       {/* Product Detail Modal */}
       <ProductDetailModal
         product={selectedProduct}
         isOpen={isOpen}
         onClose={closeModal}
-        onAddToCart={handleAddToCart}
+        onAddToCart={handleModalAddToCart}
       />
       <div className="flex gap-[12px]">
         {/* Main content - white rounded container */}
@@ -266,6 +283,7 @@ export default function HomePage() {
           {/* Spotlight Section - Featured Products (only show if has items) */}
           {spotlightProducts && spotlightProducts.length > 0 && (
             <ProductSection
+              sectionId="spotlight"
               title={t('home.spotlight')}
               products={spotlightProducts}
               seeAllLink="/spotlight"
@@ -279,6 +297,7 @@ export default function HomePage() {
             widget.items && widget.items.length > 0 && (
               <ProductSection
                 key={`${widget.type}-${widget.id}`}
+                sectionId={`widget-${widget.type}-${widget.id}`}
                 title={widget.title}
                 titleAr={widget.titleAr}
                 products={widget.items}
@@ -292,6 +311,7 @@ export default function HomePage() {
           {/* Active Discounts Section - Use ProductSection like other widgets */}
           {discounts && discounts.length > 0 && (
             <ProductSection
+              sectionId="discounts"
               title={t('home.activeDiscounts')}
               products={discounts.map(item => ({
                 id: item.id,
@@ -309,6 +329,11 @@ export default function HomePage() {
                 smallUnitPrice: item.smallUnitPrice,
                 bigUnitImageUrl: item.bigUnitImageUrl,
                 smallUnitImageUrl: item.smallUnitImageUrl,
+                // Required fields for ProductSummary
+                isAvailable: true,
+                isNew: false,
+                categoryId: 0,
+                hasQuantityDiscount: false,
               }))}
               seeAllLink="/discounts"
               onProductClick={handleProductClick}
@@ -319,6 +344,7 @@ export default function HomePage() {
           {/* Deals Shelf Section - Fallback to spotlight API (only show if has items) */}
           {spotlightItems && spotlightItems.length > 0 && (
             <ProductSection
+              sectionId="deals"
               title={t('home.dealsShelf')}
               products={spotlightItems}
               seeAllLink="/deals"

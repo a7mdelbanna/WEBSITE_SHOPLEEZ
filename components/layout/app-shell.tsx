@@ -7,20 +7,21 @@
  * - Gray background (#F5F5F5)
  * - White rounded containers for sidebar and content areas
  * - Proper spacing and padding
+ * - LOCAL-FIRST: Cart data comes from local store, not API
  */
 
 import { useState, type ReactNode } from 'react';
-import { useLocalization } from '@/lib/hooks/use-tenant';
 import { cn } from '@/lib/utils';
 import { Header } from './header';
 import { Sidebar, MobileSidebar } from './sidebar';
+import { FloatingCartButton } from '@/components/cart/floating-cart-button';
+import { ToastContainer } from '@/components/ui/toast';
 import type { CategoryNavItem } from '@/types/category';
 
 interface AppShellProps {
   children: ReactNode;
   categories?: CategoryNavItem[];
   activeCategoryId?: number;
-  cartCount?: number;
   hideSidebar?: boolean;
 }
 
@@ -28,17 +29,18 @@ export function AppShell({
   children,
   categories,
   activeCategoryId,
-  cartCount = 0,
   hideSidebar = false,
 }: AppShellProps) {
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
 
+  // LOCAL-FIRST: Cart data is handled by FloatingCart inside Header
+  // No API call needed here anymore
+
   return (
     <div className="min-h-screen bg-[#F5F5F5]">
-      {/* Header - sticky white bar */}
+      {/* Header - sticky white bar with FloatingCart */}
       <Header
         onMenuClick={() => setIsMobileSidebarOpen(true)}
-        cartCount={cartCount}
       />
 
       {/* Main area with padding */}
@@ -70,6 +72,12 @@ export function AppShell({
         </main>
         </div>
       </div>
+
+      {/* Floating Cart Button */}
+      <FloatingCartButton />
+
+      {/* Toast Notifications */}
+      <ToastContainer />
     </div>
   );
 }

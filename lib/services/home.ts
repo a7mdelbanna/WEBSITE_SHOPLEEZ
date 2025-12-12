@@ -29,12 +29,24 @@ export const homeQueryKeys = {
 };
 
 /**
+ * Check if a unit ID is valid (positive integer)
+ */
+function isValidUnitId(id: unknown): id is number {
+  return typeof id === 'number' && id > 0 && Number.isInteger(id);
+}
+
+/**
  * Normalize widget item from API response
  */
 function normalizeWidgetItem(item: Record<string, unknown>): ProductSummary {
   // Extract unit info
   const bigUnit = item.bigUnit as Record<string, unknown> | undefined;
   const smallUnit = item.smallUnit as Record<string, unknown> | undefined;
+
+  // Debug: Log raw item for first few items to understand API structure
+  if (Math.random() < 0.05) {
+    console.log('[Home] Raw API item:', JSON.stringify(item, null, 2));
+  }
 
   // Get prices - prefer smallUnitPrice for display, fallback to bigUnitPrice
   const smallUnitPrice = item.smallUnitPrice as number | undefined;
@@ -45,6 +57,39 @@ function normalizeWidgetItem(item: Record<string, unknown>): ProductSummary {
   const smallUnitImageUrl = item.itemImageForSmallUnitUrl as string | undefined;
   const bigUnitImageUrl = item.itemImageForBigUnitUrl as string | undefined;
   const displayImage = smallUnitImageUrl || bigUnitImageUrl || item.imageUrl as string || item.mainImage as string || '';
+
+  // Extract unit IDs - try multiple possible field names
+  // The API might return unit ID as bigUnit.id, bigUnit.unitId, or item.bigUnitId
+  let bigUnitId = bigUnit?.id as number | undefined;
+  if (!isValidUnitId(bigUnitId)) {
+    bigUnitId = (bigUnit?.unitId || bigUnit?.customerUnitId || item.bigUnitId) as number | undefined;
+  }
+
+  let smallUnitId = smallUnit?.id as number | undefined;
+  if (!isValidUnitId(smallUnitId)) {
+    smallUnitId = (smallUnit?.unitId || smallUnit?.customerUnitId || item.smallUnitId) as number | undefined;
+  }
+
+  // Check for default unit ID at item level
+  const defaultUnitId = item.defaultUnitId as number | undefined;
+  const customerUnitId = item.customerUnitId as number | undefined;
+
+  const hasBigUnit = bigUnit && isValidUnitId(bigUnitId);
+  const hasSmallUnit = smallUnit && isValidUnitId(smallUnitId);
+
+  // Log if no valid unit IDs found
+  if (!hasBigUnit && !hasSmallUnit) {
+    console.warn('[Home] No valid unit IDs for item:', {
+      itemId: item.id || item.itemId,
+      name: item.nameEN || item.name,
+      bigUnit: bigUnit ? JSON.stringify(bigUnit) : null,
+      smallUnit: smallUnit ? JSON.stringify(smallUnit) : null,
+      bigUnitId,
+      smallUnitId,
+      defaultUnitId,
+      customerUnitId,
+    });
+  }
 
   return {
     id: item.id as number || item.itemId as number,
@@ -64,27 +109,50 @@ function normalizeWidgetItem(item: Record<string, unknown>): ProductSummary {
     brandNameAr: (item.companyNameAR || item.brandNameAr || '') as string | undefined,
     categoryName: (item.categoryNameEN || item.categoryName || '') as string | undefined,
     categoryNameAr: (item.categoryNameAR || item.categoryNameAr || '') as string | undefined,
-    // Unit support
+    // Required ProductSummary fields
+    isAvailable: (item.isAvailable ?? true) as boolean,
+    isNew: (item.isNew ?? false) as boolean,
+    categoryId: (item.categoryId ?? 0) as number,
+    hasQuantityDiscount: (item.hasQuantityDiscount ?? false) as boolean,
+    // Unit support - only include units with valid IDs
     bigUnitPrice,
     smallUnitPrice,
     bigUnitImageUrl,
     smallUnitImageUrl,
-    bigUnit: bigUnit ? {
-      id: bigUnit.id as number,
+    // Include fallback unit IDs at the product level
+    ...(isValidUnitId(defaultUnitId) ? { defaultUnitId } : {}),
+    ...(isValidUnitId(customerUnitId) ? { customerUnitId } : {}),
+    bigUnit: hasBigUnit ? {
+      id: bigUnitId as number, // Safe: hasBigUnit ensures bigUnitId is valid
       name: (bigUnit.nameEN || bigUnit.name || '') as string,
       nameAr: (bigUnit.nameAR || bigUnit.nameAr || '') as string,
       amount: bigUnit.amount as number || 1,
       price: bigUnitPrice || 0,
+      specialPrice: (bigUnit.specialPrice || bigUnit.discountPrice || item.bigUnitSpecialPrice) as number | undefined,
       imageUrl: bigUnitImageUrl,
     } : undefined,
-    smallUnit: smallUnit ? {
-      id: smallUnit.id as number,
+    smallUnit: hasSmallUnit ? {
+      id: smallUnitId as number, // Safe: hasSmallUnit ensures smallUnitId is valid
       name: (smallUnit.nameEN || smallUnit.name || '') as string,
       nameAr: (smallUnit.nameAR || smallUnit.nameAr || '') as string,
       amount: smallUnit.amount as number || 1,
       price: smallUnitPrice || 0,
+      specialPrice: (smallUnit.specialPrice || smallUnit.discountPrice || item.smallUnitSpecialPrice) as number | undefined,
       imageUrl: smallUnitImageUrl,
     } : undefined,
+
+    // Discount quantity limits (for splitting logic) - Flutter parity
+    bigUnitDiscountMinQuantity: item.bigUnitDiscountMinQuantity as number | undefined,
+    bigUnitDiscountMaxQuantity: item.bigUnitDiscountMaxQuantity as number | undefined,
+    smallUnitDiscountMinQuantity: item.smallUnitDiscountMinQuantity as number | undefined,
+    smallUnitDiscountMaxQuantity: item.smallUnitDiscountMaxQuantity as number | undefined,
+
+    // Maximum quantity per user - Flutter parity
+    isMaximumAmountForUser: item.isMaximumAmountForUser as boolean | undefined,
+    maximumAmountForUser: item.maximumAmountForUser as number | undefined,
+
+    // Stock quantity - Flutter parity
+    itemAmount: item.itemAmount as number | undefined,
   };
 }
 
@@ -95,6 +163,11 @@ function normalizeDiscountItem(item: Record<string, unknown>): DiscountItem {
   // Extract unit info - API uses nameAR (uppercase) not nameAr
   const bigUnit = item.bigUnit as Record<string, unknown> | undefined;
   const smallUnit = item.smallUnit as Record<string, unknown> | undefined;
+
+  // Debug: Log raw discount item for first few items
+  if (Math.random() < 0.05) {
+    console.log('[Home] Raw discount item:', JSON.stringify(item, null, 2));
+  }
 
   // Get prices from API - use directly without modification
   const rawSmallPrice = item.smallUnitPrice as number | undefined;
@@ -118,6 +191,32 @@ function normalizeDiscountItem(item: Record<string, unknown>): DiscountItem {
   const bigUnitName = bigUnit ? (bigUnit.nameAR || bigUnit.nameAr || bigUnit.nameEN || bigUnit.name || '') as string : '';
   const smallUnitName = smallUnit ? (smallUnit.nameAR || smallUnit.nameAr || smallUnit.nameEN || smallUnit.name || '') as string : '';
 
+  // Extract unit IDs - try multiple possible field names
+  let bigUnitId = bigUnit?.id as number | undefined;
+  if (!isValidUnitId(bigUnitId)) {
+    bigUnitId = (bigUnit?.unitId || bigUnit?.customerUnitId || item.bigUnitId) as number | undefined;
+  }
+
+  let smallUnitId = smallUnit?.id as number | undefined;
+  if (!isValidUnitId(smallUnitId)) {
+    smallUnitId = (smallUnit?.unitId || smallUnit?.customerUnitId || item.smallUnitId) as number | undefined;
+  }
+
+  const hasBigUnit = bigUnit && isValidUnitId(bigUnitId);
+  const hasSmallUnit = smallUnit && isValidUnitId(smallUnitId);
+
+  // Log if no valid unit IDs found
+  if (!hasBigUnit && !hasSmallUnit) {
+    console.warn('[Home] No valid unit IDs for discount item:', {
+      itemId: item.id || item.itemId,
+      name: item.nameEN || item.name,
+      bigUnit: bigUnit ? JSON.stringify(bigUnit) : null,
+      smallUnit: smallUnit ? JSON.stringify(smallUnit) : null,
+      bigUnitId,
+      smallUnitId,
+    });
+  }
+
   return {
     id: item.id as number || item.itemId as number,
     itemId: item.itemId as number || item.id as number,
@@ -129,27 +228,42 @@ function normalizeDiscountItem(item: Record<string, unknown>): DiscountItem {
     imageUrl: displayImage,
     discountName: (item.discountNameEN || item.discountName || '') as string,
     discountNameAr: (item.discountNameAR || item.discountNameAr || '') as string,
-    // Unit support - extract actual unit names from API (nameAR uppercase)
+    // Unit support - only include units with valid IDs
     bigUnitPrice,
     smallUnitPrice,
     bigUnitImageUrl,
     smallUnitImageUrl,
-    bigUnit: bigUnit ? {
-      id: bigUnit.id as number,
+    bigUnit: hasBigUnit ? {
+      id: bigUnitId as number,
       name: bigUnitName,
       nameAr: bigUnitName, // Use same name since API only provides nameAR
       amount: bigUnit.amount as number || 1,
       price: bigUnitPrice || 0,
+      specialPrice: (bigUnit.specialPrice || bigUnit.discountPrice || item.bigUnitSpecialPrice) as number | undefined,
       imageUrl: bigUnitImageUrl,
     } : undefined,
-    smallUnit: smallUnit ? {
-      id: smallUnit.id as number,
+    smallUnit: hasSmallUnit ? {
+      id: smallUnitId as number,
       name: smallUnitName,
       nameAr: smallUnitName, // Use same name since API only provides nameAR
       amount: smallUnit.amount as number || 1,
       price: smallUnitPrice || 0,
+      specialPrice: (smallUnit.specialPrice || smallUnit.discountPrice || item.smallUnitSpecialPrice) as number | undefined,
       imageUrl: smallUnitImageUrl,
     } : undefined,
+
+    // Discount quantity limits (for splitting logic) - Flutter parity
+    bigUnitDiscountMinQuantity: item.bigUnitDiscountMinQuantity as number | undefined,
+    bigUnitDiscountMaxQuantity: item.bigUnitDiscountMaxQuantity as number | undefined,
+    smallUnitDiscountMinQuantity: item.smallUnitDiscountMinQuantity as number | undefined,
+    smallUnitDiscountMaxQuantity: item.smallUnitDiscountMaxQuantity as number | undefined,
+
+    // Maximum quantity per user - Flutter parity
+    isMaximumAmountForUser: item.isMaximumAmountForUser as boolean | undefined,
+    maximumAmountForUser: item.maximumAmountForUser as number | undefined,
+
+    // Stock quantity - Flutter parity
+    itemAmount: item.itemAmount as number | undefined,
   };
 }
 
@@ -234,12 +348,23 @@ export function useHomePage() {
             return;
           }
 
+          // Normalize and deduplicate items by ID
+          const normalizedItems = items.map(normalizeWidgetItem);
+          const seen = new Set<number>();
+          const deduplicatedItems = normalizedItems.filter(item => {
+            if (seen.has(item.id)) {
+              return false;
+            }
+            seen.add(item.id);
+            return true;
+          });
+
           widgetsData.push({
             id: widget.id as number,
             title,
             titleAr,
             type: 'custom',
-            items: items.map(normalizeWidgetItem),
+            items: deduplicatedItems,
           });
         });
       }
@@ -254,7 +379,7 @@ export function useHomePage() {
 
         // Normalize banners (PromotionOffers)
         if (section.key === 'PromotionOffers') {
-          sectionData = sectionData.map((item: Record<string, unknown>) => ({
+          sectionData = (sectionData as Record<string, unknown>[]).map((item) => ({
             ...item,
             imageUrl: item.filePath || item.imageUrl || '',
             imageUrlAr: item.filePath || item.imageUrlAr || '',
@@ -266,17 +391,17 @@ export function useHomePage() {
 
         // Normalize special offers (PromotionSpecialOffers)
         if (section.key === 'PromotionSpecialOffers') {
-          sectionData = sectionData.map(normalizeWidgetItem);
+          sectionData = (sectionData as Record<string, unknown>[]).map(normalizeWidgetItem);
         }
 
         // Normalize spotlight (PromotionSpotlights)
         if (section.key === 'PromotionSpotlights') {
-          sectionData = sectionData.map(normalizeWidgetItem);
+          sectionData = (sectionData as Record<string, unknown>[]).map(normalizeWidgetItem);
         }
 
         // Normalize categories
         if (section.key === 'MainCategories' || section.key === 'Categories') {
-          sectionData = sectionData.map((cat: Record<string, unknown>) => ({
+          sectionData = (sectionData as Record<string, unknown>[]).map((cat) => ({
             ...cat,
             name: cat.nameEN || cat.name || '',
             nameAr: cat.nameAR || cat.nameAr || '',
@@ -286,7 +411,7 @@ export function useHomePage() {
 
         // Normalize companies
         if (section.key === 'Companies') {
-          sectionData = sectionData.map((comp: Record<string, unknown>) => ({
+          sectionData = (sectionData as Record<string, unknown>[]).map((comp) => ({
             ...comp,
             name: comp.nameEN || comp.name || comp.nameAr || '',
             nameAr: comp.nameAr || '',
@@ -294,9 +419,18 @@ export function useHomePage() {
           }));
         }
 
-        // Extract active discounts
+        // Extract active discounts - deduplicate by item ID
         if (section.key === 'ActiveDiscounts') {
-          discounts = (sectionData as Record<string, unknown>[]).map(normalizeDiscountItem);
+          const allDiscounts = (sectionData as Record<string, unknown>[]).map(normalizeDiscountItem);
+          // Deduplicate by ID - keep first occurrence
+          const seen = new Set<number>();
+          discounts = allDiscounts.filter(item => {
+            if (seen.has(item.id)) {
+              return false;
+            }
+            seen.add(item.id);
+            return true;
+          });
         }
 
         return {

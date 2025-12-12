@@ -11,7 +11,7 @@
  * - Product grid with real API data
  */
 
-import { use, useState } from 'react';
+import { use, useState, useMemo, useCallback } from 'react';
 import Link from 'next/link';
 import { MapPin } from 'lucide-react';
 import { AppShell } from '@/components/layout';
@@ -21,7 +21,11 @@ import { useTranslations } from '@/lib/hooks/use-translations';
 import { useAuth } from '@/lib/contexts/auth-context';
 import { useCategories } from '@/lib/services/categories';
 import { useProductsSimple } from '@/lib/services/products';
+import { useCartStore, useLocalCartItems } from '@/lib/stores/cart-store';
+import { getCartItemKey } from '@/lib/services/cart';
+import { toast } from '@/lib/stores/toast-store';
 import { cn } from '@/lib/utils';
+import type { ProductSummary } from '@/types/product';
 
 interface CategoryPageProps {
   params: Promise<{ id: string }>;
@@ -52,6 +56,29 @@ export default function CategoryPage({ params }: CategoryPageProps) {
   // Fetch products for this category
   const { data: products, isLoading: productsLoading } = useProductsSimple(productFilters);
 
+  // LOCAL-FIRST: Use local cart store instead of API
+  const localCartItems = useLocalCartItems();
+  const addItem = useCartStore((state) => state.addItem);
+  const updateQuantity = useCartStore((state) => state.updateQuantity);
+  const removeItem = useCartStore((state) => state.removeItem);
+
+  // Create a map using 3-field key (itemId-unitId-flavorId) to cart quantity
+  const quantityMap = useMemo(() => {
+    const map = new Map<string, number>();
+    localCartItems.forEach(item => {
+      const key = getCartItemKey(item.itemId, item.selectedUnitId, item.selectedFlavorId);
+      const existing = map.get(key) || 0;
+      map.set(key, existing + item.quantity);
+    });
+    return map;
+  }, [localCartItems]);
+
+  // Get display quantity for a specific product+unit combination
+  const getDisplayQuantity = useCallback((productId: number, unitId?: number, flavorId?: number): number => {
+    const key = getCartItemKey(productId, unitId, flavorId);
+    return quantityMap.get(key) || 0;
+  }, [quantityMap]);
+
   // Category name with localization
   const categoryName = category ? localize(category.name, category.nameAr) : '';
 
@@ -66,10 +93,78 @@ export default function CategoryPage({ params }: CategoryPageProps) {
     console.log('Product clicked:', productId);
   };
 
-  // Handle add to cart
-  const handleAddToCart = (productId: number) => {
-    console.log('Add to cart:', productId);
+  // Handle add to cart - LOCAL ONLY, NO API call (following Flutter documentation)
+  const handleAddToCart = (product: ProductSummary, unitType?: 'big' | 'small') => {
+    // Determine which unit to use based on selection, with fallbacks
+    let selectedUnit = unitType === 'big' ? product.bigUnit : product.smallUnit;
+
+    // Fallback: if selected unit doesn't exist, try the other one
+    if (!selectedUnit) {
+      selectedUnit = product.smallUnit || product.bigUnit;
+    }
+
+    const unitId = selectedUnit?.id;
+    const unitPrice = selectedUnit?.price || product.price;
+    const discountPrice = selectedUnit?.specialPrice || product.discountPrice;
+
+    console.log('[Category] LOCAL add to cart:', {
+      itemId: product.id,
+      unitType,
+      unitId,
+      price: unitPrice,
+    });
+
+    // Add to LOCAL cart (instant, no API call)
+    addItem({
+      itemId: product.id,
+      quantity: 1,
+      customerUnitId: unitId,
+      itemUnitId: unitId,
+      normalPrice: unitPrice,
+      itemPriceAfterDiscount: discountPrice,
+      // Product metadata for display in cart
+      name: product.name,
+      nameAr: product.nameAr,
+      image: product.imageUrl || product.mainImage || '',
+      // Discount limits
+      bigUnitId: product.bigUnit?.id,
+      smallUnitId: product.smallUnit?.id,
+      bigUnitDiscountMinQuantity: product.bigUnitDiscountMinQuantity,
+      bigUnitDiscountMaxQuantity: product.bigUnitDiscountMaxQuantity,
+      smallUnitDiscountMinQuantity: product.smallUnitDiscountMinQuantity,
+      smallUnitDiscountMaxQuantity: product.smallUnitDiscountMaxQuantity,
+      // Maximum quantity limits
+      isMaximumAmountForUser: product.isMaximumAmountForUser,
+      maximumAmountForUser: product.maximumAmountForUser,
+    });
+
+    // Show toast notification
+    toast.success('Added to cart', 'تمت الإضافة إلى السلة');
   };
+
+  // Handle quantity update - LOCAL ONLY, NO API call
+  const handleUpdateQuantity = useCallback((
+    product: ProductSummary,
+    newQuantity: number,
+    unitType?: 'big' | 'small'
+  ) => {
+    const productId = product.id;
+    const selectedUnit = unitType === 'big' ? product.bigUnit : (product.smallUnit || product.bigUnit);
+    const unitId = selectedUnit?.id;
+
+    console.log('[Category] LOCAL update quantity:', {
+      productId,
+      newQuantity,
+      unitType,
+      unitId,
+    });
+
+    if (newQuantity <= 0) {
+      removeItem(productId, unitId, undefined);
+    } else {
+      updateQuantity(productId, unitId, undefined, newQuantity);
+    }
+  }, [updateQuantity, removeItem]);
 
   return (
     <AppShell activeCategoryId={categoryId}>
@@ -120,36 +215,65 @@ export default function CategoryPage({ params }: CategoryPageProps) {
             {/* Products grid */}
             {!productsLoading && products && products.length > 0 && (
               <ProductGrid>
-                {products.map((product) => (
-                  <ProductCard
-                    key={product.id}
-                    id={product.id}
-                    name={product.name}
-                    nameAr={product.nameAr}
-                    image={product.imageUrl || product.mainImage || ''}
-                    price={product.price}
-                    originalPrice={product.originalPrice}
-                    weight={product.weight || product.volume}
-                    badge={
-                      product.discountPercent
-                        ? {
-                            text: `-${product.discountPercent}%`,
-                            textAr: `-${product.discountPercent}%`,
-                            variant: 'discount' as const,
-                          }
-                        : product.isNew
-                        ? { text: 'New', textAr: 'جديد', variant: 'new' as const }
-                        : undefined
-                    }
-                    isAvailable={product.isAvailable}
-                    bigUnit={product.bigUnit}
-                    smallUnit={product.smallUnit}
-                    bigUnitImageUrl={product.bigUnitImageUrl}
-                    smallUnitImageUrl={product.smallUnitImageUrl}
-                    onAddToCart={() => handleAddToCart(product.id)}
-                    onClick={() => handleProductClick(product.id)}
-                  />
-                ))}
+                {products.map((product) => {
+                  // Get per-unit quantities using 3-field matching from LOCAL store
+                  const smallUnitId = product.smallUnit?.id;
+                  const bigUnitId = product.bigUnit?.id;
+
+                  // Check for quantities with proper unit IDs
+                  const smallQty = smallUnitId ? getDisplayQuantity(product.id, smallUnitId, undefined) : 0;
+                  const bigQty = bigUnitId ? getDisplayQuantity(product.id, bigUnitId, undefined) : 0;
+
+                  // CRITICAL: Also check for cart items added WITHOUT unit IDs (old items)
+                  const legacyQty = getDisplayQuantity(product.id, undefined, undefined);
+
+                  // Total quantity = sum of all matching methods
+                  const totalSmallQty = smallQty + (smallUnitId ? 0 : legacyQty);
+                  const totalBigQty = bigQty + (bigUnitId ? 0 : legacyQty);
+                  const hasUnits = smallUnitId || bigUnitId;
+                  const noUnitQty = !hasUnits ? legacyQty : 0;
+
+                  return (
+                    <ProductCard
+                      key={product.id}
+                      id={product.id}
+                      name={product.name}
+                      nameAr={product.nameAr}
+                      image={product.imageUrl || product.mainImage || ''}
+                      price={product.price}
+                      originalPrice={product.originalPrice}
+                      weight={product.weight || product.volume}
+                      badge={
+                        product.discountPercent
+                          ? {
+                              text: `-${product.discountPercent}%`,
+                              textAr: `-${product.discountPercent}%`,
+                              variant: 'discount' as const,
+                            }
+                          : product.isNew
+                          ? { text: 'New', textAr: 'جديد', variant: 'new' as const }
+                          : undefined
+                      }
+                      isAvailable={product.isAvailable}
+                      bigUnit={product.bigUnit}
+                      smallUnit={product.smallUnit}
+                      bigUnitImageUrl={product.bigUnitImageUrl}
+                      smallUnitImageUrl={product.smallUnitImageUrl}
+                      onAddToCart={(unitType) => handleAddToCart(product, unitType)}
+                      onUpdateQuantity={(quantity, unitType) => handleUpdateQuantity(product, quantity, unitType)}
+                      onClick={() => handleProductClick(product.id)}
+                      // Cart quantity - per unit for 3-field matching (from LOCAL store)
+                      smallUnitCartQuantity={totalSmallQty || legacyQty}
+                      bigUnitCartQuantity={totalBigQty || legacyQty}
+                      cartQuantity={noUnitQty || legacyQty}
+                      isUpdating={false}
+                      // Flutter parity: Maximum quantity validation
+                      isMaximumAmountForUser={product.isMaximumAmountForUser}
+                      maximumAmountForUser={product.maximumAmountForUser}
+                      itemAmount={product.itemAmount}
+                    />
+                  );
+                })}
               </ProductGrid>
             )}
 

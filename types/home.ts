@@ -28,6 +28,7 @@ export interface DiscountUnitInfo {
   nameAr: string;
   amount: number;
   price: number;
+  specialPrice?: number;  // Discounted price for this unit
   imageUrl?: string;
 }
 
@@ -52,6 +53,16 @@ export interface DiscountItem {
   smallUnitPrice?: number;
   bigUnitImageUrl?: string;
   smallUnitImageUrl?: string;
+  // Discount quantity limits (for splitting logic)
+  bigUnitDiscountMinQuantity?: number;
+  bigUnitDiscountMaxQuantity?: number;
+  smallUnitDiscountMinQuantity?: number;
+  smallUnitDiscountMaxQuantity?: number;
+  // Maximum quantity per user
+  isMaximumAmountForUser?: boolean;
+  maximumAmountForUser?: number;
+  // Stock quantity
+  itemAmount?: number;
 }
 
 /**

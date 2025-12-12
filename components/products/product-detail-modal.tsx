@@ -11,6 +11,9 @@
  * 3. Collapsible sections with fade-out gradient when collapsed
  * 4. Full Arabic/English localization support
  * 5. Fetches full product data and related products from API
+ *
+ * IMPORTANT: All hooks must be called before any conditional returns
+ * to comply with React's Rules of Hooks.
  */
 
 import { useState, useEffect, useMemo, useCallback } from 'react';
@@ -161,6 +164,10 @@ export function ProductDetailModal({
   onClose,
   onAddToCart,
 }: ProductDetailModalProps) {
+  // ============================================================================
+  // ALL HOOKS MUST BE CALLED FIRST (before any conditional returns)
+  // ============================================================================
+
   const [expandedSections, setExpandedSections] = useState<Set<string>>(new Set());
   const [selectedUnit, setSelectedUnit] = useState<'small' | 'big'>('small');
   const { t, locale, isRTL } = useTranslations();
@@ -202,143 +209,168 @@ export function ProductDetailModal({
     isOpen && !!product?.id
   );
 
-  useEffect(() => {
-    if (isOpen) {
-      document.body.style.overflow = 'hidden';
-    } else {
-      document.body.style.overflow = '';
-    }
-    return () => {
-      document.body.style.overflow = '';
+  // Computed values using useMemo (must be before early return)
+  const displayProduct = useMemo(() => {
+    if (!product) return null;
+
+    const passedBigUnitName = product.bigUnit
+      ? (locale === 'ar' ? (product.bigUnit.nameAr || product.bigUnit.name) : product.bigUnit.name)
+      : undefined;
+    const passedSmallUnitName = product.smallUnit
+      ? (locale === 'ar' ? (product.smallUnit.nameAr || product.smallUnit.name) : product.smallUnit.name)
+      : undefined;
+
+    return {
+      ...product,
+      bigUnitName: passedBigUnitName,
+      smallUnitName: passedSmallUnitName,
+      ...(fullProduct ? {
+        name: fullProduct.name,
+        nameAr: fullProduct.nameAr,
+        description: fullProduct.description,
+        descriptionAr: fullProduct.descriptionAr,
+        image: fullProduct.mainImage || product.image,
+        price: fullProduct.price,
+        brand: fullProduct.companyName,
+        brandAr: fullProduct.companyNameAr,
+        productType: fullProduct.categoryName,
+        productTypeAr: fullProduct.categoryNameAr,
+        bigUnitPrice: fullProduct.bigUnitPrice,
+        smallUnitPrice: fullProduct.smallUnitPrice,
+        bigUnitName: fullProduct.bigUnitName || passedBigUnitName,
+        smallUnitName: fullProduct.smallUnitName || passedSmallUnitName,
+        bigUnitImageUrl: fullProduct.bigUnitImageUrl,
+        smallUnitImageUrl: fullProduct.smallUnitImageUrl,
+        calories: fullProduct.calories,
+        protein: fullProduct.protein,
+        fat: fullProduct.fat,
+        carbs: fullProduct.carbs,
+      } : {}),
+      relatedProducts: relatedProducts?.map(rp => ({
+        id: rp.id,
+        name: rp.name || rp.nameEn || '',
+        nameAr: rp.nameAr,
+        image: rp.imageUrl || rp.mainImage || '',
+        price: rp.price,
+        originalPrice: rp.originalPrice,
+        weight: rp.volume || rp.weight,
+        badge: rp.discountPercent ? {
+          text: `-${rp.discountPercent}%`,
+          textAr: `${rp.discountPercent}%-`,
+          variant: 'discount' as const,
+        } : undefined,
+      })) || product.relatedProducts,
     };
-  }, [isOpen]);
+  }, [product, fullProduct, relatedProducts, locale]);
 
-  useEffect(() => {
-    const handleEscape = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onClose();
-    };
-    if (isOpen) {
-      window.addEventListener('keydown', handleEscape);
+  // Computed price/unit values
+  const computedValues = useMemo(() => {
+    if (!product || !displayProduct) {
+      return {
+        hasMultipleUnits: false,
+        currentPrice: 0,
+        currentImage: '',
+        currentUnitName: '',
+        hasDiscount: false,
+        hasMultipleUnitsForCart: false,
+        effectiveSelectedUnit: 'small' as const,
+        currentUnitId: undefined as number | undefined,
+        smallQty: 0,
+        bigQty: 0,
+        legacyQty: 0,
+        cartQuantity: 0,
+        isOutOfStock: false,
+        isUnavailable: false,
+        isAtMaxPerUserLimit: false,
+        isAtStockLimit: false,
+        isAtMaxQuantity: false,
+        canAddToCart: false,
+      };
     }
-    return () => window.removeEventListener('keydown', handleEscape);
-  }, [isOpen, onClose]);
 
-  // Reset selected unit when product changes
-  useEffect(() => {
-    setSelectedUnit('small');
-  }, [product?.id]);
+    const hasMultipleUnits = displayProduct.bigUnitPrice && displayProduct.smallUnitPrice &&
+      displayProduct.bigUnitPrice !== displayProduct.smallUnitPrice;
+    const currentPrice = selectedUnit === 'big'
+      ? (displayProduct.bigUnitPrice || displayProduct.price)
+      : (displayProduct.smallUnitPrice || displayProduct.price);
+    const currentImage = selectedUnit === 'big'
+      ? (displayProduct.bigUnitImageUrl || displayProduct.image)
+      : (displayProduct.smallUnitImageUrl || displayProduct.image);
+    const currentUnitName = selectedUnit === 'big'
+      ? displayProduct.bigUnitName
+      : displayProduct.smallUnitName;
 
-  if (!isOpen || !product) return null;
+    const hasDiscount = displayProduct.originalPrice && displayProduct.originalPrice > currentPrice;
 
-  // Merge API data with passed product data (API takes precedence)
-  // Extract unit names from passed product's unit objects if available
-  const passedBigUnitName = product.bigUnit
-    ? (locale === 'ar' ? (product.bigUnit.nameAr || product.bigUnit.name) : product.bigUnit.name)
-    : undefined;
-  const passedSmallUnitName = product.smallUnit
-    ? (locale === 'ar' ? (product.smallUnit.nameAr || product.smallUnit.name) : product.smallUnit.name)
-    : undefined;
+    const hasMultipleUnitsForCart = product?.bigUnit && product?.smallUnit;
+    const effectiveSelectedUnit = hasMultipleUnitsForCart
+      ? selectedUnit
+      : (product?.smallUnit ? 'small' : 'big');
+    const currentUnitObj = effectiveSelectedUnit === 'big' ? product?.bigUnit : product?.smallUnit;
+    const currentUnitId = currentUnitObj?.id;
 
-  const displayProduct = {
-    ...product,
-    // Use unit names from passed product if available
-    bigUnitName: passedBigUnitName,
-    smallUnitName: passedSmallUnitName,
-    ...(fullProduct ? {
-      name: fullProduct.name,
-      nameAr: fullProduct.nameAr,
-      description: fullProduct.description,
-      descriptionAr: fullProduct.descriptionAr,
-      image: fullProduct.mainImage || product.image,
-      price: fullProduct.price,
-      brand: fullProduct.companyName,
-      brandAr: fullProduct.companyNameAr,
-      productType: fullProduct.categoryName,
-      productTypeAr: fullProduct.categoryNameAr,
-      // Unit info - override with API data if available
-      bigUnitPrice: fullProduct.bigUnitPrice,
-      smallUnitPrice: fullProduct.smallUnitPrice,
-      bigUnitName: fullProduct.bigUnitName || passedBigUnitName,
-      smallUnitName: fullProduct.smallUnitName || passedSmallUnitName,
-      bigUnitImageUrl: fullProduct.bigUnitImageUrl,
-      smallUnitImageUrl: fullProduct.smallUnitImageUrl,
-      // Nutrition
-      calories: fullProduct.calories,
-      protein: fullProduct.protein,
-      fat: fullProduct.fat,
-      carbs: fullProduct.carbs,
-    } : {}),
-    // Add related products from API
-    relatedProducts: relatedProducts?.map(rp => ({
-      id: rp.id,
-      name: rp.name || rp.nameEn || '',
-      nameAr: rp.nameAr,
-      image: rp.imageUrl || rp.mainImage || '',
-      price: rp.price,
-      originalPrice: rp.originalPrice,
-      weight: rp.volume || rp.weight,
-      badge: rp.discountPercent ? {
-        text: `-${rp.discountPercent}%`,
-        textAr: `${rp.discountPercent}%-`,
-        variant: 'discount' as const,
-      } : undefined,
-    })) || product.relatedProducts,
-  };
+    const smallQty = product?.smallUnit?.id ? getDisplayQuantity(product.id, product.smallUnit.id, undefined) : 0;
+    const bigQty = product?.bigUnit?.id ? getDisplayQuantity(product.id, product.bigUnit.id, undefined) : 0;
+    const legacyQty = product ? getDisplayQuantity(product.id, undefined, undefined) : 0;
 
-  // Get current price based on selected unit
-  const hasMultipleUnits = displayProduct.bigUnitPrice && displayProduct.smallUnitPrice &&
-    displayProduct.bigUnitPrice !== displayProduct.smallUnitPrice;
-  const currentPrice = selectedUnit === 'big'
-    ? (displayProduct.bigUnitPrice || displayProduct.price)
-    : (displayProduct.smallUnitPrice || displayProduct.price);
-  const currentImage = selectedUnit === 'big'
-    ? (displayProduct.bigUnitImageUrl || displayProduct.image)
-    : (displayProduct.smallUnitImageUrl || displayProduct.image);
-  const currentUnitName = selectedUnit === 'big'
-    ? displayProduct.bigUnitName
-    : displayProduct.smallUnitName;
+    const cartQuantity = effectiveSelectedUnit === 'big'
+      ? (bigQty || legacyQty)
+      : (smallQty || legacyQty);
 
-  const hasDiscount = displayProduct.originalPrice && displayProduct.originalPrice > currentPrice;
+    const isOutOfStock = product?.itemAmount !== undefined && product.itemAmount <= 0;
+    const isUnavailable = product?.isAvailable === false;
 
-  // Compute cart quantity based on selected unit - matching ProductCard logic
-  const hasMultipleUnitsForCart = product?.bigUnit && product?.smallUnit;
-  const effectiveSelectedUnit = hasMultipleUnitsForCart
-    ? selectedUnit
-    : (product?.smallUnit ? 'small' : 'big');
-  const currentUnitObj = effectiveSelectedUnit === 'big' ? product?.bigUnit : product?.smallUnit;
-  const currentUnitId = currentUnitObj?.id;
+    const isAtMaxPerUserLimit = product?.isMaximumAmountForUser && product?.maximumAmountForUser
+      ? cartQuantity >= product.maximumAmountForUser
+      : false;
 
-  // Get per-unit quantities using 3-field matching from LOCAL store
-  const smallQty = product?.smallUnit?.id ? getDisplayQuantity(product.id, product.smallUnit.id, undefined) : 0;
-  const bigQty = product?.bigUnit?.id ? getDisplayQuantity(product.id, product.bigUnit.id, undefined) : 0;
-  const legacyQty = product ? getDisplayQuantity(product.id, undefined, undefined) : 0;
+    const isAtStockLimit = product?.itemAmount !== undefined && product.itemAmount > 0
+      ? cartQuantity >= product.itemAmount
+      : false;
 
-  // Cart quantity for current selected unit
-  const cartQuantity = effectiveSelectedUnit === 'big'
-    ? (bigQty || legacyQty)
-    : (smallQty || legacyQty);
+    const isAtMaxQuantity = isAtMaxPerUserLimit || isAtStockLimit;
+    const canAddToCart = !isOutOfStock && !isUnavailable;
 
-  // Check if out of stock
-  const isOutOfStock = product?.itemAmount !== undefined && product.itemAmount <= 0;
-  const isUnavailable = product?.isAvailable === false;
+    return {
+      hasMultipleUnits,
+      currentPrice,
+      currentImage,
+      currentUnitName,
+      hasDiscount,
+      hasMultipleUnitsForCart,
+      effectiveSelectedUnit,
+      currentUnitId,
+      smallQty,
+      bigQty,
+      legacyQty,
+      cartQuantity,
+      isOutOfStock,
+      isUnavailable,
+      isAtMaxPerUserLimit,
+      isAtStockLimit,
+      isAtMaxQuantity,
+      canAddToCart,
+    };
+  }, [product, displayProduct, selectedUnit, getDisplayQuantity]);
 
-  // Check if maximum quantity reached (from any source)
-  // 1. Per-user limit: isMaximumAmountForUser && cartQuantity >= maximumAmountForUser
-  // 2. Stock limit: itemAmount > 0 && cartQuantity >= itemAmount
-  const isAtMaxPerUserLimit = product?.isMaximumAmountForUser && product?.maximumAmountForUser
-    ? cartQuantity >= product.maximumAmountForUser
-    : false;
+  // Destructure computed values for easier access
+  const {
+    hasMultipleUnits,
+    currentPrice,
+    currentImage,
+    currentUnitName,
+    hasDiscount,
+    effectiveSelectedUnit,
+    currentUnitId,
+    cartQuantity,
+    isOutOfStock,
+    isUnavailable,
+    isAtMaxQuantity,
+    canAddToCart,
+  } = computedValues;
 
-  const isAtStockLimit = product?.itemAmount !== undefined && product.itemAmount > 0
-    ? cartQuantity >= product.itemAmount
-    : false;
-
-  const isAtMaxQuantity = isAtMaxPerUserLimit || isAtStockLimit;
-
-  // Check if product can be added to cart
-  const canAddToCart = !isOutOfStock && !isUnavailable;
-
-  const toggleSection = (section: string) => {
+  // Toggle section handler
+  const toggleSection = useCallback((section: string) => {
     setExpandedSections((prev) => {
       const next = new Set(prev);
       if (next.has(section)) {
@@ -348,17 +380,14 @@ export function ProductDetailModal({
       }
       return next;
     });
-  };
+  }, []);
 
   // Handle add to cart - LOCAL ONLY, NO API call (following Flutter documentation)
   const handleAddToCart = useCallback(() => {
-    if (!product || !canAddToCart) return;
+    if (!product || !displayProduct || !canAddToCart) return;
 
     requireAuth(() => {
-      // Get unit info based on selection, with fallbacks
       let unitObj = effectiveSelectedUnit === 'big' ? product.bigUnit : product.smallUnit;
-
-      // Fallback: if selected unit doesn't exist, try the other one
       if (!unitObj) {
         unitObj = product.smallUnit || product.bigUnit;
       }
@@ -373,7 +402,6 @@ export function ProductDetailModal({
         price: currentPrice,
       });
 
-      // Add to LOCAL cart (instant, no API call)
       addItem({
         itemId: product.id,
         quantity: 1,
@@ -381,51 +409,41 @@ export function ProductDetailModal({
         itemUnitId: unitId,
         normalPrice: currentPrice,
         itemPriceAfterDiscount: discountPrice,
-        // Product metadata for display in cart
         name: displayProduct.name,
         nameAr: displayProduct.nameAr,
         image: displayProduct.image,
-        // Discount limits
         bigUnitId: product.bigUnit?.id,
         smallUnitId: product.smallUnit?.id,
-        // Maximum quantity limits
         isMaximumAmountForUser: product.isMaximumAmountForUser,
         maximumAmountForUser: product.maximumAmountForUser,
       });
 
-      // Show success toast
       toast.success('Added to cart', 'تمت الإضافة إلى السلة');
-      // Also call the optional callback for any additional handling
       onAddToCart?.(product.id);
     });
-  }, [product, canAddToCart, effectiveSelectedUnit, displayProduct, currentPrice, addItem, requireAuth, onAddToCart]);
+  }, [product, displayProduct, canAddToCart, effectiveSelectedUnit, currentPrice, addItem, requireAuth, onAddToCart]);
 
   // Handle quantity update - LOCAL ONLY, NO API call
   const handleUpdateQuantity = useCallback((newQuantity: number) => {
     if (!product) return;
 
-    const unitId = currentUnitId;
-
     console.log('[ProductModal] LOCAL update quantity:', {
       productId: product.id,
       newQuantity,
-      unitId,
+      unitId: currentUnitId,
     });
 
     if (newQuantity <= 0) {
-      removeItem(product.id, unitId, undefined);
+      removeItem(product.id, currentUnitId, undefined);
     } else {
-      updateQuantity(product.id, unitId, undefined, newQuantity);
+      updateQuantity(product.id, currentUnitId, undefined, newQuantity);
     }
   }, [product, currentUnitId, updateQuantity, removeItem]);
 
   // Handle increment
   const handleIncrement = useCallback(() => {
     if (isAtMaxQuantity) {
-      toast.error(
-        'Maximum quantity reached',
-        'تم الوصول للحد الأقصى'
-      );
+      toast.error('Maximum quantity reached', 'تم الوصول للحد الأقصى');
       return;
     }
     if (cartQuantity === 0) {
@@ -447,7 +465,38 @@ export function ProductDetailModal({
     toast.info('You will be notified when available', 'سيتم إعلامك عند توفره');
   }, []);
 
-  // Localized getters - use displayProduct which has merged API data
+  // Effects (must be before early return)
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [isOpen]);
+
+  useEffect(() => {
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose();
+    };
+    if (isOpen) {
+      window.addEventListener('keydown', handleEscape);
+    }
+    return () => window.removeEventListener('keydown', handleEscape);
+  }, [isOpen, onClose]);
+
+  useEffect(() => {
+    setSelectedUnit('small');
+  }, [product?.id]);
+
+  // ============================================================================
+  // EARLY RETURN - Only after ALL hooks have been called
+  // ============================================================================
+  if (!isOpen || !product || !displayProduct) return null;
+
+  // Localized getters
   const getName = () => locale === 'ar' ? (displayProduct.nameAr || displayProduct.name) : displayProduct.name;
   const getDescription = () => locale === 'ar' ? (displayProduct.descriptionAr || displayProduct.description) : displayProduct.description;
   const getUsage = () => locale === 'ar' ? (displayProduct.usageAr || displayProduct.usage) : displayProduct.usage;
@@ -528,15 +577,21 @@ export function ProductDetailModal({
 
                   {/* Product image */}
                   <div className="relative aspect-square p-[32px]">
-                    <Image
-                      src={currentImage}
-                      alt={getName()}
-                      fill
-                      className="object-contain"
-                      sizes="450px"
-                      priority
-                      unoptimized
-                    />
+                    {currentImage ? (
+                      <Image
+                        src={currentImage}
+                        alt={getName()}
+                        fill
+                        className="object-contain"
+                        sizes="450px"
+                        priority
+                        unoptimized
+                      />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center bg-[#F0F0F0] rounded-[16px]">
+                        <span className="text-[#9CA3AF]">{t('common.noImage')}</span>
+                      </div>
+                    )}
                   </div>
 
                   {/* Premium Unit Toggle - Segmented Control with Prices */}
@@ -638,15 +693,21 @@ export function ProductDetailModal({
                           >
                             {/* Card image */}
                             <div className="relative aspect-square bg-[#FAFAFA] rounded-t-[16px]">
-                              <Image
-                                src={related.image}
-                                alt={getRelatedName(related)}
-                                fill
-                                className="object-contain"
-                                style={{ padding: '16px' }}
-                                sizes="160px"
-                                unoptimized
-                              />
+                              {related.image ? (
+                                <Image
+                                  src={related.image}
+                                  alt={getRelatedName(related)}
+                                  fill
+                                  className="object-contain"
+                                  style={{ padding: '16px' }}
+                                  sizes="160px"
+                                  unoptimized
+                                />
+                              ) : (
+                                <div className="w-full h-full flex items-center justify-center">
+                                  <span className="text-[#D1D5DB] text-[12px]">{t('common.noImage')}</span>
+                                </div>
+                              )}
                               {related.badge && (
                                 <div className={cn(
                                   "absolute px-[8px] py-[3px] rounded-[6px] bg-[#1F1F1F] text-[11px] font-semibold text-white",
