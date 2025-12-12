@@ -46,6 +46,7 @@ interface ProductCardProps {
   };
   isAvailable?: boolean;
   onAddToCart?: (unitType?: 'big' | 'small') => void;
+  onUpdateQuantity?: (quantity: number, unitType?: 'big' | 'small') => void;
   onClick?: () => void;
   className?: string;
   // Unit support
@@ -53,6 +54,23 @@ interface ProductCardProps {
   smallUnit?: UnitInfo;
   bigUnitImageUrl?: string;
   smallUnitImageUrl?: string;
+  // Cart quantity - per unit for 3-field matching
+  // Pass both so ProductCard can show correct quantity based on selected unit
+  smallUnitCartQuantity?: number;
+  bigUnitCartQuantity?: number;
+  // Legacy single quantity prop (deprecated, use per-unit quantities)
+  cartQuantity?: number;
+  isUpdating?: boolean;
+
+  // Maximum quantity per user (Flutter parity)
+  isMaximumAmountForUser?: boolean;
+  maximumAmountForUser?: number;
+
+  // Stock quantity (for out-of-stock handling)
+  itemAmount?: number;
+
+  // Notify Me callback (for out-of-stock items)
+  onNotifyMe?: (productId: number) => void;
 }
 
 export function ProductCard({
@@ -68,12 +86,24 @@ export function ProductCard({
   badge,
   isAvailable = true,
   onAddToCart,
+  onUpdateQuantity,
   onClick,
   className,
   bigUnit,
   smallUnit,
   bigUnitImageUrl,
   smallUnitImageUrl,
+  // Per-unit cart quantities for 3-field matching
+  smallUnitCartQuantity = 0,
+  bigUnitCartQuantity = 0,
+  // Legacy prop - fallback if per-unit not provided
+  cartQuantity: legacyCartQuantity = 0,
+  isUpdating = false,
+  // New props for Flutter parity
+  isMaximumAmountForUser,
+  maximumAmountForUser,
+  itemAmount,
+  onNotifyMe,
 }: ProductCardProps) {
   const { tenant, locale } = useTenant();
   const { isRTL, localize, t } = useTranslations();
@@ -83,8 +113,21 @@ export function ProductCard({
   const hasMultipleUnits = !!(bigUnit && smallUnit && bigUnit.price !== smallUnit.price);
   const [selectedUnit, setSelectedUnit] = useState<'small' | 'big'>('small');
 
-  // Get current unit info based on selection
-  const currentUnit = selectedUnit === 'big' ? bigUnit : smallUnit;
+  // Compute effective unit - handles single-unit products correctly
+  // - For multi-unit products: use user's selection
+  // - For single-unit products: use whichever unit actually exists
+  const effectiveSelectedUnit = hasMultipleUnits
+    ? selectedUnit
+    : (smallUnit ? 'small' : 'big');
+
+  // Get current unit info based on effective selection
+  const currentUnit = effectiveSelectedUnit === 'big' ? bigUnit : smallUnit;
+
+  // Compute cart quantity based on effective selected unit
+  // Uses per-unit quantities if provided, falls back to legacy prop
+  const cartQuantity = effectiveSelectedUnit === 'big'
+    ? (bigUnitCartQuantity || legacyCartQuantity)
+    : (smallUnitCartQuantity || legacyCartQuantity);
 
   // Calculate current price - use simple logic like other widgets:
   // For multiple units: use selected unit price
@@ -92,7 +135,7 @@ export function ProductCard({
   const currentPrice = hasMultipleUnits && currentUnit
     ? currentUnit.price
     : price;
-  const currentImage = selectedUnit === 'big' ? (bigUnitImageUrl || image) : (smallUnitImageUrl || image);
+  const currentImage = effectiveSelectedUnit === 'big' ? (bigUnitImageUrl || image) : (smallUnitImageUrl || image);
 
   const displayName = localize(name, nameAr);
   const displayPromo = localize(promoText || '', promoTextAr || '');
@@ -111,13 +154,33 @@ export function ProductCard({
     // Check if user is authenticated before adding to cart
     // If not authenticated, the login modal will open
     requireAuth(() => {
-      onAddToCart?.(selectedUnit);
+      onAddToCart?.(effectiveSelectedUnit);
     });
   };
 
   const handleUnitToggle = (e: React.MouseEvent, unit: 'small' | 'big') => {
     e.stopPropagation();
+    // Simply switch units - cart quantities are tracked per unit via 3-field matching
+    // The UI will automatically show the correct quantity for the new unit
+    // We don't clear the old unit's cart - user can have both units in cart
     setSelectedUnit(unit);
+  };
+
+  // Check if out of stock
+  const isOutOfStock = itemAmount !== undefined && itemAmount <= 0;
+
+  // Check if maximum quantity reached (only when increasing)
+  const isAtMaxQuantity = isMaximumAmountForUser && maximumAmountForUser
+    ? cartQuantity >= maximumAmountForUser
+    : false;
+
+  // Final availability check
+  const canAddToCart = isAvailable && !isOutOfStock;
+
+  // Handle Notify Me click
+  const handleNotifyMe = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    onNotifyMe?.(id);
   };
 
   return (
@@ -220,56 +283,131 @@ export function ProductCard({
           )}
         </div>
 
-        {/* Price Button */}
+        {/* Price Button / Quantity Stepper / Notify Me */}
         <div className="mt-auto">
-          <button
-            onClick={handleAddClick}
-            disabled={!isAvailable}
-            className={cn(
-              'inline-flex items-center justify-center',
-              'h-[32px] px-[8px] rounded-full',
-              'bg-[#F0F0F0] hover:bg-[#E8E8E8]',
-              'transition-colors duration-200',
-              'disabled:opacity-50 disabled:cursor-not-allowed',
-              'whitespace-nowrap'
-            )}
-          >
-            {/* Original price (strikethrough) */}
-            {hasDiscount && (
-              <span className={cn(
-                "text-[11px] text-[#BEBEBE] line-through font-normal",
-                isRTL ? "ml-[3px]" : "mr-[3px]"
-              )}>
-                {formatPrice(originalPrice, tenant.currency, locale)}
-              </span>
-            )}
-
-            {/* Current price */}
-            <span className="text-[13px] font-bold text-[#1A1A1A]">
-              {formatPrice(currentPrice, tenant.currency, locale)}
-            </span>
-
-            {/* Plus icon */}
-            <span className={cn(
-              "flex items-center justify-center",
-              isRTL ? "mr-[3px]" : "ml-[3px]"
-            )}>
-              <svg
-                width="14"
-                height="14"
-                viewBox="0 0 14 14"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <path
-                  d="M7 2.5V11.5M2.5 7H11.5"
-                  stroke="#1A1A1A"
-                  strokeWidth="1.5"
-                  strokeLinecap="round"
-                />
+          {isOutOfStock ? (
+            /* Notify Me Button - shown when out of stock */
+            <button
+              onClick={handleNotifyMe}
+              className={cn(
+                'inline-flex items-center justify-center gap-[4px]',
+                'h-[32px] px-[12px] rounded-full',
+                'bg-[#FFF3E0] hover:bg-[#FFE0B2]',
+                'transition-colors duration-200',
+                'text-[#FF6D00] font-medium text-[12px]',
+                'whitespace-nowrap'
+              )}
+            >
+              {/* Bell icon */}
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
+                <path d="M13.73 21a2 2 0 0 1-3.46 0" />
               </svg>
-            </span>
-          </button>
+              {t('product.notifyMe')}
+            </button>
+          ) : cartQuantity > 0 ? (
+            /* Quantity Stepper - shown when item is in cart */
+            <div
+              className={cn(
+                'inline-flex items-center justify-center',
+                'h-[32px] rounded-full',
+                'bg-[var(--color-primary)] text-white',
+                'transition-all duration-200',
+                isUpdating && 'opacity-70'
+              )}
+            >
+              {/* Minus button */}
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onUpdateQuantity?.(cartQuantity - 1, effectiveSelectedUnit);
+                }}
+                disabled={isUpdating}
+                className="w-[32px] h-[32px] flex items-center justify-center hover:bg-white/10 rounded-full transition-colors"
+              >
+                <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                  <path d="M2.5 7H11.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+                </svg>
+              </button>
+
+              {/* Quantity */}
+              <span className="min-w-[24px] text-center text-[13px] font-bold">
+                {cartQuantity}
+              </span>
+
+              {/* Plus button - disabled at max quantity */}
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  if (!isAtMaxQuantity) {
+                    onUpdateQuantity?.(cartQuantity + 1, effectiveSelectedUnit);
+                  }
+                }}
+                disabled={isUpdating || isAtMaxQuantity}
+                className={cn(
+                  "w-[32px] h-[32px] flex items-center justify-center rounded-full transition-colors",
+                  isAtMaxQuantity
+                    ? "opacity-40 cursor-not-allowed"
+                    : "hover:bg-white/10"
+                )}
+                title={isAtMaxQuantity ? t('product.maxQuantityReached') : undefined}
+              >
+                <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                  <path d="M7 2.5V11.5M2.5 7H11.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+                </svg>
+              </button>
+            </div>
+          ) : (
+            /* Add to Cart Button - shown when item not in cart */
+            <button
+              onClick={handleAddClick}
+              disabled={!canAddToCart}
+              className={cn(
+                'inline-flex items-center justify-center',
+                'h-[32px] px-[8px] rounded-full',
+                'bg-[#F0F0F0] hover:bg-[#E8E8E8]',
+                'transition-colors duration-200',
+                'disabled:opacity-50 disabled:cursor-not-allowed',
+                'whitespace-nowrap'
+              )}
+            >
+              {/* Original price (strikethrough) */}
+              {hasDiscount && (
+                <span className={cn(
+                  "text-[11px] text-[#BEBEBE] line-through font-normal",
+                  isRTL ? "ml-[3px]" : "mr-[3px]"
+                )}>
+                  {formatPrice(originalPrice, tenant.currency, locale)}
+                </span>
+              )}
+
+              {/* Current price */}
+              <span className="text-[13px] font-bold text-[#1A1A1A]">
+                {formatPrice(currentPrice, tenant.currency, locale)}
+              </span>
+
+              {/* Plus icon */}
+              <span className={cn(
+                "flex items-center justify-center",
+                isRTL ? "mr-[3px]" : "ml-[3px]"
+              )}>
+                <svg
+                  width="14"
+                  height="14"
+                  viewBox="0 0 14 14"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    d="M7 2.5V11.5M2.5 7H11.5"
+                    stroke="#1A1A1A"
+                    strokeWidth="1.5"
+                    strokeLinecap="round"
+                  />
+                </svg>
+              </span>
+            </button>
+          )}
         </div>
       </div>
     </div>
