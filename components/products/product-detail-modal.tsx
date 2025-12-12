@@ -13,14 +13,18 @@
  * 5. Fetches full product data and related products from API
  */
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import Image from 'next/image';
-import { X, Share2, ChevronDown, ChevronUp, Loader2 } from 'lucide-react';
+import { X, Share2, ChevronDown, ChevronUp, Loader2, Plus, Minus, Bell } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useTranslations } from '@/lib/hooks/use-translations';
 import { useTenant, useCurrency } from '@/lib/hooks/use-tenant';
+import { useAuth } from '@/lib/contexts/auth-context';
 import { formatPrice } from '@/lib/utils/format';
 import { useProductById, useRelatedProducts } from '@/lib/services/products';
+import { useCartStore, useLocalCartItems } from '@/lib/stores/cart-store';
+import { getCartItemKey } from '@/lib/services/cart';
+import { toast } from '@/lib/stores/toast-store';
 
 /**
  * Unit info for modal display
@@ -31,6 +35,7 @@ interface ProductUnitInfo {
   nameAr: string;
   amount: number;
   price: number;
+  specialPrice?: number;  // Discounted price for this unit
   imageUrl?: string;
 }
 
@@ -76,6 +81,11 @@ export interface ProductDetailData {
   smallUnitPrice?: number;
   bigUnitImageUrl?: string;
   smallUnitImageUrl?: string;
+  // Stock & availability validation
+  isAvailable?: boolean;
+  itemAmount?: number;
+  isMaximumAmountForUser?: boolean;
+  maximumAmountForUser?: number;
 }
 
 interface RelatedProduct {
@@ -155,6 +165,30 @@ export function ProductDetailModal({
   const [selectedUnit, setSelectedUnit] = useState<'small' | 'big'>('small');
   const { t, locale, isRTL } = useTranslations();
   const currency = useCurrency();
+  const { requireAuth } = useAuth();
+
+  // LOCAL-FIRST: Use local cart store instead of API
+  const localCartItems = useLocalCartItems();
+  const addItem = useCartStore((state) => state.addItem);
+  const updateQuantity = useCartStore((state) => state.updateQuantity);
+  const removeItem = useCartStore((state) => state.removeItem);
+
+  // Create a map using 3-field key (itemId-unitId-flavorId) to cart quantity
+  const quantityMap = useMemo(() => {
+    const map = new Map<string, number>();
+    localCartItems.forEach(item => {
+      const key = getCartItemKey(item.itemId, item.selectedUnitId, item.selectedFlavorId);
+      const existing = map.get(key) || 0;
+      map.set(key, existing + item.quantity);
+    });
+    return map;
+  }, [localCartItems]);
+
+  // Get display quantity for a specific product+unit combination
+  const getDisplayQuantity = useCallback((productId: number, unitId?: number, flavorId?: number): number => {
+    const key = getCartItemKey(productId, unitId, flavorId);
+    return quantityMap.get(key) || 0;
+  }, [quantityMap]);
 
   // Fetch full product details from API
   const { data: fullProduct, isLoading: isLoadingProduct } = useProductById(
@@ -266,6 +300,44 @@ export function ProductDetailModal({
 
   const hasDiscount = displayProduct.originalPrice && displayProduct.originalPrice > currentPrice;
 
+  // Compute cart quantity based on selected unit - matching ProductCard logic
+  const hasMultipleUnitsForCart = product?.bigUnit && product?.smallUnit;
+  const effectiveSelectedUnit = hasMultipleUnitsForCart
+    ? selectedUnit
+    : (product?.smallUnit ? 'small' : 'big');
+  const currentUnitObj = effectiveSelectedUnit === 'big' ? product?.bigUnit : product?.smallUnit;
+  const currentUnitId = currentUnitObj?.id;
+
+  // Get per-unit quantities using 3-field matching from LOCAL store
+  const smallQty = product?.smallUnit?.id ? getDisplayQuantity(product.id, product.smallUnit.id, undefined) : 0;
+  const bigQty = product?.bigUnit?.id ? getDisplayQuantity(product.id, product.bigUnit.id, undefined) : 0;
+  const legacyQty = product ? getDisplayQuantity(product.id, undefined, undefined) : 0;
+
+  // Cart quantity for current selected unit
+  const cartQuantity = effectiveSelectedUnit === 'big'
+    ? (bigQty || legacyQty)
+    : (smallQty || legacyQty);
+
+  // Check if out of stock
+  const isOutOfStock = product?.itemAmount !== undefined && product.itemAmount <= 0;
+  const isUnavailable = product?.isAvailable === false;
+
+  // Check if maximum quantity reached (from any source)
+  // 1. Per-user limit: isMaximumAmountForUser && cartQuantity >= maximumAmountForUser
+  // 2. Stock limit: itemAmount > 0 && cartQuantity >= itemAmount
+  const isAtMaxPerUserLimit = product?.isMaximumAmountForUser && product?.maximumAmountForUser
+    ? cartQuantity >= product.maximumAmountForUser
+    : false;
+
+  const isAtStockLimit = product?.itemAmount !== undefined && product.itemAmount > 0
+    ? cartQuantity >= product.itemAmount
+    : false;
+
+  const isAtMaxQuantity = isAtMaxPerUserLimit || isAtStockLimit;
+
+  // Check if product can be added to cart
+  const canAddToCart = !isOutOfStock && !isUnavailable;
+
   const toggleSection = (section: string) => {
     setExpandedSections((prev) => {
       const next = new Set(prev);
@@ -278,9 +350,102 @@ export function ProductDetailModal({
     });
   };
 
-  const handleAddToCart = () => {
-    onAddToCart?.(product.id);
-  };
+  // Handle add to cart - LOCAL ONLY, NO API call (following Flutter documentation)
+  const handleAddToCart = useCallback(() => {
+    if (!product || !canAddToCart) return;
+
+    requireAuth(() => {
+      // Get unit info based on selection, with fallbacks
+      let unitObj = effectiveSelectedUnit === 'big' ? product.bigUnit : product.smallUnit;
+
+      // Fallback: if selected unit doesn't exist, try the other one
+      if (!unitObj) {
+        unitObj = product.smallUnit || product.bigUnit;
+      }
+
+      const unitId = unitObj?.id;
+      const discountPrice = unitObj?.specialPrice || displayProduct.originalPrice;
+
+      console.log('[ProductModal] LOCAL add to cart:', {
+        itemId: product.id,
+        selectedUnit: effectiveSelectedUnit,
+        unitId,
+        price: currentPrice,
+      });
+
+      // Add to LOCAL cart (instant, no API call)
+      addItem({
+        itemId: product.id,
+        quantity: 1,
+        customerUnitId: unitId,
+        itemUnitId: unitId,
+        normalPrice: currentPrice,
+        itemPriceAfterDiscount: discountPrice,
+        // Product metadata for display in cart
+        name: displayProduct.name,
+        nameAr: displayProduct.nameAr,
+        image: displayProduct.image,
+        // Discount limits
+        bigUnitId: product.bigUnit?.id,
+        smallUnitId: product.smallUnit?.id,
+        // Maximum quantity limits
+        isMaximumAmountForUser: product.isMaximumAmountForUser,
+        maximumAmountForUser: product.maximumAmountForUser,
+      });
+
+      // Show success toast
+      toast.success('Added to cart', 'تمت الإضافة إلى السلة');
+      // Also call the optional callback for any additional handling
+      onAddToCart?.(product.id);
+    });
+  }, [product, canAddToCart, effectiveSelectedUnit, displayProduct, currentPrice, addItem, requireAuth, onAddToCart]);
+
+  // Handle quantity update - LOCAL ONLY, NO API call
+  const handleUpdateQuantity = useCallback((newQuantity: number) => {
+    if (!product) return;
+
+    const unitId = currentUnitId;
+
+    console.log('[ProductModal] LOCAL update quantity:', {
+      productId: product.id,
+      newQuantity,
+      unitId,
+    });
+
+    if (newQuantity <= 0) {
+      removeItem(product.id, unitId, undefined);
+    } else {
+      updateQuantity(product.id, unitId, undefined, newQuantity);
+    }
+  }, [product, currentUnitId, updateQuantity, removeItem]);
+
+  // Handle increment
+  const handleIncrement = useCallback(() => {
+    if (isAtMaxQuantity) {
+      toast.error(
+        'Maximum quantity reached',
+        'تم الوصول للحد الأقصى'
+      );
+      return;
+    }
+    if (cartQuantity === 0) {
+      handleAddToCart();
+    } else {
+      handleUpdateQuantity(cartQuantity + 1);
+    }
+  }, [cartQuantity, isAtMaxQuantity, handleAddToCart, handleUpdateQuantity]);
+
+  // Handle decrement
+  const handleDecrement = useCallback(() => {
+    if (cartQuantity > 0) {
+      handleUpdateQuantity(cartQuantity - 1);
+    }
+  }, [cartQuantity, handleUpdateQuantity]);
+
+  // Handle notify me
+  const handleNotifyMe = useCallback(() => {
+    toast.info('You will be notified when available', 'سيتم إعلامك عند توفره');
+  }, []);
 
   // Localized getters - use displayProduct which has merged API data
   const getName = () => locale === 'ar' ? (displayProduct.nameAr || displayProduct.name) : displayProduct.name;
@@ -700,20 +865,79 @@ export function ProductDetailModal({
 
               {/* STICKY Add to Cart bar - FULL WIDTH of right column */}
               <div className="sticky bottom-0 left-0 right-0 bg-white px-[16px] py-[16px] z-10">
-                {/* Full-width primary color pill button */}
-                <button
-                  onClick={handleAddToCart}
-                  className="w-full h-[56px] rounded-full text-white text-[18px] font-semibold flex items-center justify-center gap-[8px] transition-colors"
-                  style={{ background: 'linear-gradient(to right, #FF4B12, #FF6B3D)' }}
-                >
-                  {hasDiscount && (
-                    <span className="text-[16px] text-white/60 line-through">
-                      {formatPrice(displayProduct.originalPrice!, currency, locale)}
-                    </span>
-                  )}
-                  <span>{formatPrice(currentPrice, currency, locale)}</span>
-                  <span className={cn("text-[24px] font-normal", isRTL ? "mr-[6px]" : "ml-[6px]")}>+</span>
-                </button>
+                {/* Out of Stock - Show Notify Me Button */}
+                {(isOutOfStock || isUnavailable) ? (
+                  <button
+                    onClick={handleNotifyMe}
+                    className="w-full h-[56px] rounded-full bg-[#F0F0F0] text-[#1A1A1A] text-[18px] font-semibold flex items-center justify-center gap-[8px] transition-colors hover:bg-[#E5E5E5]"
+                  >
+                    <Bell className="w-[20px] h-[20px]" />
+                    <span>{isRTL ? 'أعلمني عند التوفر' : 'Notify Me'}</span>
+                  </button>
+                ) : cartQuantity > 0 ? (
+                  /* In Cart - Show Quantity Stepper */
+                  <div className="flex items-center gap-[12px]">
+                    {/* Price display */}
+                    <div className={cn("flex-1 flex items-center", isRTL ? "flex-row-reverse justify-end" : "justify-start")}>
+                      {hasDiscount && (
+                        <span className="text-[14px] text-[#9CA3AF] line-through mr-[8px]">
+                          {formatPrice(displayProduct.originalPrice!, currency, locale)}
+                        </span>
+                      )}
+                      <span className="text-[20px] font-bold" style={{ color: 'var(--color-primary)' }}>
+                        {formatPrice(currentPrice * cartQuantity, currency, locale)}
+                      </span>
+                    </div>
+
+                    {/* Quantity Stepper */}
+                    <div className="flex items-center rounded-full overflow-hidden" style={{ background: 'linear-gradient(to right, #FF4B12, #FF6B3D)' }}>
+                      {/* Minus Button */}
+                      <button
+                        onClick={handleDecrement}
+                        className="w-[56px] h-[56px] flex items-center justify-center text-white hover:bg-black/10 transition-colors"
+                      >
+                        {cartQuantity === 1 ? (
+                          <X className="w-[22px] h-[22px]" />
+                        ) : (
+                          <Minus className="w-[22px] h-[22px]" />
+                        )}
+                      </button>
+
+                      {/* Quantity Display */}
+                      <span className="min-w-[48px] text-center text-[20px] font-bold text-white">
+                        {cartQuantity}
+                      </span>
+
+                      {/* Plus Button */}
+                      <button
+                        onClick={handleIncrement}
+                        disabled={isAtMaxQuantity}
+                        className={cn(
+                          "w-[56px] h-[56px] flex items-center justify-center text-white transition-colors",
+                          isAtMaxQuantity ? "opacity-40 cursor-not-allowed" : "hover:bg-black/10"
+                        )}
+                        title={isAtMaxQuantity ? (isRTL ? 'تم الوصول للحد الأقصى' : 'Maximum quantity reached') : undefined}
+                      >
+                        <Plus className="w-[22px] h-[22px]" />
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  /* Not in Cart - Show Add Button */
+                  <button
+                    onClick={handleAddToCart}
+                    className="w-full h-[56px] rounded-full text-white text-[18px] font-semibold flex items-center justify-center gap-[8px] transition-colors"
+                    style={{ background: 'linear-gradient(to right, #FF4B12, #FF6B3D)' }}
+                  >
+                    {hasDiscount && (
+                      <span className="text-[16px] text-white/60 line-through">
+                        {formatPrice(displayProduct.originalPrice!, currency, locale)}
+                      </span>
+                    )}
+                    <span>{formatPrice(currentPrice, currency, locale)}</span>
+                    <span className={cn("text-[24px] font-normal", isRTL ? "mr-[6px]" : "ml-[6px]")}>+</span>
+                  </button>
+                )}
               </div>
             </div>
           </div>
