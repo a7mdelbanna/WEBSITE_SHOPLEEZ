@@ -169,10 +169,18 @@ export function ProductCard({
   // Check if out of stock
   const isOutOfStock = itemAmount !== undefined && itemAmount <= 0;
 
-  // Check if maximum quantity reached (only when increasing)
-  const isAtMaxQuantity = isMaximumAmountForUser && maximumAmountForUser
+  // Check if maximum quantity reached (from any source)
+  // 1. Per-user limit: isMaximumAmountForUser && cartQuantity >= maximumAmountForUser
+  // 2. Stock limit: itemAmount > 0 && cartQuantity >= itemAmount
+  const isAtMaxPerUserLimit = isMaximumAmountForUser && maximumAmountForUser
     ? cartQuantity >= maximumAmountForUser
     : false;
+
+  const isAtStockLimit = itemAmount !== undefined && itemAmount > 0
+    ? cartQuantity >= itemAmount
+    : false;
+
+  const isAtMaxQuantity = isAtMaxPerUserLimit || isAtStockLimit;
 
   // Final availability check
   const canAddToCart = isAvailable && !isOutOfStock;
