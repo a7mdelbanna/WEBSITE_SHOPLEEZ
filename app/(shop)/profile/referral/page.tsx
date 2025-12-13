@@ -62,7 +62,7 @@ const STEPS = [
 export default function ReferralPage() {
   const router = useRouter();
   const { isRTL } = useTranslations();
-  const { isAuthenticated, openLoginModal } = useAuth();
+  const { isAuthenticated, isLoading: authLoading, openLoginModal } = useAuth();
 
   const [copied, setCopied] = useState(false);
 
@@ -79,6 +79,9 @@ export default function ReferralPage() {
 
   // Redirect if not authenticated
   useEffect(() => {
+    // Don't redirect while still checking authentication
+    if (authLoading) return;
+
     if (!isAuthenticated) {
       openLoginModal();
       router.push('/profile');

@@ -113,13 +113,13 @@ export default function OrdersPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { isRTL } = useTranslations();
-  const { isAuthenticated, openLoginModal } = useAuth();
+  const { isAuthenticated, isLoading: authLoading, openLoginModal } = useAuth();
 
   // Success message state
   const [showSuccessMessage, setShowSuccessMessage] = useState(false);
 
-  // Fetch orders
-  const { data: orders, isLoading, error } = useMyOrders();
+  // Fetch orders - only enabled when authenticated
+  const { data: orders, isLoading, error } = useMyOrders(isAuthenticated);
 
   // Check for success redirect from checkout
   useEffect(() => {
@@ -141,13 +141,17 @@ export default function OrdersPage() {
     }
   }, [searchParams]);
 
-  // Redirect if not authenticated
+  // Redirect if not authenticated - ONLY after auth loading is complete
   useEffect(() => {
+    // Don't redirect while still checking authentication
+    if (authLoading) return;
+
     if (!isAuthenticated) {
+      console.log('[Orders] User not authenticated, redirecting to home');
       openLoginModal();
       router.push('/');
     }
-  }, [isAuthenticated, openLoginModal, router]);
+  }, [isAuthenticated, authLoading, openLoginModal, router]);
 
   // Format price
   const formatPrice = (price: number) => {

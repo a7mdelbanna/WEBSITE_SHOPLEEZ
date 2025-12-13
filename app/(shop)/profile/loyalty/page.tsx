@@ -59,7 +59,7 @@ const EARN_STEPS = [
 export default function LoyaltyPage() {
   const router = useRouter();
   const { isRTL } = useTranslations();
-  const { isAuthenticated, openLoginModal } = useAuth();
+  const { isAuthenticated, isLoading: authLoading, openLoginModal } = useAuth();
 
   // Fetch profile for points
   const { data: profile, isLoading } = useProfile(isAuthenticated);
@@ -90,6 +90,9 @@ export default function LoyaltyPage() {
 
   // Redirect if not authenticated
   useEffect(() => {
+    // Don't redirect while still checking authentication
+    if (authLoading) return;
+
     if (!isAuthenticated) {
       openLoginModal();
       router.push('/profile');

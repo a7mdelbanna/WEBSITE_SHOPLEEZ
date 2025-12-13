@@ -106,7 +106,7 @@ function TransactionItem({
 export default function TransactionsPage() {
   const router = useRouter();
   const { isRTL, locale } = useTranslations();
-  const { isAuthenticated, openLoginModal } = useAuth();
+  const { isAuthenticated, isLoading: authLoading, openLoginModal } = useAuth();
   const { locale: _, ...currency } = useCurrency();
 
   // Fetch transactions
@@ -115,6 +115,9 @@ export default function TransactionsPage() {
 
   // Redirect if not authenticated
   useEffect(() => {
+    // Don't redirect while still checking authentication
+    if (authLoading) return;
+
     if (!isAuthenticated) {
       openLoginModal();
       router.push('/profile');

@@ -35,7 +35,7 @@ import type { CartItem } from '@/types/cart';
 export default function FavoritesPage() {
   const router = useRouter();
   const { isRTL } = useTranslations();
-  const { isAuthenticated, openLoginModal } = useAuth();
+  const { isAuthenticated, isLoading: authLoading, openLoginModal } = useAuth();
 
   // Fetch favorites
   const { data: favoritesData, isLoading } = useFavorites();
@@ -48,6 +48,9 @@ export default function FavoritesPage() {
 
   // Redirect if not authenticated
   useEffect(() => {
+    // Don't redirect while still checking authentication
+    if (authLoading) return;
+
     if (!isAuthenticated) {
       openLoginModal();
       router.push('/profile');

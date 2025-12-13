@@ -170,7 +170,7 @@ function ConnectionStatus({
 export default function ChatbotPage() {
   const router = useRouter();
   const { isRTL } = useTranslations();
-  const { isAuthenticated, openLoginModal } = useAuth();
+  const { isAuthenticated, isLoading: authLoading, openLoginModal } = useAuth();
   const { storeId } = useApiClient();
   const { data: profile } = useProfile(isAuthenticated);
 
@@ -227,6 +227,9 @@ export default function ChatbotPage() {
 
   // Redirect if not authenticated
   useEffect(() => {
+    // Don't redirect while still checking authentication
+    if (authLoading) return;
+
     if (!isAuthenticated) {
       openLoginModal();
       router.push('/profile');

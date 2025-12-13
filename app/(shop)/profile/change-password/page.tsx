@@ -43,7 +43,7 @@ const PASSWORD_RULES = [
 export default function ChangePasswordPage() {
   const router = useRouter();
   const { isRTL } = useTranslations();
-  const { isAuthenticated, openLoginModal } = useAuth();
+  const { isAuthenticated, isLoading: authLoading, openLoginModal } = useAuth();
   const changePasswordMutation = useChangePassword();
 
   // Form state
@@ -58,6 +58,9 @@ export default function ChangePasswordPage() {
 
   // Redirect if not authenticated
   useEffect(() => {
+    // Don't redirect while still checking authentication
+    if (authLoading) return;
+
     if (!isAuthenticated) {
       openLoginModal();
       router.push('/profile');
