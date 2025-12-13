@@ -211,9 +211,10 @@ export function useMyOrders(enabled = true) {
         const itemCount = order.itemDetails?.length || 0;
 
         // Parse date and time from API
-        // API returns: orderEznDate (e.g., "2025-12-13")
-        //              orderEznTime (e.g., "17:37 م" or "09:20 ص")
-        // Note: م = PM (مساءً), ص = AM (صباحاً) in Arabic
+        // CRITICAL: API returns 24-hour time with Arabic AM/PM characters
+        // orderEznDate: "2025-12-13"
+        // orderEznTime: "17:37 م" (already 24-hour! م is decorative)
+        // orderEznTime: "09:20 ص" (already 24-hour! ص is decorative)
         let createdAt = new Date().toISOString();
 
         if (order.orderEznDate) {
@@ -222,31 +223,30 @@ export function useMyOrders(enabled = true) {
             const dateObj = new Date(order.orderEznDate);
 
             if (!isNaN(dateObj.getTime())) {
+              const dateStr = dateObj.toISOString().split('T')[0];
+
               // Parse time if provided
               if (order.orderEznTime) {
-                // Remove Arabic AM/PM characters: م (PM) or ص (AM)
-                const timeStr = order.orderEznTime
-                  .replace(/\s*م\s*$/i, ' PM')  // Replace م with PM
-                  .replace(/\s*ص\s*$/i, ' AM')  // Replace ص with AM
+                // Remove Arabic AM/PM characters (they're decorative, time is already 24-hour)
+                // "17:37 م" → "17:37"
+                // "09:20 ص" → "09:20"
+                const timeOnly = order.orderEznTime
+                  .replace(/\s*[مص]\s*$/i, '')  // Remove م or ص
                   .trim();
 
-                // Create date-time string
-                const dateStr = dateObj.toISOString().split('T')[0];
+                // Split time parts
+                const timeParts = timeOnly.split(':');
+                if (timeParts.length >= 2) {
+                  const hours = timeParts[0].padStart(2, '0');
+                  const minutes = timeParts[1].padStart(2, '0');
+                  const seconds = timeParts[2] || '00';
 
-                // Convert 12-hour time to 24-hour format for ISO
-                const [time, period] = timeStr.split(' ');
-                let [hours, minutes] = time.split(':').map(Number);
-
-                if (period === 'PM' && hours !== 12) {
-                  hours += 12;
-                } else if (period === 'AM' && hours === 12) {
-                  hours = 0;
+                  // Add 'Z' suffix to make it a valid ISO 8601 UTC string
+                  createdAt = `${dateStr}T${hours}:${minutes}:${seconds}Z`;
+                } else {
+                  // Fallback to just the date
+                  createdAt = dateObj.toISOString();
                 }
-
-                const hours24 = hours.toString().padStart(2, '0');
-                const mins = minutes.toString().padStart(2, '0');
-
-                createdAt = `${dateStr}T${hours24}:${mins}:00`;
               } else {
                 createdAt = dateObj.toISOString();
               }
