@@ -381,7 +381,9 @@ export function useOrderDetails(orderId: number | null) {
         total: data.orderEznNetValue || 0,
         paymentMethod: data.paymentMethod || 'CashOnDelivery',
         isPaid: data.paymentStatus === 'Paid',
-        address: data.address ? {
+        address: data.address ? (() => {
+          console.log('[Order] Raw address from API:', data.address);
+          const addressObj = {
           id: data.address.id || 0,
           addressTitle: data.address.addressName || 'Delivery Address',
           fullAddress: [
@@ -400,7 +402,10 @@ export function useOrderDetails(orderId: number | null) {
           floorNumber: data.address.floorNo,
           apartmentNumber: data.address.apartment,
           landmark: data.address.famousSign || data.address.deliveryNotes,
-        } : undefined,
+          };
+          console.log('[Order] Created address object:', addressObj);
+          return addressObj;
+        })() : undefined,
         estimatedDeliveryTime: data.remainingTimeInMinutes ? `${data.remainingTimeInMinutes} minutes` : undefined,
         actualDeliveryTime: undefined,
         note: data.orderEznMemo || '',

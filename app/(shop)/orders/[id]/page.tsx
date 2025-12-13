@@ -353,23 +353,25 @@ export default function OrderDetailsPage() {
             </div>
 
             {/* Delivery Address */}
-            <div className="bg-[#F9FAFB] rounded-[16px] p-5">
-              <div className="flex items-center gap-2 mb-4">
-                <MapPin className="w-5 h-5" style={{ color: 'var(--color-primary)' }} />
-                <h2 className="text-[16px] font-semibold text-[#1A1A1A]">
-                  {isRTL ? 'عنوان التوصيل' : 'Delivery Address'}
-                </h2>
-              </div>
+            {order.address && (
+              <div className="bg-[#F9FAFB] rounded-[16px] p-5">
+                <div className="flex items-center gap-2 mb-4">
+                  <MapPin className="w-5 h-5" style={{ color: 'var(--color-primary)' }} />
+                  <h2 className="text-[16px] font-semibold text-[#1A1A1A]">
+                    {isRTL ? 'عنوان التوصيل' : 'Delivery Address'}
+                  </h2>
+                </div>
 
-              <div className="bg-white rounded-[12px] p-4">
-                <p className="text-[14px] font-medium text-[#1A1A1A]">
-                  {order.address.addressTitle}
-                </p>
-                <p className="text-[13px] text-[#6B7280] mt-1">
-                  {order.address.fullAddress}
-                </p>
+                <div className="bg-white rounded-[12px] p-4">
+                  <p className="text-[14px] font-medium text-[#1A1A1A]">
+                    {order.address.addressTitle}
+                  </p>
+                  <p className="text-[13px] text-[#6B7280] mt-1">
+                    {order.address.fullAddress}
+                  </p>
+                </div>
               </div>
-            </div>
+            )}
 
             {/* Order Note */}
             {order.note && (
