@@ -305,21 +305,39 @@ export function useOrderDetails(orderId: number | null) {
       const data = response.data?.data || response.data;
       console.log('[Order] Extracted order details:', data);
 
+      // Log raw itemDetails to debug
+      console.log('[Order] Raw itemDetails from API:', data.itemDetails);
+
       // Map itemDetails array
-      const items = (data.itemDetails || []).map((item: any) => ({
-        id: item.id || 0,
-        itemId: item.itemId || 0,
-        name: item.itemNameEN || item.itemNameAR || 'Item',
-        nameAr: item.itemNameAR || item.itemNameEN || 'منتج',
-        image: item.itemImageUrl || '',
-        quantity: item.orderDetQty || 1,
-        unitPrice: item.unitPrice || 0,
-        totalPrice: item.orderDetTotal || 0,
-        unitName: item.itemUnit?.unitNameEN || item.selectedUnit || '',
-        unitNameAr: item.itemUnit?.unitNameAR || item.selectedUnit || '',
-        flavorName: undefined,
-        flavorNameAr: undefined,
-      }));
+      const items = (data.itemDetails || []).map((item: any, index: number) => {
+        console.log(`[Order] Item ${index}:`, {
+          id: item.id,
+          itemId: item.itemId,
+          itemNameEN: item.itemNameEN,
+          itemNameAR: item.itemNameAR,
+          itemImageUrl: item.itemImageUrl,
+          orderDetQty: item.orderDetQty,
+          unitPrice: item.unitPrice,
+          orderDetTotal: item.orderDetTotal,
+          selectedUnit: item.selectedUnit,
+          itemUnit: item.itemUnit,
+        });
+
+        return {
+          id: item.id || 0,
+          itemId: item.itemId || 0,
+          name: item.itemNameEN || item.itemNameAR || 'Item',
+          nameAr: item.itemNameAR || item.itemNameEN || 'منتج',
+          image: item.itemImageUrl || '',
+          quantity: item.orderDetQty || 1,
+          unitPrice: item.unitPrice || 0,
+          totalPrice: item.orderDetTotal || 0,
+          unitName: item.itemUnit?.unitNameEN || item.selectedUnit || '',
+          unitNameAr: item.itemUnit?.unitNameAR || item.selectedUnit || '',
+          flavorName: undefined,
+          flavorNameAr: undefined,
+        };
+      });
 
       // Combine date and time
       const createdAt = data.orderEznDate
