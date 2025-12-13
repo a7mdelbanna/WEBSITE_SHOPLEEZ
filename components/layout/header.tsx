@@ -13,6 +13,7 @@
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
+import { useRouter } from 'next/navigation';
 import { Search, User, Menu, X, MessageCircle, Globe, LogOut, Loader2, Plus, Minus, ShoppingCart } from 'lucide-react';
 import { useTenant, useCurrency } from '@/lib/hooks/use-tenant';
 import { useTranslations } from '@/lib/hooks/use-translations';
@@ -50,6 +51,7 @@ function useDebounce<T>(value: T, delay: number): T {
 }
 
 export function Header({ onMenuClick }: HeaderProps) {
+  const router = useRouter();
   const { tenant, locale, setLocale } = useTenant();
   const { t, isRTL, localize } = useTranslations();
   const currency = useCurrency();
@@ -91,7 +93,12 @@ export function Header({ onMenuClick }: HeaderProps) {
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
-    // Search is handled automatically via debounce
+
+    // Only navigate if valid search query (2+ chars)
+    if (searchQuery.trim().length >= 2) {
+      setSearchFocused(false); // Close dropdown
+      router.push(`/search?q=${encodeURIComponent(searchQuery.trim())}`);
+    }
   };
 
   const handleSearchBlur = () => {
@@ -190,6 +197,16 @@ export function Header({ onMenuClick }: HeaderProps) {
                   className="flex h-[24px] w-[24px] items-center justify-center rounded-full hover:bg-[#F5F5F5] transition-colors"
                 >
                   <X className="h-[16px] w-[16px] text-[#9E9E9E]" />
+                </button>
+              )}
+              {/* Search Icon - Navigate to full page */}
+              {searchQuery.trim().length >= 2 && (
+                <button
+                  type="submit"
+                  className="flex h-[32px] w-[32px] items-center justify-center rounded-full hover:bg-[#F5F5F5] transition-colors"
+                  aria-label="View all search results"
+                >
+                  <Search className="h-[18px] w-[18px] text-[var(--color-primary)]" />
                 </button>
               )}
             </div>

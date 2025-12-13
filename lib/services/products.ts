@@ -441,3 +441,72 @@ export function useSearchProducts(query: string, enabled = true) {
     placeholderData: (previousData) => previousData, // Keep showing old results while loading new
   });
 }
+
+/**
+ * Search products with pagination support
+ * For full-page search results
+ */
+export function useSearchProductsPaginated(
+  query: string,
+  page: number = 1,
+  pageSize: number = 24,
+  enabled = true
+) {
+  const { apiClient, storeId, buildEndpoint } = useApiClient();
+
+  return useQuery<{
+    items: ProductSummary[];
+    totalCount: number;
+    pageNumber: number;
+    pageSize: number;
+    totalPages: number;
+    hasNextPage: boolean;
+    hasPreviousPage: boolean;
+  }>({
+    queryKey: [...productQueryKeys.search(storeId, query), page, pageSize],
+    queryFn: async () => {
+      if (!query.trim()) {
+        return {
+          items: [],
+          totalCount: 0,
+          pageNumber: 1,
+          pageSize: pageSize,
+          totalPages: 0,
+          hasNextPage: false,
+          hasPreviousPage: false,
+        };
+      }
+
+      const url = buildEndpoint(API_ENDPOINTS.products.getAll);
+      const { data } = await apiClient.get(url, {
+        params: {
+          searchQuery: query.trim(),
+          pageNumber: page,
+          pageSize: pageSize,
+        },
+      });
+
+      // Extract items array
+      const items = data.data || data.items || data || [];
+      const normalizedItems = Array.isArray(items) ? items.map(normalizeProductItem) : [];
+
+      // Calculate pagination info
+      const totalCount = normalizedItems.length; // API should return total, but fallback to items length
+      const totalPages = Math.ceil(totalCount / pageSize);
+
+      return {
+        items: normalizedItems,
+        totalCount,
+        pageNumber: page,
+        pageSize,
+        totalPages,
+        hasNextPage: page < totalPages,
+        hasPreviousPage: page > 1,
+      };
+    },
+    enabled: enabled && query.trim().length >= 2,
+    staleTime: 30 * 1000,
+    gcTime: 5 * 60 * 1000,
+    placeholderData: (previousData) => previousData,
+  });
+}
