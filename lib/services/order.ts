@@ -174,6 +174,14 @@ export function useCheckout() {
 
 /**
  * Get my orders (order history)
+ *
+ * API Response Structure (from Profile Module Documentation):
+ * - orderEznNo: Order number
+ * - orderStatus: Order status (Pending, Confirmed, Processing, etc.)
+ * - orderEznDate: Order date
+ * - orderEznTime: Order time
+ * - orderEznNetValue: Total amount
+ * - itemDetails: Array of order items
  */
 export function useMyOrders(enabled = true) {
   const { apiClient, storeId } = useApiClient();
@@ -183,20 +191,43 @@ export function useMyOrders(enabled = true) {
     queryFn: async () => {
       const url = buildUrl(API_ENDPOINTS.orders.getMyOrders, storeId);
       const response = await apiClient.get(url);
-      console.log('[Order] My orders response:', response.data);
+      console.log('[Order] My orders raw response:', response.data);
+
+      // API returns { result, data } structure
       const data = response.data?.data || response.data;
+      console.log('[Order] Extracted data:', data);
 
-      if (!Array.isArray(data)) return [];
+      if (!Array.isArray(data)) {
+        console.warn('[Order] Response data is not an array:', data);
+        return [];
+      }
 
-      return data.map((order: any) => ({
-        id: order.id || order.orderId,
-        orderNumber: order.orderNumber || order.orderNo || `#${order.id}`,
-        status: order.status || order.orderStatus || 'Pending',
-        itemCount: order.itemCount || order.totalItems || order.items?.length || 0,
-        total: order.total || order.finalAmount || order.totalAmount || 0,
-        createdAt: order.createdAt || order.orderDate || order.dateCreated,
-        firstItemImage: order.firstItemImage || order.items?.[0]?.image,
-      }));
+      // Map API response to OrderSummary format
+      const orders = data.map((order: any) => {
+        // Get first item image from itemDetails array
+        const firstItemImage = order.itemDetails?.[0]?.itemImageUrl || null;
+
+        // Count items
+        const itemCount = order.itemDetails?.length || 0;
+
+        // Combine date and time for createdAt
+        const createdAt = order.orderEznDate
+          ? `${order.orderEznDate}${order.orderEznTime ? ' ' + order.orderEznTime : ''}`
+          : new Date().toISOString();
+
+        return {
+          id: order.id || 0,
+          orderNumber: order.orderEznNo ? `#${order.orderEznNo}` : `#${order.id}`,
+          status: order.orderStatus || 'Pending',
+          itemCount,
+          total: order.orderEznNetValue || 0,
+          createdAt,
+          firstItemImage,
+        };
+      });
+
+      console.log('[Order] Mapped orders:', orders);
+      return orders;
     },
     enabled,
     staleTime: 60 * 1000, // 1 minute
@@ -206,6 +237,17 @@ export function useMyOrders(enabled = true) {
 
 /**
  * Get order details by ID
+ *
+ * API Response Structure (from Profile Module Documentation):
+ * - orderEznNo: Order number
+ * - orderStatus: Order status
+ * - orderEznDate, orderEznTime: Date and time
+ * - itemDetails: Array of items
+ * - orderEznNetValue: Total amount
+ * - orderEznTotal, orderEznTotalVatValue, orderEznTotalTaxValue: Price breakdown
+ * - couponDisVal: Coupon discount
+ * - deliveryFee: Delivery fee
+ * - orderTipVal: Tip amount
  */
 export function useOrderDetails(orderId: number | null) {
   const { apiClient, storeId } = useApiClient();
@@ -216,51 +258,65 @@ export function useOrderDetails(orderId: number | null) {
       const url = buildUrl(API_ENDPOINTS.orders.getDetails, storeId)
         .replace('{orderId}', String(orderId));
       const response = await apiClient.get(url);
-      console.log('[Order] Order details response:', response.data);
+      console.log('[Order] Order details raw response:', response.data);
+
+      // API returns { result, data } structure
       const data = response.data?.data || response.data;
+      console.log('[Order] Extracted order details:', data);
+
+      // Map itemDetails array
+      const items = (data.itemDetails || []).map((item: any) => ({
+        id: item.id || 0,
+        itemId: item.itemId || 0,
+        name: item.itemNameEN || item.itemNameAR || 'Item',
+        nameAr: item.itemNameAR || item.itemNameEN || 'منتج',
+        image: item.itemImageUrl || '',
+        quantity: item.orderDetQty || 1,
+        unitPrice: item.unitPrice || 0,
+        totalPrice: item.orderDetTotal || 0,
+        unitName: item.itemUnit?.unitNameEN || item.selectedUnit || '',
+        unitNameAr: item.itemUnit?.unitNameAR || item.selectedUnit || '',
+        flavorName: undefined,
+        flavorNameAr: undefined,
+      }));
+
+      // Combine date and time
+      const createdAt = data.orderEznDate
+        ? `${data.orderEznDate}${data.orderEznTime ? ' ' + data.orderEznTime : ''}`
+        : new Date().toISOString();
 
       return {
-        id: data.id || data.orderId,
-        orderNumber: data.orderNumber || data.orderNo || `#${data.id}`,
-        status: data.status || data.orderStatus || 'Pending',
-        statusHistory: data.statusHistory || [],
-        items: (data.items || data.orderItems || []).map((item: any) => ({
-          id: item.id,
-          itemId: item.itemId,
-          name: item.name || item.nameEn || item.itemName,
-          nameAr: item.nameAr || item.itemNameAr,
-          image: item.image || item.imageUrl || item.mainImage,
-          quantity: item.quantity || item.qty,
-          unitPrice: item.unitPrice || item.price,
-          totalPrice: item.totalPrice || item.total || (item.unitPrice * item.quantity),
-          unitName: item.unitName || item.unitNameEn,
-          unitNameAr: item.unitNameAr,
-          flavorName: item.flavorName || item.flavourName,
-          flavorNameAr: item.flavorNameAr || item.flavourNameAr,
-        })),
-        itemCount: data.itemCount || data.totalItems || data.items?.length || 0,
-        subtotal: data.subtotal || data.subTotal || 0,
-        discount: data.discount || 0,
-        couponDiscount: data.couponDiscount || data.couponDisVal || 0,
-        deliveryFee: data.deliveryFee || 0,
-        tip: data.tip || data.orderTipVal || 0,
-        total: data.total || data.finalAmount || 0,
-        paymentMethod: data.paymentMethod === 3 ? 'CashOnDelivery' : (data.paymentMethodName || 'CashOnDelivery'),
-        isPaid: data.isPaid || false,
-        address: data.address || {
-          id: data.addressId,
-          addressTitle: data.addressName || 'Delivery Address',
-          fullAddress: data.fullAddress || data.addressDetails,
-          latitude: data.latitude || 0,
-          longitude: data.longitude || 0,
-        },
-        estimatedDeliveryTime: data.estimatedDeliveryTime,
-        actualDeliveryTime: data.actualDeliveryTime,
-        note: data.note || data.orderEznMemo,
-        rating: data.rating,
-        review: data.review,
-        createdAt: data.createdAt || data.orderDate,
-        updatedAt: data.updatedAt || data.lastModified,
+        id: data.id || 0,
+        orderNumber: data.orderEznNo ? `#${data.orderEznNo}` : `#${data.id}`,
+        status: data.orderStatus || 'Pending',
+        statusHistory: [], // Not provided in current API
+        items,
+        itemCount: items.length,
+        subtotal: data.orderEznTotal || 0,
+        discount: data.orderEznTotalOfferDisValue || 0,
+        couponDiscount: data.couponDisVal || 0,
+        deliveryFee: data.deliveryFeeInfo?.deliveryFee || data.deliveryFee || 0,
+        tip: data.orderTipVal || 0,
+        total: data.orderEznNetValue || 0,
+        paymentMethod: data.paymentMethod || 'CashOnDelivery',
+        isPaid: data.paymentStatus === 'Paid',
+        address: data.address ? {
+          id: 0,
+          addressTitle: 'Delivery Address',
+          fullAddress: `${data.address.addressLine1 || ''} ${data.address.addressLine2 || ''}`.trim(),
+          city: data.address.city,
+          governorate: data.address.governorate,
+          latitude: parseFloat(data.address.latitude || '0'),
+          longitude: parseFloat(data.address.longitude || '0'),
+        } : undefined,
+        estimatedDeliveryTime: data.remainingTimeInMinutes ? `${data.remainingTimeInMinutes} minutes` : undefined,
+        actualDeliveryTime: undefined,
+        note: data.orderEznMemo || '',
+        rating: data.orderRating,
+        review: undefined,
+        createdAt,
+        updatedAt: createdAt,
+        deliveryBoyName: data.deliveryBoyName,
       };
     },
     enabled: !!orderId,
