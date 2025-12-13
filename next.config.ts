@@ -15,6 +15,10 @@ const nextConfig: NextConfig = {
         protocol: 'https',
         hostname: 'modytest-002-site3.atempurl.com',
       },
+      {
+        protocol: 'https',
+        hostname: 'i.postimg.cc',
+      },
     ],
   },
 };

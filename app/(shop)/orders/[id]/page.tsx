@@ -309,8 +309,8 @@ export default function OrderDetailsPage() {
               </h2>
 
               <div className="space-y-4">
-                {order.items.map((item) => (
-                  <div key={item.id} className="flex gap-4 p-3 bg-white rounded-[12px]">
+                {order.items.map((item, index) => (
+                  <div key={`${item.itemId}-${index}`} className="flex gap-4 p-3 bg-white rounded-[12px]">
                     <div className="w-[70px] h-[70px] rounded-[8px] bg-[#F5F5F7] overflow-hidden flex-shrink-0">
                       {item.image ? (
                         <Image
