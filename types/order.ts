@@ -25,6 +25,7 @@ export type OrderStatus =
   | 'OutForDelivery'
   | 'Delivered'
   | 'Cancelled'
+  | 'Rejected'
   | 'Refunded';
 
 export interface OrderAddress {

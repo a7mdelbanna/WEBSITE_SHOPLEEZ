@@ -84,6 +84,13 @@ const STATUS_CONFIG: Record<OrderStatus, {
     labelEn: 'Cancelled',
     labelAr: 'ملغي',
   },
+  Rejected: {
+    icon: XCircle,
+    colorClass: 'text-red-600',
+    bgClass: 'bg-red-50',
+    labelEn: 'Rejected',
+    labelAr: 'مرفوض',
+  },
   Refunded: {
     icon: XCircle,
     colorClass: 'text-gray-600',

@@ -50,6 +50,7 @@ const STATUS_CONFIG: Record<OrderStatus, {
   OutForDelivery: { icon: Truck, colorClass: 'text-cyan-600', bgClass: 'bg-cyan-50', labelEn: 'On the way', labelAr: 'في الطريق' },
   Delivered: { icon: CheckCircle, colorClass: 'text-green-600', bgClass: 'bg-green-50', labelEn: 'Delivered', labelAr: 'تم التوصيل' },
   Cancelled: { icon: XCircle, colorClass: 'text-red-600', bgClass: 'bg-red-50', labelEn: 'Cancelled', labelAr: 'ملغي' },
+  Rejected: { icon: XCircle, colorClass: 'text-red-600', bgClass: 'bg-red-50', labelEn: 'Rejected', labelAr: 'مرفوض' },
   Refunded: { icon: XCircle, colorClass: 'text-gray-600', bgClass: 'bg-gray-50', labelEn: 'Refunded', labelAr: 'تم الاسترداد' },
 };
 
@@ -249,7 +250,7 @@ export default function OrderDetailsPage() {
           {/* Main Content */}
           <div className="flex-1 space-y-6">
             {/* Status Timeline */}
-            {!['Cancelled', 'Refunded'].includes(order.status) && (
+            {!['Cancelled', 'Rejected', 'Refunded'].includes(order.status) && (
               <div className="bg-[#F9FAFB] rounded-[16px] p-5">
                 <h2 className="text-[16px] font-semibold text-[#1A1A1A] mb-4">
                   {isRTL ? 'حالة الطلب' : 'Order Status'}
@@ -568,7 +569,7 @@ export default function OrderDetailsPage() {
                     {isRTL ? 'طريقة الدفع' : 'Payment Method'}
                   </p>
                   <p className="text-[14px] font-medium text-[#1A1A1A]">
-                    {order.paymentMethod === 'CashOnDelivery'
+                    {(order.paymentMethod === 'CashOnDelivery' || order.paymentMethod === 'CashOnDeliver')
                       ? (isRTL ? 'الدفع عند الاستلام' : 'Cash on Delivery')
                       : order.paymentMethod}
                   </p>
