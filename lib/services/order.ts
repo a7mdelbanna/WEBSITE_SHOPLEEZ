@@ -210,10 +210,36 @@ export function useMyOrders(enabled = true) {
         // Count items
         const itemCount = order.itemDetails?.length || 0;
 
-        // Combine date and time for createdAt
-        const createdAt = order.orderEznDate
-          ? `${order.orderEznDate}${order.orderEznTime ? ' ' + order.orderEznTime : ''}`
-          : new Date().toISOString();
+        // Parse date and time from API
+        // API returns: orderEznDate (e.g., "2025-12-13T00:00:00" or "13/12/2025")
+        //              orderEznTime (e.g., "19:30:00")
+        let createdAt = new Date().toISOString();
+
+        if (order.orderEznDate) {
+          try {
+            // Try parsing the date directly (handles ISO format)
+            let dateObj = new Date(order.orderEznDate);
+
+            // If invalid, try parsing DD/MM/YYYY format
+            if (isNaN(dateObj.getTime()) && order.orderEznDate.includes('/')) {
+              const [day, month, year] = order.orderEznDate.split('/');
+              dateObj = new Date(`${year}-${month}-${day}`);
+            }
+
+            // If we have a valid date, format it as ISO string
+            if (!isNaN(dateObj.getTime())) {
+              // If time is provided, append it
+              if (order.orderEznTime) {
+                const dateStr = dateObj.toISOString().split('T')[0];
+                createdAt = `${dateStr}T${order.orderEznTime}`;
+              } else {
+                createdAt = dateObj.toISOString();
+              }
+            }
+          } catch (error) {
+            console.warn('[Order] Failed to parse date:', order.orderEznDate, error);
+          }
+        }
 
         return {
           id: order.id || 0,
