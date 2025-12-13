@@ -171,7 +171,7 @@ export default function ChatbotPage() {
   const router = useRouter();
   const { isRTL } = useTranslations();
   const { isAuthenticated, isLoading: authLoading, openLoginModal } = useAuth();
-  const { storeId } = useApiClient();
+  const { storeId, baseUrl } = useApiClient();
   const { data: profile } = useProfile(isAuthenticated);
 
   // State
@@ -216,9 +216,9 @@ export default function ChatbotPage() {
   // Connect when authenticated
   useEffect(() => {
     if (isAuthenticated && profile?.id && status === 'initial') {
-      chatbotService.connect(String(profile.id), storeId);
+      chatbotService.connect(String(profile.id), storeId, baseUrl);
     }
-  }, [isAuthenticated, profile?.id, storeId, status]);
+  }, [isAuthenticated, profile?.id, storeId, baseUrl, status]);
 
   // Scroll on new messages
   useEffect(() => {
@@ -242,7 +242,7 @@ export default function ChatbotPage() {
   const handleReconnect = () => {
     if (profile?.id) {
       setStatus('initial');
-      chatbotService.connect(String(profile.id), storeId);
+      chatbotService.connect(String(profile.id), storeId, baseUrl);
     }
   };
 

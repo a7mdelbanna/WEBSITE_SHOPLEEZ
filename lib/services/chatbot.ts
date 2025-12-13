@@ -21,9 +21,6 @@ import {
 import { getTokens } from '@/lib/api/client';
 import type { ChatMessage, ChatbotStatus } from '@/types/profile';
 
-// Hub URL - use environment variable or default
-const CHAT_HUB_URL = process.env.NEXT_PUBLIC_CHAT_HUB_URL || 'https://api.shopleez.com/CustomerSupport';
-
 // Message types from hub
 type HubMessage = {
   messageId?: string;
@@ -61,8 +58,14 @@ export class ChatbotService {
   /**
    * Connect to the chat hub
    */
-  async connect(userId: string, storeId: number): Promise<void> {
+  async connect(userId: string, storeId: number, baseUrl: string): Promise<void> {
     if (this.connection?.state === HubConnectionState.Connected) {
+      return;
+    }
+
+    if (!baseUrl) {
+      console.error('[Chatbot] No base URL provided');
+      this.callbacks?.onStatusChange('error');
       return;
     }
 
@@ -70,10 +73,14 @@ export class ChatbotService {
 
     const { accessToken } = getTokens();
 
+    // Build hub URL from base URL (ensure it's absolute)
+    const hubUrl = `${baseUrl}/CustomerSupport`;
+    console.log('[Chatbot] Connecting to:', hubUrl);
+
     try {
       // Build connection
       this.connection = new HubConnectionBuilder()
-        .withUrl(`${CHAT_HUB_URL}?storeId=${storeId}`, {
+        .withUrl(`${hubUrl}?storeId=${storeId}`, {
           accessTokenFactory: () => accessToken || '',
         })
         .withAutomaticReconnect({
