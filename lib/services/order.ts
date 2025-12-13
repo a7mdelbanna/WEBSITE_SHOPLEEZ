@@ -305,44 +305,66 @@ export function useOrderDetails(orderId: number | null) {
       const data = response.data?.data || response.data;
       console.log('[Order] Extracted order details:', data);
 
-      // Log raw itemDetails to debug
-      console.log('[Order] Raw itemDetails from API:', data.itemDetails);
-
       // Map itemDetails array
-      const items = (data.itemDetails || []).map((item: any, index: number) => {
-        console.log(`[Order] Item ${index}:`, {
-          id: item.id,
-          itemId: item.itemId,
-          itemNameEN: item.itemNameEN,
-          itemNameAR: item.itemNameAR,
-          itemImageUrl: item.itemImageUrl,
-          orderDetQty: item.orderDetQty,
-          unitPrice: item.unitPrice,
-          orderDetTotal: item.orderDetTotal,
-          selectedUnit: item.selectedUnit,
-          itemUnit: item.itemUnit,
-        });
+      // IMPORTANT: API uses different field names than documentation:
+      // - eznItemName (not itemNameEN/itemNameAR)
+      // - imageURL (not itemImageUrl)
+      // - eznItemAmount (not orderDetQty)
+      // - eznItemPrice (not unitPrice)
+      // - eznItemTotal (not orderDetTotal)
+      const items = (data.itemDetails || []).map((item: any) => {
+        // Determine best image to use (prefer imageURL, fallback to unit-specific images)
+        const image = item.imageURL || item.itemImageForBigUnitUrl || item.itemImageForSmallUnitUrl || '';
 
         return {
           id: item.id || 0,
           itemId: item.itemId || 0,
-          name: item.itemNameEN || item.itemNameAR || 'Item',
-          nameAr: item.itemNameAR || item.itemNameEN || 'منتج',
-          image: item.itemImageUrl || '',
-          quantity: item.orderDetQty || 1,
-          unitPrice: item.unitPrice || 0,
-          totalPrice: item.orderDetTotal || 0,
-          unitName: item.itemUnit?.unitNameEN || item.selectedUnit || '',
-          unitNameAr: item.itemUnit?.unitNameAR || item.selectedUnit || '',
+          name: item.eznItemName || 'Item',
+          nameAr: item.eznItemName || 'منتج',
+          image,
+          quantity: item.eznItemAmount || 1,
+          unitPrice: item.eznItemPrice || 0,
+          totalPrice: item.eznItemTotal || 0,
+          unitName: item.itemUnit?.nameEN || '',
+          unitNameAr: item.itemUnit?.nameAR || '',
           flavorName: undefined,
           flavorNameAr: undefined,
         };
       });
 
       // Combine date and time
-      const createdAt = data.orderEznDate
-        ? `${data.orderEznDate}${data.orderEznTime ? ' ' + data.orderEznTime : ''}`
-        : new Date().toISOString();
+      // API returns time in 24-hour format with Arabic decorative characters
+      // orderEznDate: "2025-12-13"
+      // orderEznTime: "17:37 م" (already 24-hour! م is decorative)
+      let createdAt = new Date().toISOString();
+
+      if (data.orderEznDate) {
+        try {
+          const dateObj = new Date(data.orderEznDate);
+          if (!isNaN(dateObj.getTime())) {
+            const dateStr = dateObj.toISOString().split('T')[0];
+
+            if (data.orderEznTime) {
+              // Remove Arabic AM/PM characters (decorative, time is already 24-hour)
+              const timeOnly = data.orderEznTime.replace(/\s*[مص]\s*$/i, '').trim();
+              const timeParts = timeOnly.split(':');
+
+              if (timeParts.length >= 2) {
+                const hours = timeParts[0].padStart(2, '0');
+                const minutes = timeParts[1].padStart(2, '0');
+                const seconds = timeParts[2] || '00';
+                createdAt = `${dateStr}T${hours}:${minutes}:${seconds}Z`;
+              } else {
+                createdAt = dateObj.toISOString();
+              }
+            } else {
+              createdAt = dateObj.toISOString();
+            }
+          }
+        } catch (error) {
+          console.warn('[Order] Failed to parse date:', data.orderEznDate, data.orderEznTime, error);
+        }
+      }
 
       return {
         id: data.id || 0,
