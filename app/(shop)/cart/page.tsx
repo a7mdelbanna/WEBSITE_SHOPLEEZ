@@ -101,10 +101,19 @@ export default function CartPage() {
 
   // Handle proceed to checkout
   const handleCheckout = () => {
+    console.log('[Cart] handleCheckout called');
+    console.log('[Cart] isAuthenticated:', isAuthenticated);
+
     if (!isAuthenticated) {
-      requireAuth(() => router.push('/checkout'));
+      console.log('[Cart] Not authenticated, opening login modal');
+      requireAuth(() => {
+        console.log('[Cart] Auth callback - navigating to checkout');
+        router.push('/checkout');
+      });
       return;
     }
+
+    console.log('[Cart] Navigating to checkout...');
     router.push('/checkout');
   };
 

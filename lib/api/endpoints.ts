@@ -125,6 +125,7 @@ export const API_ENDPOINTS = {
   // ============== Wallet ==============
   wallet: {
     get: '/RetailAPI/Customer/Wallet/GetMyWallet/{storeId}',
+    getTransactionHistory: '/RetailAPI/Customer/Wallet/GetMyTransactionHistory/{storeId}',
   },
 
   // ============== Chat ==============

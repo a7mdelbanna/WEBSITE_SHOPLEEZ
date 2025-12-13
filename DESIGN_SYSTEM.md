@@ -178,7 +178,100 @@ margin-bottom: 28px;
 
 ---
 
-## 4. SPACING SYSTEM
+## 4. RTL (RIGHT-TO-LEFT) LAYOUT PATTERN
+
+### 4.1 Global RTL Configuration
+
+The app sets `dir="rtl"` on the `<html>` element in `app/layout.tsx`:
+
+```typescript
+<html dir={isRTL ? 'rtl' : 'ltr'}>
+```
+
+This enables browser-native RTL handling for all flex containers, grid layouts, and text alignment.
+
+### 4.2 Best Practice: Let the Browser Handle RTL
+
+**IMPORTANT: DO NOT add manual RTL classes like `flex-row-reverse` or `justify-end`.**
+
+When `dir="rtl"` is set on the `<html>` tag, the browser automatically:
+- Reverses flexbox direction
+- Mirrors grid layouts
+- Aligns text to the right
+- Flips padding/margin (e.g., `padding-left` becomes visual right padding)
+
+### 4.3 Standard Header Pattern
+
+All page headers should use this simple pattern:
+
+```typescript
+{/* ✅ CORRECT - Simple pattern, browser handles RTL */}
+<div className="flex items-center gap-4 mb-6">
+  <Link href="/">
+    <BackIcon className="w-5 h-5 text-[#1A1A1A]" />
+  </Link>
+  <h1 className="text-[24px] font-bold text-[#1A1A1A]">
+    {isRTL ? 'العنوان' : 'Title'}
+  </h1>
+</div>
+```
+
+**What NOT to do:**
+
+```typescript
+{/* ❌ WRONG - Manual RTL handling interferes with browser */}
+<div className={cn("flex items-center gap-4 mb-6", isRTL && "flex-row-reverse")}>
+<div className={cn("flex items-center gap-4 mb-6", isRTL && "justify-end")}>
+<div className={cn("flex items-center gap-4 mb-6", isRTL && "flex-row-reverse justify-end")}>
+```
+
+### 4.4 When to Use RTL-Specific Classes
+
+Only use RTL-specific classes when you need to explicitly control directionality that differs from the default:
+
+```typescript
+{/* Example: Force LTR for prices/numbers even in RTL mode */}
+<div dir="ltr" className="text-[16px]">
+  $99.99
+</div>
+
+{/* Example: Explicitly reverse for visual design reasons */}
+<div className={cn("flex items-center", isRTL && "flex-row-reverse")}>
+  {/* Only when design requires manual control */}
+</div>
+```
+
+### 4.5 Text Alignment
+
+For text alignment, use logical properties or let the browser handle it:
+
+```typescript
+{/* ✅ CORRECT - Browser handles alignment based on dir */}
+<p className="text-[14px]">
+  {isRTL ? 'نص عربي' : 'English text'}
+</p>
+
+{/* ✅ CORRECT - When you need explicit right alignment */}
+<p className={cn("text-[14px]", isRTL && "text-right")}>
+  {isRTL ? 'نص عربي' : 'English text'}
+</p>
+```
+
+### 4.6 BackIcon Pattern
+
+The `BackIcon` component should swap between left and right arrows based on RTL:
+
+```typescript
+const BackIcon = isRTL ? ArrowRight : ArrowLeft;
+
+<BackIcon className="w-5 h-5 text-[#1A1A1A]" />
+```
+
+This ensures the back arrow points in the correct direction for the reading direction.
+
+---
+
+## 5. SPACING SYSTEM
 
 ### 4.1 Base Unit
 

@@ -325,17 +325,20 @@ export function Header({ onMenuClick }: HeaderProps) {
             {isAuthenticated ? (
               // Logged in - show user name with logout option
               <div className="flex items-center gap-[8px]">
-                <div className="flex h-[48px] items-center gap-[10px] rounded-full bg-[#F5F5F7] px-[20px] text-[#1A1A1A]">
+                <Link
+                  href="/profile"
+                  className="flex h-[48px] items-center gap-[10px] rounded-full bg-[#F5F5F7] px-[20px] text-[#1A1A1A] transition-colors hover:bg-[#ECECEC]"
+                >
                   <div
                     className="w-[28px] h-[28px] rounded-full flex items-center justify-center text-white text-[12px] font-bold"
                     style={{ backgroundColor: 'var(--color-primary)' }}
                   >
-                    {user?.firstName?.charAt(0)?.toUpperCase() || <User className="h-[16px] w-[16px]" />}
+                    {user?.fullName?.charAt(0)?.toUpperCase() || <User className="h-[16px] w-[16px]" />}
                   </div>
                   <span className="text-[15px] font-medium leading-none max-w-[100px] truncate">
-                    {user?.firstName || (isRTL ? 'مرحباً' : 'Welcome')}
+                    {user?.fullName?.split(' ')[0] || (isRTL ? 'مرحباً' : 'Welcome')}
                   </span>
-                </div>
+                </Link>
                 <button
                   onClick={logout}
                   className="flex items-center justify-center w-[40px] h-[40px] rounded-full hover:bg-[#F5F5F7] transition-colors"
@@ -361,12 +364,13 @@ export function Header({ onMenuClick }: HeaderProps) {
             <FloatingCart />
 
             {/* Chat Support */}
-            <button
+            <Link
+              href="/profile/chatbot"
               className="flex items-center justify-center w-[48px] h-[48px] bg-[#F5F5F7] rounded-full transition-colors hover:bg-[#ECECEC]"
               aria-label={t('common.supportChat')}
             >
               <MessageCircle className="h-[20px] w-[20px] text-[#1A1A1A]" strokeWidth={2} />
-            </button>
+            </Link>
           </div>
         </div>
 

@@ -36,6 +36,7 @@ import {
   useCheckoutInfo,
   useDeliveryFee,
 } from '@/lib/services/order';
+import { useLocalCartItems, useCartSubtotal, useCartHydration } from '@/lib/stores/cart-store';
 import { cn } from '@/lib/utils';
 import type { Address } from '@/lib/services/address';
 import type { CheckoutRequest } from '@/types/order';
@@ -54,6 +55,11 @@ export default function CheckoutPage() {
   const router = useRouter();
   const { t, isRTL } = useTranslations();
   const { isAuthenticated, user, openLoginModal } = useAuth();
+
+  // LOCAL cart (not synced to server yet)
+  const cartHydrated = useCartHydration();
+  const localCartItems = useLocalCartItems();
+  const localSubtotal = useCartSubtotal();
 
   // Fetch data
   const { data: cart, isLoading: cartLoading } = useCart();
@@ -93,12 +99,13 @@ export default function CheckoutPage() {
     }
   }, [addresses, selectedAddressId]);
 
-  // Redirect if cart is empty
+  // Redirect if LOCAL cart is empty (but wait for hydration first!)
   useEffect(() => {
-    if (!cartLoading && (!cart?.items || cart.items.length === 0)) {
+    if (cartHydrated && localCartItems.length === 0) {
+      console.log('[Checkout] Local cart is empty (hydrated), redirecting to cart');
       router.push('/cart');
     }
-  }, [cart, cartLoading, router]);
+  }, [cartHydrated, localCartItems, router]);
 
   // Redirect if not authenticated
   useEffect(() => {
@@ -116,8 +123,8 @@ export default function CheckoutPage() {
   // Get selected address
   const selectedAddress = addresses?.find(a => a.id === selectedAddressId);
 
-  // Calculate totals
-  const subtotal = checkoutInfo?.subtotal || cart?.summary?.subtotal || 0;
+  // Calculate totals (use local cart if server cart not available)
+  const subtotal = checkoutInfo?.subtotal || cart?.summary?.subtotal || localSubtotal;
   const discount = checkoutInfo?.discount || cart?.summary?.discount || 0;
   const couponDiscount = couponApplied ? (checkoutInfo?.couponDiscount || cart?.summary?.couponDiscount || 0) : 0;
   const deliveryFee = deliveryFeeData?.deliveryFee || checkoutInfo?.deliveryFee || 0;
@@ -156,7 +163,8 @@ export default function CheckoutPage() {
       return;
     }
 
-    if (!cart?.items || cart.items.length === 0) {
+    // Check LOCAL cart (not server cart which is empty until synced)
+    if (localCartItems.length === 0) {
       setSubmitError(isRTL ? 'السلة فارغة' : 'Cart is empty');
       return;
     }
@@ -165,9 +173,10 @@ export default function CheckoutPage() {
     setSubmitError('');
 
     try {
-      // Step 1: CRITICAL - Sync cart with server before checkout (Flutter parity)
-      console.log('[Checkout] Step 1: Syncing cart with server...');
-      await syncCart.mutateAsync(cart.items);
+      // Step 1: CRITICAL - Sync LOCAL cart with server before checkout (Flutter parity)
+      console.log('[Checkout] Step 1: Syncing LOCAL cart with server...');
+      console.log('[Checkout] Local cart items:', localCartItems);
+      await syncCart.mutateAsync(localCartItems);
       console.log('[Checkout] Cart synced successfully');
 
       // Step 2: Get valid order ID
@@ -191,20 +200,55 @@ export default function CheckoutPage() {
 
       // Step 4: Submit checkout
       const result = await checkout.mutateAsync(checkoutRequest);
-      console.log('[Checkout] Order placed:', result);
+      console.log('[Checkout] Order placed successfully:', result);
 
-      // Step 5: Navigate to success page
-      router.push(`/order-success?orderId=${result.orderId}&orderNumber=${result.orderNumber || ''}`);
+      // Step 5: Show success message (will be shown before redirect)
+      console.log('[Checkout] Order placed successfully! Redirecting to orders page...');
+
+      // Step 6: Navigate to orders page with success message
+      router.push('/orders?success=true');
     } catch (error: any) {
       console.error('[Checkout] Error:', error);
-      setSubmitError(error.message || (isRTL ? 'حدث خطأ أثناء إتمام الطلب' : 'Failed to place order'));
+
+      // Parse error message for better user feedback
+      let errorMessage = '';
+      if (error?.message) {
+        const msg = error.message.toLowerCase();
+
+        // Stock error
+        if (msg.includes('stock') || msg.includes('مخزون') || msg.includes('inventory')) {
+          errorMessage = isRTL
+            ? 'عذراً، بعض المنتجات غير متوفرة بالكمية المطلوبة. يرجى تعديل سلة التسوق.'
+            : 'Sorry, some items are not available in the requested quantity. Please update your cart.';
+        }
+        // Address error
+        else if (msg.includes('address') || msg.includes('عنوان')) {
+          errorMessage = isRTL
+            ? 'خطأ في عنوان التوصيل. يرجى التحقق من العنوان المحدد.'
+            : 'Error with delivery address. Please check your selected address.';
+        }
+        // Payment error
+        else if (msg.includes('payment') || msg.includes('دفع')) {
+          errorMessage = isRTL
+            ? 'خطأ في طريقة الدفع. يرجى المحاولة مرة أخرى.'
+            : 'Payment method error. Please try again.';
+        }
+        // Generic error
+        else {
+          errorMessage = error.message;
+        }
+      } else {
+        errorMessage = isRTL ? 'حدث خطأ أثناء إتمام الطلب. يرجى المحاولة مرة أخرى.' : 'Failed to place order. Please try again.';
+      }
+
+      setSubmitError(errorMessage);
     } finally {
       setIsSubmitting(false);
     }
   };
 
   const BackIcon = isRTL ? ArrowRight : ArrowLeft;
-  const isLoading = cartLoading || addressesLoading || checkoutInfoLoading;
+  const isLoading = !cartHydrated || cartLoading || addressesLoading || checkoutInfoLoading;
 
   if (isLoading) {
     return (

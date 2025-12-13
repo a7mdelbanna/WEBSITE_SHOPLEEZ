@@ -12,10 +12,10 @@
  * - RTL support
  */
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import {
   Package, ArrowLeft, ArrowRight, Loader2, ShoppingBag,
   Clock, CheckCircle, Truck, XCircle, ChevronRight
@@ -111,11 +111,35 @@ function OrderStatusBadge({ status, isRTL }: { status: OrderStatus; isRTL: boole
 
 export default function OrdersPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { isRTL } = useTranslations();
   const { isAuthenticated, openLoginModal } = useAuth();
 
+  // Success message state
+  const [showSuccessMessage, setShowSuccessMessage] = useState(false);
+
   // Fetch orders
   const { data: orders, isLoading, error } = useMyOrders();
+
+  // Check for success redirect from checkout
+  useEffect(() => {
+    const success = searchParams.get('success');
+    if (success === 'true') {
+      setShowSuccessMessage(true);
+
+      // Clear success param from URL without refresh
+      const newUrl = new URL(window.location.href);
+      newUrl.searchParams.delete('success');
+      window.history.replaceState({}, '', newUrl.toString());
+
+      // Auto-hide success message after 5 seconds
+      const timer = setTimeout(() => {
+        setShowSuccessMessage(false);
+      }, 5000);
+
+      return () => clearTimeout(timer);
+    }
+  }, [searchParams]);
 
   // Redirect if not authenticated
   useEffect(() => {
@@ -157,6 +181,31 @@ export default function OrdersPage() {
             {isRTL ? 'طلباتي' : 'My Orders'}
           </h1>
         </div>
+
+        {/* Success Message */}
+        {showSuccessMessage && (
+          <div className="mb-6 p-4 rounded-[16px] bg-green-50 border border-green-200 flex items-start gap-3 animate-in fade-in slide-in-from-top-4">
+            <div className="flex-shrink-0 w-10 h-10 rounded-full bg-green-100 flex items-center justify-center">
+              <CheckCircle className="w-6 h-6 text-green-600" />
+            </div>
+            <div className="flex-1">
+              <h3 className="text-[16px] font-semibold text-green-900 mb-1">
+                {isRTL ? 'تم إتمام الطلب بنجاح!' : 'Order Placed Successfully!'}
+              </h3>
+              <p className="text-[14px] text-green-700">
+                {isRTL
+                  ? 'شكراً لك! تم استلام طلبك وسيتم معالجته قريباً. يمكنك متابعة حالة الطلب من الأسفل.'
+                  : 'Thank you! Your order has been received and will be processed soon. You can track your order status below.'}
+              </p>
+            </div>
+            <button
+              onClick={() => setShowSuccessMessage(false)}
+              className="flex-shrink-0 w-8 h-8 rounded-full hover:bg-green-100 flex items-center justify-center transition-colors"
+            >
+              <XCircle className="w-5 h-5 text-green-600" />
+            </button>
+          </div>
+        )}
 
         {/* Loading State */}
         {isLoading && (

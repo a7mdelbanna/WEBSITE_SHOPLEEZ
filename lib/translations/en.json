@@ -238,6 +238,7 @@
     "editProfile": "Edit Profile",
     "addresses": "My Addresses",
     "wallet": "Wallet",
+    "walletBalance": "Wallet Balance",
     "loyaltyPoints": "Loyalty Points",
     "referrals": "Refer & Earn",
     "favorites": "Favorites",
@@ -245,7 +246,17 @@
     "language": "Language",
     "settings": "Settings",
     "help": "Help & Support",
-    "about": "About"
+    "about": "About",
+    "guest": "Guest",
+    "loginRequired": "Login Required",
+    "loginRequiredDesc": "Please login to access your profile",
+    "account": "Account",
+    "myOrders": "My Orders",
+    "transactionsHistory": "Transactions History",
+    "changePassword": "Change Password",
+    "textSize": "Text Size",
+    "deleteAccount": "Delete Account",
+    "deleteConfirm": "Are you sure you want to delete your account? This action cannot be undone."
   },
   "wallet": {
     "title": "My Wallet",

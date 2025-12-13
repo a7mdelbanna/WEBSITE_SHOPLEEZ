@@ -256,8 +256,8 @@ export function useProfile(enabled = true) {
     queryFn: async (): Promise<UserProfile> => {
       const url = buildUrl(API_ENDPOINTS.auth.getProfile, storeId);
       const response = await apiClient.get(url);
-      // Profile might also be wrapped in { result, data }
-      return response.data?.data || response.data;
+      // API returns: { customerId, customerInfo: { result, data: {...} } }
+      return response.data?.customerInfo?.data || response.data?.data || response.data;
     },
     enabled: enabled && !!accessToken,
     staleTime: 5 * 60 * 1000,

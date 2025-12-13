@@ -39,16 +39,26 @@ export interface LoginResponse {
 }
 
 export interface UserProfile {
-  id: number;
-  firstName: string;
-  lastName: string;
-  phoneNumber: string;
-  email?: string;
-  profileImage?: string;
-  loyaltyPoints: number;
-  walletBalance: number;
-  referralCode?: string;
-  sellType: 'WholeSale' | 'Retail';
+  id?: string;
+  fullName?: string;
+  username?: string;
+  email?: string | null;
+  phoneNumber?: string;
+  phone1?: string;
+  phone2?: string;
+  fcmToken?: string;
+  userType?: string;
+  isActive?: boolean;
+  isAvaliable?: boolean;
+  status?: any;
+  hasNewNotifications?: number;
+  minAllowedOrders?: number;
+  myReferrerCode?: string;
+  isMyReferralCodeActive?: boolean;
+  referralCode?: any;
+  myPoints?: number;
+  roles?: string[];
+  permissions?: any[];
 }
 
 // Store settings from API

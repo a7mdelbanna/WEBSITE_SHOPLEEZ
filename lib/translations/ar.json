@@ -238,6 +238,7 @@
     "editProfile": "تعديل الملف الشخصي",
     "addresses": "عناويني",
     "wallet": "المحفظة",
+    "walletBalance": "رصيد المحفظة",
     "loyaltyPoints": "نقاط الولاء",
     "referrals": "دعوة واكسب",
     "favorites": "المفضلة",
@@ -245,7 +246,17 @@
     "language": "اللغة",
     "settings": "الإعدادات",
     "help": "المساعدة والدعم",
-    "about": "عن التطبيق"
+    "about": "عن التطبيق",
+    "guest": "زائر",
+    "loginRequired": "تسجيل الدخول مطلوب",
+    "loginRequiredDesc": "يرجى تسجيل الدخول للوصول إلى حسابك",
+    "account": "الحساب",
+    "myOrders": "طلباتي",
+    "transactionsHistory": "سجل المعاملات",
+    "changePassword": "تغيير كلمة المرور",
+    "textSize": "حجم النص",
+    "deleteAccount": "حذف الحساب",
+    "deleteConfirm": "هل أنت متأكد من حذف حسابك؟ لا يمكن التراجع عن هذا الإجراء."
   },
   "wallet": {
     "title": "محفظتي",
