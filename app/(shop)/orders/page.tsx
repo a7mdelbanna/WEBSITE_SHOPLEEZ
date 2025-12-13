@@ -262,9 +262,9 @@ export default function OrdersPage() {
                 className="block bg-[#F9FAFB] rounded-[16px] p-5 hover:bg-[#F0F1F3] transition-colors"
               >
                 <div className="flex items-start gap-4">
-                  {/* Order Image */}
-                  <div className="w-[80px] h-[80px] rounded-[12px] bg-white overflow-hidden flex-shrink-0">
-                    {order.firstItemImage ? (
+                  {/* Order Icon/Image */}
+                  {order.firstItemImage ? (
+                    <div className="w-[80px] h-[80px] rounded-[12px] bg-white overflow-hidden flex-shrink-0">
                       <Image
                         src={order.firstItemImage}
                         alt="Order"
@@ -272,12 +272,30 @@ export default function OrdersPage() {
                         height={80}
                         className="w-full h-full object-contain"
                       />
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center">
-                        <Package className="w-8 h-8 text-[#D1D5DB]" />
-                      </div>
-                    )}
-                  </div>
+                    </div>
+                  ) : (
+                    <div className="w-[56px] h-[56px] rounded-[14px] flex-shrink-0 flex items-center justify-center"
+                      style={{ backgroundColor: STATUS_CONFIG[order.status]?.bgClass.replace('bg-', '') === 'red-50' ? '#FEF2F2' :
+                               STATUS_CONFIG[order.status]?.bgClass.replace('bg-', '') === 'green-50' ? '#F0FDF4' :
+                               STATUS_CONFIG[order.status]?.bgClass.replace('bg-', '') === 'blue-50' ? '#EFF6FF' :
+                               STATUS_CONFIG[order.status]?.bgClass.replace('bg-', '') === 'amber-50' ? '#FFFBEB' :
+                               STATUS_CONFIG[order.status]?.bgClass.replace('bg-', '') === 'indigo-50' ? '#EEF2FF' :
+                               STATUS_CONFIG[order.status]?.bgClass.replace('bg-', '') === 'purple-50' ? '#FAF5FF' :
+                               STATUS_CONFIG[order.status]?.bgClass.replace('bg-', '') === 'cyan-50' ? '#ECFEFF' :
+                               '#F5F5F7' }}
+                    >
+                      <Package className="w-7 h-7"
+                        style={{ color: STATUS_CONFIG[order.status]?.colorClass.replace('text-', '') === 'red-600' ? '#DC2626' :
+                                 STATUS_CONFIG[order.status]?.colorClass.replace('text-', '') === 'green-600' ? '#16A34A' :
+                                 STATUS_CONFIG[order.status]?.colorClass.replace('text-', '') === 'blue-600' ? '#2563EB' :
+                                 STATUS_CONFIG[order.status]?.colorClass.replace('text-', '') === 'amber-600' ? '#D97706' :
+                                 STATUS_CONFIG[order.status]?.colorClass.replace('text-', '') === 'indigo-600' ? '#4F46E5' :
+                                 STATUS_CONFIG[order.status]?.colorClass.replace('text-', '') === 'purple-600' ? '#9333EA' :
+                                 STATUS_CONFIG[order.status]?.colorClass.replace('text-', '') === 'cyan-600' ? '#0891B2' :
+                                 '#6B7280' }}
+                      />
+                    </div>
+                  )}
 
                   {/* Order Info */}
                   <div className="flex-1 min-w-0">
