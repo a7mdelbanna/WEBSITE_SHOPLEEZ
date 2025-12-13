@@ -36,7 +36,7 @@ import {
   useCheckoutInfo,
   useDeliveryFee,
 } from '@/lib/services/order';
-import { useLocalCartItems, useCartSubtotal, useCartHydration } from '@/lib/stores/cart-store';
+import { useLocalCartItems, useCartSubtotal, useCartHydration, useCartStore } from '@/lib/stores/cart-store';
 import { cn } from '@/lib/utils';
 import type { Address } from '@/lib/services/address';
 import type { CheckoutRequest } from '@/types/order';
@@ -60,6 +60,7 @@ export default function CheckoutPage() {
   const cartHydrated = useCartHydration();
   const localCartItems = useLocalCartItems();
   const localSubtotal = useCartSubtotal();
+  const clearCart = useCartStore((state) => state.clearCart);
 
   // Fetch data
   const { data: cart, isLoading: cartLoading } = useCart();
@@ -202,10 +203,14 @@ export default function CheckoutPage() {
       const result = await checkout.mutateAsync(checkoutRequest);
       console.log('[Checkout] Order placed successfully:', result);
 
-      // Step 5: Show success message (will be shown before redirect)
+      // Step 5: Clear local cart and localStorage
+      console.log('[Checkout] Clearing local cart...');
+      clearCart();
+
+      // Step 6: Show success message (will be shown before redirect)
       console.log('[Checkout] Order placed successfully! Redirecting to orders page...');
 
-      // Step 6: Navigate to orders page with success message
+      // Step 7: Navigate to orders page with success message
       router.push('/orders?success=true');
     } catch (error: any) {
       console.error('[Checkout] Error:', error);
