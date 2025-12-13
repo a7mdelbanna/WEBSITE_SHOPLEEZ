@@ -1,15 +1,17 @@
 'use client';
 
 /**
- * Chatbot Service
+ * Chatbot Service - Flutter-compatible implementation
  *
  * SignalR-based chat service for customer support.
- * Features:
- * - WebSocket connection to CustomerSupport hub
- * - Message sending and receiving
- * - Connection state management
- * - Auto-reconnect on disconnect
- * - Typing indicators
+ * This implementation matches the Flutter app's chat flow exactly.
+ *
+ * Flow:
+ * 1. Call REST API to start session and get sessionId
+ * 2. Connect to SignalR hub at /chatHub
+ * 3. Join session using JoinSession(sessionId)
+ * 4. Send messages using SendMessageToSession(sessionId, message)
+ * 5. Receive messages via ReceiveSessionMessage event
  */
 
 import {
@@ -47,6 +49,8 @@ export class ChatbotService {
   private reconnectAttempts = 0;
   private maxReconnectAttempts = 5;
   private sessionId: string | null = null;
+  private baseUrl: string | null = null;
+  private storeId: number | null = null;
 
   /**
    * Initialize the chatbot service with callbacks
@@ -56,7 +60,50 @@ export class ChatbotService {
   }
 
   /**
-   * Connect to the chat hub
+   * Start a new chat session via REST API
+   */
+  private async startSession(): Promise<string | null> {
+    if (!this.baseUrl || !this.storeId) {
+      console.error('[Chatbot] No base URL or store ID');
+      return null;
+    }
+
+    const { accessToken } = getTokens();
+    const url = `${this.baseUrl}/RetailAPI/Customer/Chat/StartSession/${this.storeId}`;
+
+    try {
+      console.log('[Chatbot] Starting session:', url);
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${accessToken}`,
+        },
+        body: JSON.stringify({}),
+      });
+
+      if (!response.ok) {
+        throw new Error(`Failed to start session: ${response.statusText}`);
+      }
+
+      const data = await response.json();
+      console.log('[Chatbot] Session started:', data);
+
+      // Extract session ID from response
+      const sessionId = data.data?.sessionId || data.sessionId;
+      if (!sessionId) {
+        throw new Error('No session ID in response');
+      }
+
+      return sessionId;
+    } catch (error) {
+      console.error('[Chatbot] Failed to start session:', error);
+      return null;
+    }
+  }
+
+  /**
+   * Connect to the chat hub (Flutter-compatible)
    */
   async connect(userId: string, storeId: number, baseUrl: string): Promise<void> {
     if (this.connection?.state === HubConnectionState.Connected) {
@@ -69,19 +116,29 @@ export class ChatbotService {
       return;
     }
 
+    this.baseUrl = baseUrl;
+    this.storeId = storeId;
     this.callbacks?.onStatusChange('connecting');
 
     const { accessToken } = getTokens();
 
-    // Build hub URL from base URL (ensure it's absolute)
-    const hubUrl = `${baseUrl}/CustomerSupport`;
+    // Build hub URL - Flutter uses /chatHub with access_token query parameter
+    const hubUrl = `${baseUrl}/chatHub`;
     console.log('[Chatbot] Connecting to:', hubUrl);
 
     try {
-      // Build connection
+      // Start session first to get session ID
+      this.sessionId = await this.startSession();
+      if (!this.sessionId) {
+        throw new Error('Failed to get session ID');
+      }
+
+      console.log('[Chatbot] Session ID:', this.sessionId);
+
+      // Build SignalR connection
       this.connection = new HubConnectionBuilder()
-        .withUrl(`${hubUrl}?storeId=${storeId}`, {
-          accessTokenFactory: () => accessToken || '',
+        .withUrl(`${hubUrl}?access_token=${accessToken}`, {
+          skipNegotiation: false,
         })
         .withAutomaticReconnect({
           nextRetryDelayInMilliseconds: (retryContext) => {
@@ -91,7 +148,7 @@ export class ChatbotService {
             return Math.min(1000 * Math.pow(2, retryContext.previousRetryCount), 30000);
           },
         })
-        .configureLogging(LogLevel.Warning)
+        .configureLogging(LogLevel.Information)
         .build();
 
       // Set up event handlers
@@ -99,89 +156,95 @@ export class ChatbotService {
 
       // Start connection
       await this.connection.start();
+      console.log('[Chatbot] SignalR connected');
 
-      // Start session
-      await this.startSession(userId);
+      // Join session
+      await this.joinSession(this.sessionId);
 
       this.callbacks?.onStatusChange('connected');
       this.reconnectAttempts = 0;
 
     } catch (error) {
-      console.error('Chat connection failed:', error);
+      console.error('[Chatbot] Connection failed:', error);
       this.callbacks?.onStatusChange('error');
       this.callbacks?.onError(error as Error);
     }
   }
 
   /**
-   * Set up SignalR event handlers
+   * Set up SignalR event handlers (Flutter-compatible)
    */
   private setupEventHandlers(): void {
     if (!this.connection) return;
 
-    // Receive message
-    this.connection.on('ReceiveMessage', (message: HubMessage) => {
-      const chatMessage: ChatMessage = {
-        id: message.messageId || Date.now().toString(),
-        message: message.message,
-        senderId: message.senderId,
-        senderType: message.senderType,
-        timestamp: message.timestamp,
-        sessionId: message.sessionId,
-      };
-      this.callbacks?.onMessage(chatMessage);
+    // Receive message from admin/bot (Flutter: ReceiveSessionMessage)
+    this.connection.on('ReceiveSessionMessage', (...args: any[]) => {
+      console.log('[Chatbot] ReceiveSessionMessage:', args);
+
+      // Handle both array and object formats
+      const messageData = args[0];
+      const message = Array.isArray(messageData) ? messageData[0] : messageData;
+
+      if (message) {
+        const chatMessage: ChatMessage = {
+          id: message.messageId || Date.now().toString(),
+          message: message.message || message.toString(),
+          senderId: message.senderId || 'admin',
+          senderType: message.senderType || 'agent',
+          timestamp: message.timestamp || new Date().toISOString(),
+          sessionId: this.sessionId || '',
+        };
+        this.callbacks?.onMessage(chatMessage);
+      }
     });
 
-    // Typing indicator
-    this.connection.on('Typing', (isTyping: boolean) => {
-      this.callbacks?.onTyping(isTyping);
-    });
-
-    // Session started
-    this.connection.on('SessionStarted', (sessionId: string) => {
-      this.sessionId = sessionId;
-    });
-
-    // Session closed
-    this.connection.on('SessionClosed', () => {
+    // Session closed by admin (Flutter: SessionClosed)
+    this.connection.on('SessionClosed', (...args: any[]) => {
+      console.log('[Chatbot] SessionClosed:', args);
       this.sessionId = null;
       this.callbacks?.onStatusChange('sessionClosed');
     });
 
     // Connection state changes
     this.connection.onclose(() => {
+      console.log('[Chatbot] Connection closed');
       this.callbacks?.onStatusChange('disconnected');
     });
 
     this.connection.onreconnecting(() => {
+      console.log('[Chatbot] Reconnecting...');
       this.callbacks?.onStatusChange('connecting');
     });
 
-    this.connection.onreconnected(() => {
+    this.connection.onreconnected(async () => {
+      console.log('[Chatbot] Reconnected');
+      // Rejoin session after reconnect
+      if (this.sessionId) {
+        await this.joinSession(this.sessionId);
+      }
       this.callbacks?.onStatusChange('connected');
       this.reconnectAttempts = 0;
     });
   }
 
   /**
-   * Start a chat session
+   * Join a chat session (Flutter: JoinSession)
    */
-  private async startSession(userId: string): Promise<void> {
+  private async joinSession(sessionId: string): Promise<void> {
     if (!this.connection) return;
 
     try {
-      const response = await this.connection.invoke('StartSession', userId);
-      if (response?.sessionId) {
-        this.sessionId = response.sessionId;
-      }
+      console.log('[Chatbot] Joining session:', sessionId);
+      await this.connection.invoke('JoinSession', sessionId);
+      console.log('[Chatbot] Joined session successfully');
     } catch (error) {
-      console.error('Failed to start session:', error);
+      console.error('[Chatbot] Failed to join session:', error);
       throw error;
     }
   }
 
   /**
-   * Send a message
+   * Send a message (Flutter: SendMessageToSession)
    */
   async sendMessage(message: string): Promise<void> {
     if (!this.connection || this.connection.state !== HubConnectionState.Connected) {
@@ -193,28 +256,28 @@ export class ChatbotService {
     }
 
     try {
-      await this.connection.invoke('SendMessage', {
-        sessionId: this.sessionId,
-        message,
-      });
+      console.log('[Chatbot] Sending message:', message);
+      await this.connection.invoke('SendMessageToSession', this.sessionId, message);
+      console.log('[Chatbot] Message sent successfully');
     } catch (error) {
-      console.error('Failed to send message:', error);
+      console.error('[Chatbot] Failed to send message:', error);
       throw error;
     }
   }
 
   /**
-   * Send typing indicator
+   * Leave session (Flutter: LeaveSession)
    */
-  async sendTyping(isTyping: boolean): Promise<void> {
-    if (!this.connection || this.connection.state !== HubConnectionState.Connected) {
-      return;
-    }
+  private async leaveSession(): Promise<void> {
+    if (!this.sessionId || !this.connection) return;
 
     try {
-      await this.connection.invoke('SetTyping', this.sessionId, isTyping);
+      console.log('[Chatbot] Leaving session:', this.sessionId);
+      await this.connection.invoke('LeaveSession', this.sessionId);
+      this.sessionId = null;
+      console.log('[Chatbot] Left session successfully');
     } catch (error) {
-      console.error('Failed to send typing:', error);
+      console.error('[Chatbot] Failed to leave session:', error);
     }
   }
 
@@ -224,9 +287,10 @@ export class ChatbotService {
   async disconnect(): Promise<void> {
     if (this.connection) {
       try {
+        await this.leaveSession();
         await this.connection.stop();
       } catch (error) {
-        console.error('Disconnect error:', error);
+        console.error('[Chatbot] Disconnect error:', error);
       }
       this.connection = null;
     }
