@@ -33,7 +33,7 @@ import {
 import { AppShell } from '@/components/layout';
 import { useTranslations } from '@/lib/hooks/use-translations';
 import { useAuth } from '@/lib/contexts/auth-context';
-import { useProfile } from '@/lib/services/auth';
+import { useProfile, useStartChatSession } from '@/lib/services/auth';
 import { useApiClient } from '@/lib/api/provider';
 import { chatbotService } from '@/lib/services/chatbot';
 import { cn } from '@/lib/utils';
@@ -171,10 +171,14 @@ export default function ChatbotPage() {
   const router = useRouter();
   const { isRTL } = useTranslations();
   const { isAuthenticated, isLoading: authLoading, openLoginModal } = useAuth();
-  const { storeId, baseUrl } = useApiClient();
+  const { baseUrl } = useApiClient();
   const { data: profile } = useProfile(isAuthenticated);
 
+  // Chat session mutation
+  const startChatSession = useStartChatSession();
+
   // State
+  const [sessionId, setSessionId] = useState<string | null>(null);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [inputValue, setInputValue] = useState('');
   const [status, setStatus] = useState<ChatbotStatus>('initial');
@@ -213,12 +217,24 @@ export default function ChatbotPage() {
     };
   }, []);
 
-  // Connect when authenticated
+  // Start chat session and connect when authenticated
   useEffect(() => {
-    if (isAuthenticated && profile?.id && status === 'initial') {
-      chatbotService.connect(String(profile.id), storeId, baseUrl);
+    if (isAuthenticated && !sessionId && status === 'initial') {
+      console.log('[ChatPage] Starting chat session...');
+      startChatSession.mutate(undefined, {
+        onSuccess: (data) => {
+          console.log('[ChatPage] Session started:', data.sessionId);
+          setSessionId(data.sessionId);
+          // Connect to SignalR with the session ID
+          chatbotService.connect(data.sessionId, baseUrl);
+        },
+        onError: (error) => {
+          console.error('[ChatPage] Failed to start session:', error);
+          setStatus('error');
+        },
+      });
     }
-  }, [isAuthenticated, profile?.id, storeId, baseUrl, status]);
+  }, [isAuthenticated, sessionId, status, baseUrl, startChatSession]);
 
   // Scroll on new messages
   useEffect(() => {
@@ -240,9 +256,12 @@ export default function ChatbotPage() {
 
   // Handle reconnect
   const handleReconnect = () => {
-    if (profile?.id) {
+    if (sessionId) {
       setStatus('initial');
-      chatbotService.connect(String(profile.id), storeId, baseUrl);
+      chatbotService.connect(sessionId, baseUrl);
+    } else {
+      // No session ID - restart from beginning
+      setStatus('initial');
     }
   };
 

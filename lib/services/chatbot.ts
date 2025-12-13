@@ -50,7 +50,6 @@ export class ChatbotService {
   private maxReconnectAttempts = 5;
   private sessionId: string | null = null;
   private baseUrl: string | null = null;
-  private storeId: number | null = null;
 
   /**
    * Initialize the chatbot service with callbacks
@@ -60,64 +59,23 @@ export class ChatbotService {
   }
 
   /**
-   * Start a new chat session via REST API
-   */
-  private async startSession(): Promise<string | null> {
-    if (!this.baseUrl || !this.storeId) {
-      console.error('[Chatbot] No base URL or store ID');
-      return null;
-    }
-
-    const { accessToken } = getTokens();
-    const url = `${this.baseUrl}/RetailAPI/Customer/Chat/StartSession/${this.storeId}`;
-
-    try {
-      console.log('[Chatbot] Starting session:', url);
-      const response = await fetch(url, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${accessToken}`,
-        },
-        body: JSON.stringify({}),
-      });
-
-      if (!response.ok) {
-        throw new Error(`Failed to start session: ${response.statusText}`);
-      }
-
-      const data = await response.json();
-      console.log('[Chatbot] Session started:', data);
-
-      // Extract session ID from response
-      const sessionId = data.data?.sessionId || data.sessionId;
-      if (!sessionId) {
-        throw new Error('No session ID in response');
-      }
-
-      return sessionId;
-    } catch (error) {
-      console.error('[Chatbot] Failed to start session:', error);
-      return null;
-    }
-  }
-
-  /**
    * Connect to the chat hub (Flutter-compatible)
+   * @param sessionId - Existing session ID from REST API call
+   * @param baseUrl - API base URL
    */
-  async connect(userId: string, storeId: number, baseUrl: string): Promise<void> {
+  async connect(sessionId: string, baseUrl: string): Promise<void> {
     if (this.connection?.state === HubConnectionState.Connected) {
       return;
     }
 
-    if (!baseUrl) {
-      console.error('[Chatbot] No base URL provided');
+    if (!baseUrl || !sessionId) {
+      console.error('[Chatbot] No base URL or session ID provided');
       this.callbacks?.onStatusChange('error');
       return;
     }
 
     this.baseUrl = baseUrl;
-    this.storeId = storeId;
+    this.sessionId = sessionId;
     this.callbacks?.onStatusChange('connecting');
 
     const { accessToken } = getTokens();
@@ -125,15 +83,9 @@ export class ChatbotService {
     // Build hub URL - Flutter uses /chatHub with access_token query parameter
     const hubUrl = `${baseUrl}/chatHub`;
     console.log('[Chatbot] Connecting to:', hubUrl);
+    console.log('[Chatbot] Using session ID:', sessionId);
 
     try {
-      // Start session first to get session ID
-      this.sessionId = await this.startSession();
-      if (!this.sessionId) {
-        throw new Error('Failed to get session ID');
-      }
-
-      console.log('[Chatbot] Session ID:', this.sessionId);
 
       // Build SignalR connection
       this.connection = new HubConnectionBuilder()

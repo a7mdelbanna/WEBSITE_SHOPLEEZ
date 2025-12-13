@@ -329,3 +329,43 @@ export function useDeleteAccount() {
     },
   });
 }
+
+/**
+ * Start chat session
+ * Returns session ID for SignalR connection
+ */
+export interface ChatSessionData {
+  sessionId: string;
+  botMessage?: {
+    message: string;
+    choices?: string[];
+  };
+}
+
+export function useStartChatSession() {
+  const { apiClient, storeId, baseUrl } = useApiClient();
+
+  return useMutation({
+    mutationFn: async (): Promise<ChatSessionData> => {
+      // Matches Flutter: POST /RetailAPI/Customer/Chat/StartSession/{storeId}
+      const url = `${baseUrl}/RetailAPI/Customer/Chat/StartSession/${storeId}`;
+      console.log('[ChatSession] Starting session:', url);
+
+      const response = await apiClient.post(url, {});
+      console.log('[ChatSession] Response:', response.data);
+
+      // Extract session ID (handles both data.sessionId and data.data.sessionId)
+      const data = response.data?.data || response.data;
+      const sessionId = data?.sessionId;
+
+      if (!sessionId) {
+        throw new Error('No session ID in response');
+      }
+
+      return {
+        sessionId: sessionId.toString(),
+        botMessage: data?.botMessage,
+      };
+    },
+  });
+}
