@@ -211,33 +211,48 @@ export function useMyOrders(enabled = true) {
         const itemCount = order.itemDetails?.length || 0;
 
         // Parse date and time from API
-        // API returns: orderEznDate (e.g., "2025-12-13T00:00:00" or "13/12/2025")
-        //              orderEznTime (e.g., "19:30:00")
+        // API returns: orderEznDate (e.g., "2025-12-13")
+        //              orderEznTime (e.g., "17:37 م" or "09:20 ص")
+        // Note: م = PM (مساءً), ص = AM (صباحاً) in Arabic
         let createdAt = new Date().toISOString();
 
         if (order.orderEznDate) {
           try {
-            // Try parsing the date directly (handles ISO format)
-            let dateObj = new Date(order.orderEznDate);
+            // Parse ISO date format (2025-12-13)
+            const dateObj = new Date(order.orderEznDate);
 
-            // If invalid, try parsing DD/MM/YYYY format
-            if (isNaN(dateObj.getTime()) && order.orderEznDate.includes('/')) {
-              const [day, month, year] = order.orderEznDate.split('/');
-              dateObj = new Date(`${year}-${month}-${day}`);
-            }
-
-            // If we have a valid date, format it as ISO string
             if (!isNaN(dateObj.getTime())) {
-              // If time is provided, append it
+              // Parse time if provided
               if (order.orderEznTime) {
+                // Remove Arabic AM/PM characters: م (PM) or ص (AM)
+                const timeStr = order.orderEznTime
+                  .replace(/\s*م\s*$/i, ' PM')  // Replace م with PM
+                  .replace(/\s*ص\s*$/i, ' AM')  // Replace ص with AM
+                  .trim();
+
+                // Create date-time string
                 const dateStr = dateObj.toISOString().split('T')[0];
-                createdAt = `${dateStr}T${order.orderEznTime}`;
+
+                // Convert 12-hour time to 24-hour format for ISO
+                const [time, period] = timeStr.split(' ');
+                let [hours, minutes] = time.split(':').map(Number);
+
+                if (period === 'PM' && hours !== 12) {
+                  hours += 12;
+                } else if (period === 'AM' && hours === 12) {
+                  hours = 0;
+                }
+
+                const hours24 = hours.toString().padStart(2, '0');
+                const mins = minutes.toString().padStart(2, '0');
+
+                createdAt = `${dateStr}T${hours24}:${mins}:00`;
               } else {
                 createdAt = dateObj.toISOString();
               }
             }
           } catch (error) {
-            console.warn('[Order] Failed to parse date:', order.orderEznDate, error);
+            console.warn('[Order] Failed to parse date:', order.orderEznDate, order.orderEznTime, error);
           }
         }
 
