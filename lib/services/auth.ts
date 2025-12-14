@@ -451,21 +451,9 @@ export function useStartChatSession() {
         if (response.data?.result?.code === 400) {
           console.log('[ChatSession] Existing session found (code 400)');
 
-          // Note: We load existing session even if locale changed
-          // Old messages will be in old language, but new bot responses will be in current language
-          // This is acceptable UX - better than blocking the user completely
-          // TODO: Backend should support closing/resetting sessions when locale changes
-
-          console.log('[ChatSession] Loading messages from existing session...');
-
-          // Load existing session messages - matches Flutter LoadSessionMessagesEvent
+          // Load existing session messages to get session ID
           const getMessagesUrl = `${baseUrl}/RetailAPI/Customer/Chat/GetMySessionMessages/${storeId}`;
-          console.log('[ChatSession] Loading existing messages:', getMessagesUrl);
-
           const messagesResponse = await apiClient.get(getMessagesUrl);
-          console.log('[ChatSession] Messages response:', messagesResponse.data);
-
-          // Extract messages and get sessionId from last message
           const messagesData = messagesResponse.data?.data || messagesResponse.data;
           const messages = Array.isArray(messagesData) ? messagesData : [];
 
@@ -480,8 +468,24 @@ export function useStartChatSession() {
             throw new Error('No session ID found in existing messages');
           }
 
-          console.log('[ChatSession] Loaded', messages.length, 'existing messages');
-          console.log('[ChatSession] Using existing session ID:', sessionId);
+          // Check if locale changed since session started
+          const sessionLocale = getChatSessionLocale();
+          console.log('[ChatSession] Session locale:', sessionLocale, 'Current locale:', locale);
+
+          if (sessionLocale && sessionLocale !== locale) {
+            // Locale changed - don't load old messages (they're in wrong language)
+            // Return session ID with empty messages - bot will send new welcome in current language
+            console.log('[ChatSession] Locale changed - starting fresh without old messages');
+            storeChatSessionLocale(locale); // Update stored locale
+
+            return {
+              sessionId: sessionId.toString(),
+              messages: [], // Empty - bot will send new welcome message in current language
+            };
+          }
+
+          // Same locale - load existing messages normally
+          console.log('[ChatSession] Loaded', messages.length, 'existing messages (same locale)');
 
           // Convert API messages to ChatMessage format
           const chatMessages: ChatMessage[] = messages.map((msg: any) => ({
@@ -496,7 +500,7 @@ export function useStartChatSession() {
 
           return {
             sessionId: sessionId.toString(),
-            messages: chatMessages,  // ✅ Return ALL messages
+            messages: chatMessages,
             botMessage: lastMessage,
           };
         }
