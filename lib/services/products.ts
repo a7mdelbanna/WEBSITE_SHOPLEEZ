@@ -480,7 +480,7 @@ export function useSearchProductsPaginated(
       const url = buildEndpoint(API_ENDPOINTS.products.getAll);
       const { data } = await apiClient.get(url, {
         params: {
-          searchQuery: query.trim(),
+          SearchTerm: query.trim(), // Flutter uses "SearchTerm" not "searchQuery"
           pageNumber: page,
           pageSize: pageSize,
         },
