@@ -410,8 +410,9 @@ export function useStartChatSession() {
 
           // Check if session was created in different locale
           const sessionLocale = getChatSessionLocale();
-          if (sessionLocale && sessionLocale !== locale) {
-            console.log(`[ChatSession] Session locale (${sessionLocale}) != current locale (${locale}), closing session...`);
+          // Close session if locale doesn't match OR if we don't know the session locale (pre-existing sessions)
+          if (!sessionLocale || sessionLocale !== locale) {
+            console.log(`[ChatSession] Session locale (${sessionLocale || 'unknown'}) != current locale (${locale}), closing session...`);
 
             // Close the existing session
             try {
@@ -514,8 +515,9 @@ export function useStartChatSession() {
 
           // Check if session was created in different locale
           const sessionLocale = getChatSessionLocale();
-          if (sessionLocale && sessionLocale !== locale) {
-            console.log(`[ChatSession] Session locale (${sessionLocale}) != current locale (${locale}), closing session...`);
+          // Close session if locale doesn't match OR if we don't know the session locale (pre-existing sessions)
+          if (!sessionLocale || sessionLocale !== locale) {
+            console.log(`[ChatSession] Session locale (${sessionLocale || 'unknown'}) != current locale (${locale}), closing session...`);
 
             // Close the existing session
             try {
