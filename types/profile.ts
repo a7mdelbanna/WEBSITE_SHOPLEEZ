@@ -254,6 +254,7 @@ export interface ChatMessage {
   senderType: ChatMessageSender;
   timestamp: string;
   sessionId: string;
+  choices?: string[];  // Bot message choices/quick replies
 }
 
 export interface ChatSession {

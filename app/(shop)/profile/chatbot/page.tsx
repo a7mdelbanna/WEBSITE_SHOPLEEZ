@@ -33,11 +33,12 @@ import {
 import { AppShell } from '@/components/layout';
 import { useTranslations } from '@/lib/hooks/use-translations';
 import { useAuth } from '@/lib/contexts/auth-context';
-import { useProfile, useStartChatSession } from '@/lib/services/auth';
+import { useProfile, useStartChatSession, useSendBotChoice } from '@/lib/services/auth';
 import { useApiClient } from '@/lib/api/provider';
 import { chatbotService } from '@/lib/services/chatbot';
 import { cn } from '@/lib/utils';
 import type { ChatMessage, ChatbotStatus } from '@/types/profile';
+import { ChoiceChips } from '@/components/chatbot/choice-chips';
 
 // Quick action chips
 const QUICK_ACTIONS = [
@@ -176,6 +177,7 @@ export default function ChatbotPage() {
 
   // Chat session mutation
   const startChatSession = useStartChatSession();
+  const sendBotChoice = useSendBotChoice();
 
   // State
   const [sessionId, setSessionId] = useState<string | null>(null);
@@ -184,6 +186,7 @@ export default function ChatbotPage() {
   const [status, setStatus] = useState<ChatbotStatus>('initial');
   const [isTyping, setIsTyping] = useState(false);
   const [isSending, setIsSending] = useState(false);
+  const [currentChoices, setCurrentChoices] = useState<string[]>([]);
 
   // Refs
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -200,6 +203,15 @@ export default function ChatbotPage() {
       onMessage: (message) => {
         setMessages(prev => [...prev, message]);
         setIsTyping(false);
+
+        // Update current choices if this is a bot message with choices
+        if (message.senderType === 'bot' && message.choices && message.choices.length > 0) {
+          console.log('[ChatPage] Bot message with choices:', message.choices);
+          setCurrentChoices(message.choices);
+        } else if (message.senderType === 'bot') {
+          // Clear choices if bot sends message without choices
+          setCurrentChoices([]);
+        }
       },
       onStatusChange: (newStatus) => {
         setStatus(newStatus);
@@ -229,6 +241,13 @@ export default function ChatbotPage() {
           if (data.messages && data.messages.length > 0) {
             console.log('[ChatPage] Loading', data.messages.length, 'existing messages');
             setMessages(data.messages);  // ✅ Load ALL existing messages
+
+            // Set choices from last bot message
+            const lastBotMessage = [...data.messages].reverse().find(msg => msg.senderType === 'bot');
+            if (lastBotMessage?.choices && lastBotMessage.choices.length > 0) {
+              console.log('[ChatPage] Setting choices from existing session:', lastBotMessage.choices);
+              setCurrentChoices(lastBotMessage.choices);
+            }
           }
 
           setSessionId(data.sessionId);
@@ -261,6 +280,12 @@ export default function ChatbotPage() {
   }, [isAuthenticated, openLoginModal, router]);
 
   const BackIcon = isRTL ? ArrowRight : ArrowLeft;
+
+  // Check if input should be disabled (Flutter logic)
+  // Input is disabled when there are non-empty choices only
+  const hasNonEmptyChoices = currentChoices.some(choice => choice.trim() !== '');
+  const hasEmptyChoices = currentChoices.some(choice => choice.trim() === '');
+  const inputDisabled = status !== 'connected' || (hasNonEmptyChoices && !hasEmptyChoices);
 
   // Handle reconnect
   const handleReconnect = () => {
@@ -300,6 +325,36 @@ export default function ChatbotPage() {
     } finally {
       setIsSending(false);
       inputRef.current?.focus();
+    }
+  };
+
+  // Handle choice selection
+  const handleChoiceSelected = async (choiceIndex: number, choiceText: string) => {
+    console.log('[ChatPage] Choice selected:', choiceIndex, choiceText);
+
+    // Add user's choice as a message optimistically
+    const userMessage: ChatMessage = {
+      id: Date.now().toString(),
+      message: choiceText,
+      senderId: profile?.id ? String(profile.id) : 'user',
+      senderType: 'user',
+      timestamp: new Date().toISOString(),
+      sessionId: sessionId || '',
+    };
+    setMessages(prev => [...prev, userMessage]);
+
+    // Clear choices immediately (like Flutter does)
+    setCurrentChoices([]);
+    setIsSending(true);
+
+    try {
+      await sendBotChoice.mutateAsync(choiceIndex);
+      console.log('[ChatPage] Choice sent successfully');
+    } catch (error) {
+      console.error('[ChatPage] Failed to send choice:', error);
+      // Could show error toast here
+    } finally {
+      setIsSending(false);
     }
   };
 
@@ -386,6 +441,15 @@ export default function ChatbotPage() {
           {/* Typing indicator */}
           {isTyping && <TypingIndicator isRTL={isRTL} />}
 
+          {/* Choice chips - show if there are choices */}
+          {currentChoices.length > 0 && (
+            <ChoiceChips
+              choices={currentChoices}
+              onChoiceSelected={handleChoiceSelected}
+              isRTL={isRTL}
+            />
+          )}
+
           <div ref={messagesEndRef} />
         </div>
 
@@ -402,7 +466,7 @@ export default function ChatbotPage() {
               onChange={(e) => setInputValue(e.target.value)}
               onKeyPress={handleKeyPress}
               placeholder={isRTL ? 'اكتب رسالتك...' : 'Type your message...'}
-              disabled={status !== 'connected'}
+              disabled={inputDisabled}
               className={cn(
                 "flex-1 bg-transparent outline-none text-[14px] text-[#1A1A1A]",
                 "placeholder:text-[#9CA3AF] disabled:opacity-50",

@@ -135,6 +135,13 @@ export const API_ENDPOINTS = {
     uploadImage: '/RetailAPI/Chat/UploadChatImage/{storeId}',
   },
 
+  // ============== Chatbot (Customer Support) ==============
+  chatbot: {
+    startSession: '/RetailAPI/Customer/Chat/StartSession/{storeId}',
+    getMessages: '/RetailAPI/Customer/Chat/GetMySessionMessages/{storeId}',
+    sendBotChoice: '/RetailAPI/Customer/Chat/BotMessage/{storeId}',
+  },
+
   // ============== Notifications ==============
   notifications: {
     getHistory: '/RetailAPI/Notification/GetNotificationsHistory/{storeId}',

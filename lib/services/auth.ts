@@ -344,6 +344,28 @@ export interface ChatSessionData {
   };
 }
 
+/**
+ * Send bot choice selection
+ * Sends choice index to backend (Flutter: sendBotChoice)
+ */
+export function useSendBotChoice() {
+  const { apiClient, storeId, baseUrl } = useApiClient();
+
+  return useMutation({
+    mutationFn: async (choiceIndex: number): Promise<ApiResponseWrapper<any>> => {
+      const url = `${baseUrl}/RetailAPI/Customer/Chat/BotMessage/${storeId}`;
+      console.log('[ChatSession] Sending bot choice:', choiceIndex);
+
+      const response = await apiClient.post(url, {
+        message: choiceIndex.toString(),
+      });
+
+      console.log('[ChatSession] Choice sent response:', response.data);
+      return response.data;
+    },
+  });
+}
+
 export function useStartChatSession() {
   const { apiClient, storeId, baseUrl } = useApiClient();
 
@@ -395,6 +417,7 @@ export function useStartChatSession() {
             senderType: msg.isBotMessage ? 'bot' : (msg.isSender ? 'user' : 'agent'),
             timestamp: msg.timestamp || new Date().toISOString(),
             sessionId: sessionId.toString(),
+            choices: msg.choices || undefined,
           }));
 
           return {
@@ -455,6 +478,7 @@ export function useStartChatSession() {
             senderType: msg.isBotMessage ? 'bot' : (msg.isSender ? 'user' : 'agent'),
             timestamp: msg.timestamp || new Date().toISOString(),
             sessionId: sessionId.toString(),
+            choices: msg.choices || undefined,
           }));
 
           return {

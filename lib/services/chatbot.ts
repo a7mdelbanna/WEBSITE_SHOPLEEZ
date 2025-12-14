@@ -145,6 +145,7 @@ export class ChatbotService {
           senderType: message.senderType || 'agent',
           timestamp: message.timestamp || new Date().toISOString(),
           sessionId: this.sessionId || '',
+          choices: message.choices || undefined,
         };
         this.callbacks?.onMessage(chatMessage);
       }
