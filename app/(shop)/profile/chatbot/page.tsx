@@ -187,6 +187,7 @@ export default function ChatbotPage() {
   const [isTyping, setIsTyping] = useState(false);
   const [isSending, setIsSending] = useState(false);
   const [currentChoices, setCurrentChoices] = useState<string[]>([]);
+  const [chatMode, setChatMode] = useState<'bot' | 'admin'>('bot'); // Bot vs admin mode
 
   // Refs
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -203,6 +204,15 @@ export default function ChatbotPage() {
       onMessage: (message) => {
         setMessages(prev => [...prev, message]);
         setIsTyping(false);
+
+        // Update chat mode based on message sender (Flutter: chatMode = isbot ? ChatMode.bot : ChatMode.admin)
+        if (message.senderType === 'bot') {
+          setChatMode('bot');
+          console.log('[ChatPage] Chat mode: BOT');
+        } else if (message.senderType === 'agent') {
+          setChatMode('admin');
+          console.log('[ChatPage] Chat mode: ADMIN');
+        }
 
         // Update current choices if this is a bot message with choices
         if (message.senderType === 'bot' && message.choices && message.choices.length > 0) {
@@ -241,6 +251,12 @@ export default function ChatbotPage() {
           if (data.messages && data.messages.length > 0) {
             console.log('[ChatPage] Loading', data.messages.length, 'existing messages');
             setMessages(data.messages);  // ✅ Load ALL existing messages
+
+            // Determine chat mode from last message (Flutter: chatMode = isbot ? ChatMode.bot : ChatMode.admin)
+            const lastMessage = data.messages[data.messages.length - 1];
+            const mode = lastMessage.senderType === 'bot' ? 'bot' : 'admin';
+            setChatMode(mode);
+            console.log('[ChatPage] Chat mode from existing session:', mode);
 
             // Set choices from last bot message
             const lastBotMessage = [...data.messages].reverse().find(msg => msg.senderType === 'bot');
@@ -334,7 +350,16 @@ export default function ChatbotPage() {
     setMessages(prev => [...prev, userMessage]);
 
     try {
-      await chatbotService.sendMessage(messageText);
+      // Flutter logic: Send via different methods based on chat mode
+      if (chatMode === 'bot') {
+        // Bot mode: Send via REST API /BotMessage (Flutter: SendTextToBotEvent → sendBotChoice)
+        console.log('[ChatPage] Sending to BOT via REST API');
+        await sendBotChoice.mutateAsync(messageText);
+      } else {
+        // Admin mode: Send via SignalR (Flutter: SendMessageToAdminEvent → sendMessageToAdmin)
+        console.log('[ChatPage] Sending to ADMIN via SignalR');
+        await chatbotService.sendMessage(messageText);
+      }
     } catch (error) {
       console.error('Send failed:', error);
       // Could show error toast here

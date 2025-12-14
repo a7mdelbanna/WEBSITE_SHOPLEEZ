@@ -375,15 +375,16 @@ export function useSendBotChoice() {
   const { apiClient, storeId, baseUrl } = useApiClient();
 
   return useMutation({
-    mutationFn: async (choiceIndex: number): Promise<ApiResponseWrapper<any>> => {
+    mutationFn: async (message: string | number): Promise<ApiResponseWrapper<any>> => {
       const url = `${baseUrl}/RetailAPI/Customer/Chat/BotMessage/${storeId}`;
-      console.log('[ChatSession] Sending bot choice:', choiceIndex);
+      const messageText = typeof message === 'number' ? message.toString() : message;
+      console.log('[ChatSession] Sending bot message:', messageText);
 
       const response = await apiClient.post(url, {
-        message: choiceIndex.toString(),
+        message: messageText,
       });
 
-      console.log('[ChatSession] Choice sent response:', response.data);
+      console.log('[ChatSession] Bot message sent response:', response.data);
       return response.data;
     },
   });
