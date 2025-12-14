@@ -21,6 +21,7 @@ import { useApiClient } from '@/lib/api/provider';
 import { API_ENDPOINTS } from '@/lib/api/endpoints';
 import { buildUrl, setTokens, getTokens } from '@/lib/api/client';
 import type { AuthTokens, UserProfile } from '@/types/api';
+import type { ChatMessage } from '@/types/profile';
 
 // ============== Types ==============
 
@@ -336,6 +337,7 @@ export function useDeleteAccount() {
  */
 export interface ChatSessionData {
   sessionId: string;
+  messages?: ChatMessage[];  // Array of ALL messages from existing session
   botMessage?: {
     message: string;
     choices?: string[];
@@ -347,25 +349,124 @@ export function useStartChatSession() {
 
   return useMutation({
     mutationFn: async (): Promise<ChatSessionData> => {
-      // Matches Flutter: POST /RetailAPI/Customer/Chat/StartSession/{storeId}
-      const url = `${baseUrl}/RetailAPI/Customer/Chat/StartSession/${storeId}`;
-      console.log('[ChatSession] Starting session:', url);
+      try {
+        // Matches Flutter: POST /RetailAPI/Customer/Chat/StartSession/{storeId}
+        const url = `${baseUrl}/RetailAPI/Customer/Chat/StartSession/${storeId}`;
+        console.log('[ChatSession] Starting session:', url);
 
-      const response = await apiClient.post(url, {});
-      console.log('[ChatSession] Response:', response.data);
+        const response = await apiClient.post(url, {});
+        console.log('[ChatSession] Response:', response.data);
 
-      // Extract session ID (handles both data.sessionId and data.data.sessionId)
-      const data = response.data?.data || response.data;
-      const sessionId = data?.sessionId;
+        // ✅ Check if response contains error code 400 (existing session) BEFORE extracting sessionId
+        // API returns HTTP 200 with result.code: 400 in body (not HTTP 400 error)
+        if (response.data?.result?.code === 400) {
+          console.log('[ChatSession] Existing session found (code 400), loading messages...');
 
-      if (!sessionId) {
-        throw new Error('No session ID in response');
+          // Load existing session messages - matches Flutter LoadSessionMessagesEvent
+          const getMessagesUrl = `${baseUrl}/RetailAPI/Customer/Chat/GetMySessionMessages/${storeId}`;
+          console.log('[ChatSession] Loading existing messages:', getMessagesUrl);
+
+          const messagesResponse = await apiClient.get(getMessagesUrl);
+          console.log('[ChatSession] Messages response:', messagesResponse.data);
+
+          // Extract messages and get sessionId from last message
+          const messagesData = messagesResponse.data?.data || messagesResponse.data;
+          const messages = Array.isArray(messagesData) ? messagesData : [];
+
+          if (messages.length === 0) {
+            throw new Error('No messages in existing session');
+          }
+
+          const lastMessage = messages[messages.length - 1];
+          const sessionId = lastMessage?.chatSessionId || lastMessage?.sessionId;
+
+          if (!sessionId) {
+            throw new Error('No session ID found in existing messages');
+          }
+
+          console.log('[ChatSession] Loaded', messages.length, 'existing messages');
+          console.log('[ChatSession] Using existing session ID:', sessionId);
+
+          // Convert API messages to ChatMessage format
+          const chatMessages: ChatMessage[] = messages.map((msg: any) => ({
+            id: msg.id?.toString() || Date.now().toString(),
+            message: msg.message || '',
+            senderId: msg.sender?.id || msg.senderId || 'unknown',
+            senderType: msg.isBotMessage ? 'bot' : (msg.isSender ? 'user' : 'agent'),
+            timestamp: msg.timestamp || new Date().toISOString(),
+            sessionId: sessionId.toString(),
+          }));
+
+          return {
+            sessionId: sessionId.toString(),
+            messages: chatMessages,  // ✅ Return ALL messages
+            botMessage: lastMessage,
+          };
+        }
+
+        // Extract session ID for new session (code 200)
+        const data = response.data?.data || response.data;
+        const sessionId = data?.sessionId;
+
+        if (!sessionId) {
+          throw new Error('No session ID in response');
+        }
+
+        return {
+          sessionId: sessionId.toString(),
+          botMessage: data?.botMessage,
+        };
+      } catch (error: any) {
+        // Check if HTTP error is 400 (existing session) - fallback for HTTP-level errors
+        // API client throws custom error with statusCode (not response.status)
+        if (error.statusCode === 400 || error.response?.status === 400 || error.data?.result?.code === 400) {
+          console.log('[ChatSession] Existing session found (HTTP 400), loading messages...');
+
+          // Load existing session messages - matches Flutter LoadSessionMessagesEvent
+          const getMessagesUrl = `${baseUrl}/RetailAPI/Customer/Chat/GetMySessionMessages/${storeId}`;
+          console.log('[ChatSession] Loading existing messages:', getMessagesUrl);
+
+          const messagesResponse = await apiClient.get(getMessagesUrl);
+          console.log('[ChatSession] Messages response:', messagesResponse.data);
+
+          // Extract messages and get sessionId from last message
+          const messagesData = messagesResponse.data?.data || messagesResponse.data;
+          const messages = Array.isArray(messagesData) ? messagesData : [];
+
+          if (messages.length === 0) {
+            throw new Error('No messages in existing session');
+          }
+
+          const lastMessage = messages[messages.length - 1];
+          const sessionId = lastMessage?.chatSessionId || lastMessage?.sessionId;
+
+          if (!sessionId) {
+            throw new Error('No session ID found in existing messages');
+          }
+
+          console.log('[ChatSession] Loaded', messages.length, 'existing messages');
+          console.log('[ChatSession] Using existing session ID:', sessionId);
+
+          // Convert API messages to ChatMessage format
+          const chatMessages: ChatMessage[] = messages.map((msg: any) => ({
+            id: msg.id?.toString() || Date.now().toString(),
+            message: msg.message || '',
+            senderId: msg.sender?.id || msg.senderId || 'unknown',
+            senderType: msg.isBotMessage ? 'bot' : (msg.isSender ? 'user' : 'agent'),
+            timestamp: msg.timestamp || new Date().toISOString(),
+            sessionId: sessionId.toString(),
+          }));
+
+          return {
+            sessionId: sessionId.toString(),
+            messages: chatMessages,  // ✅ Return ALL messages
+            botMessage: lastMessage,
+          };
+        }
+
+        // Re-throw other errors
+        throw error;
       }
-
-      return {
-        sessionId: sessionId.toString(),
-        botMessage: data?.botMessage,
-      };
     },
   });
 }

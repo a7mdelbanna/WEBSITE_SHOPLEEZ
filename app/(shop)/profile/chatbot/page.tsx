@@ -224,6 +224,13 @@ export default function ChatbotPage() {
       startChatSession.mutate(undefined, {
         onSuccess: (data) => {
           console.log('[ChatPage] Session started:', data.sessionId);
+
+          // If existing session, load messages into UI
+          if (data.messages && data.messages.length > 0) {
+            console.log('[ChatPage] Loading', data.messages.length, 'existing messages');
+            setMessages(data.messages);  // ✅ Load ALL existing messages
+          }
+
           setSessionId(data.sessionId);
           // Connect to SignalR with the session ID
           chatbotService.connect(data.sessionId, baseUrl);
@@ -234,7 +241,8 @@ export default function ChatbotPage() {
         },
       });
     }
-  }, [isAuthenticated, sessionId, status, baseUrl, startChatSession]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isAuthenticated, sessionId, status, baseUrl]);
 
   // Scroll on new messages
   useEffect(() => {

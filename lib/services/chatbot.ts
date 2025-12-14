@@ -1,10 +1,10 @@
 'use client';
 
 /**
- * Chatbot Service - Flutter-compatible implementation
+ * Chatbot Service - Flutter-Compatible Implementation
  *
  * SignalR-based chat service for customer support.
- * This implementation matches the Flutter app's chat flow exactly.
+ * This implementation matches the Flutter app's ACTUAL implementation exactly.
  *
  * Flow:
  * 1. Call REST API to start session and get sessionId
