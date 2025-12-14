@@ -472,10 +472,13 @@ export function useStartChatSession() {
           const sessionLocale = getChatSessionLocale();
           console.log('[ChatSession] Session locale:', sessionLocale, 'Current locale:', locale);
 
-          if (sessionLocale && sessionLocale !== locale) {
-            // Locale changed - don't load old messages (they're in wrong language)
+          // Skip old messages if:
+          // 1. No stored locale (old session before locale tracking) OR
+          // 2. Locale changed since session started
+          if (!sessionLocale || sessionLocale !== locale) {
+            // Locale mismatch or unknown - don't load old messages (might be in wrong language)
             // Return session ID with empty messages - bot will send new welcome in current language
-            console.log('[ChatSession] Locale changed - starting fresh without old messages');
+            console.log('[ChatSession] Locale mismatch/unknown - starting fresh without old messages');
             storeChatSessionLocale(locale); // Update stored locale
 
             return {
