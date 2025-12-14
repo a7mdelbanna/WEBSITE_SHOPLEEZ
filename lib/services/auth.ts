@@ -390,6 +390,48 @@ export function useSendBotChoice() {
   });
 }
 
+/**
+ * Get session messages
+ * Reloads all messages from current session (Flutter: LoadSessionMessagesEvent)
+ */
+export function useGetSessionMessages() {
+  const { apiClient, storeId, baseUrl } = useApiClient();
+
+  return useMutation({
+    mutationFn: async (): Promise<ChatMessage[]> => {
+      const url = `${baseUrl}/RetailAPI/Customer/Chat/GetMySessionMessages/${storeId}`;
+      console.log('[ChatSession] Reloading session messages...');
+
+      const response = await apiClient.get(url);
+      const messagesData = response.data?.data || response.data;
+      const messages = Array.isArray(messagesData) ? messagesData : [];
+
+      if (messages.length === 0) {
+        console.log('[ChatSession] No messages found');
+        return [];
+      }
+
+      const lastMessage = messages[messages.length - 1];
+      const sessionId = lastMessage?.chatSessionId || lastMessage?.sessionId;
+
+      console.log('[ChatSession] Loaded', messages.length, 'messages');
+
+      // Convert API messages to ChatMessage format
+      const chatMessages: ChatMessage[] = messages.map((msg: any) => ({
+        id: msg.id?.toString() || Date.now().toString(),
+        message: msg.message || '',
+        senderId: msg.sender?.id || msg.senderId || 'unknown',
+        senderType: msg.isBotMessage ? 'bot' : (msg.isSender ? 'user' : 'agent'),
+        timestamp: msg.timestamp || new Date().toISOString(),
+        sessionId: sessionId?.toString() || '',
+        choices: msg.choices || undefined,
+      }));
+
+      return chatMessages;
+    },
+  });
+}
+
 export function useStartChatSession() {
   const { apiClient, storeId, baseUrl, locale } = useApiClient();
 

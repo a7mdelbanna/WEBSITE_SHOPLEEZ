@@ -33,7 +33,7 @@ import {
 import { AppShell } from '@/components/layout';
 import { useTranslations } from '@/lib/hooks/use-translations';
 import { useAuth } from '@/lib/contexts/auth-context';
-import { useProfile, useStartChatSession, useSendBotChoice } from '@/lib/services/auth';
+import { useProfile, useStartChatSession, useSendBotChoice, useGetSessionMessages } from '@/lib/services/auth';
 import { useApiClient } from '@/lib/api/provider';
 import { chatbotService } from '@/lib/services/chatbot';
 import { cn } from '@/lib/utils';
@@ -178,6 +178,7 @@ export default function ChatbotPage() {
   // Chat session mutation
   const startChatSession = useStartChatSession();
   const sendBotChoice = useSendBotChoice();
+  const getSessionMessages = useGetSessionMessages();
 
   // State
   const [sessionId, setSessionId] = useState<string | null>(null);
@@ -355,6 +356,24 @@ export default function ChatbotPage() {
         // Bot mode: Send via REST API /BotMessage (Flutter: SendTextToBotEvent → sendBotChoice)
         console.log('[ChatPage] Sending to BOT via REST API');
         await sendBotChoice.mutateAsync(messageText);
+
+        // Flutter: After sending to bot, reload messages (LoadSessionMessagesEvent)
+        console.log('[ChatPage] Reloading messages after bot response...');
+        const updatedMessages = await getSessionMessages.mutateAsync();
+        setMessages(updatedMessages);
+
+        // Update chat mode and choices from last message
+        const lastMessage = updatedMessages[updatedMessages.length - 1];
+        if (lastMessage) {
+          const mode = lastMessage.senderType === 'bot' ? 'bot' : 'admin';
+          setChatMode(mode);
+
+          if (lastMessage.senderType === 'bot' && lastMessage.choices) {
+            setCurrentChoices(lastMessage.choices);
+          } else {
+            setCurrentChoices([]);
+          }
+        }
       } else {
         // Admin mode: Send via SignalR (Flutter: SendMessageToAdminEvent → sendMessageToAdmin)
         console.log('[ChatPage] Sending to ADMIN via SignalR');
@@ -389,8 +408,27 @@ export default function ChatbotPage() {
     setIsSending(true);
 
     try {
+      // Flutter: Send choice to bot
       await sendBotChoice.mutateAsync(choiceIndex);
       console.log('[ChatPage] Choice sent successfully');
+
+      // Flutter: After sending choice, reload messages (LoadSessionMessagesEvent)
+      console.log('[ChatPage] Reloading messages after choice response...');
+      const updatedMessages = await getSessionMessages.mutateAsync();
+      setMessages(updatedMessages);
+
+      // Update chat mode and choices from last message
+      const lastMessage = updatedMessages[updatedMessages.length - 1];
+      if (lastMessage) {
+        const mode = lastMessage.senderType === 'bot' ? 'bot' : 'admin';
+        setChatMode(mode);
+
+        if (lastMessage.senderType === 'bot' && lastMessage.choices) {
+          setCurrentChoices(lastMessage.choices);
+        } else {
+          setCurrentChoices([]);
+        }
+      }
     } catch (error) {
       console.error('[ChatPage] Failed to send choice:', error);
       // Could show error toast here
