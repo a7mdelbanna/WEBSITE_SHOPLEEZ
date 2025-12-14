@@ -199,6 +199,20 @@ export default function ChatbotPage() {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, []);
 
+  // Clear old session data on mount if needed
+  useEffect(() => {
+    // Force clear old session to ensure fresh start
+    if (typeof window !== 'undefined') {
+      const oldLocale = localStorage.getItem('chatSessionLocale');
+      if (oldLocale && oldLocale !== locale) {
+        console.log('[ChatPage] Locale changed, clearing old session data');
+        localStorage.removeItem('chatSessionLocale');
+        // Force reload to start fresh
+        window.location.reload();
+      }
+    }
+  }, []); // Only run once on mount
+
   // Initialize chatbot
   useEffect(() => {
     chatbotService.initialize({
