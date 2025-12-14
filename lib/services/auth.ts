@@ -345,6 +345,29 @@ export interface ChatSessionData {
 }
 
 /**
+ * Store/get chat session locale in localStorage
+ * Used to detect if session was created in a different language
+ */
+const CHAT_SESSION_LOCALE_KEY = 'chatSessionLocale';
+
+function storeChatSessionLocale(locale: string): void {
+  if (typeof window !== 'undefined') {
+    localStorage.setItem(CHAT_SESSION_LOCALE_KEY, locale);
+  }
+}
+
+function getChatSessionLocale(): string | null {
+  if (typeof window === 'undefined') return null;
+  return localStorage.getItem(CHAT_SESSION_LOCALE_KEY);
+}
+
+function clearChatSessionLocale(): void {
+  if (typeof window !== 'undefined') {
+    localStorage.removeItem(CHAT_SESSION_LOCALE_KEY);
+  }
+}
+
+/**
  * Send bot choice selection
  * Sends choice index to backend (Flutter: sendBotChoice)
  */
@@ -367,7 +390,7 @@ export function useSendBotChoice() {
 }
 
 export function useStartChatSession() {
-  const { apiClient, storeId, baseUrl } = useApiClient();
+  const { apiClient, storeId, baseUrl, locale } = useApiClient();
 
   return useMutation({
     mutationFn: async (): Promise<ChatSessionData> => {
@@ -375,6 +398,7 @@ export function useStartChatSession() {
         // Matches Flutter: POST /RetailAPI/Customer/Chat/StartSession/{storeId}
         const url = `${baseUrl}/RetailAPI/Customer/Chat/StartSession/${storeId}`;
         console.log('[ChatSession] Starting session:', url);
+        console.log('[ChatSession] Current locale:', locale);
 
         const response = await apiClient.post(url, {});
         console.log('[ChatSession] Response:', response.data);
@@ -382,7 +406,47 @@ export function useStartChatSession() {
         // ✅ Check if response contains error code 400 (existing session) BEFORE extracting sessionId
         // API returns HTTP 200 with result.code: 400 in body (not HTTP 400 error)
         if (response.data?.result?.code === 400) {
-          console.log('[ChatSession] Existing session found (code 400), loading messages...');
+          console.log('[ChatSession] Existing session found (code 400)');
+
+          // Check if session was created in different locale
+          const sessionLocale = getChatSessionLocale();
+          if (sessionLocale && sessionLocale !== locale) {
+            console.log(`[ChatSession] Session locale (${sessionLocale}) != current locale (${locale}), closing session...`);
+
+            // Close the existing session
+            try {
+              const closeUrl = `${baseUrl}/RetailAPI/Customer/Chat/CloseSession/${storeId}`;
+              await apiClient.post(closeUrl, {});
+              console.log('[ChatSession] Old session closed, starting new session...');
+
+              // Clear stored locale
+              clearChatSessionLocale();
+
+              // Start a new session recursively (will not have 400 this time)
+              const newSessionResponse = await apiClient.post(url, {});
+
+              // Extract session ID for new session
+              const data = newSessionResponse.data?.data || newSessionResponse.data;
+              const sessionId = data?.sessionId;
+
+              if (!sessionId) {
+                throw new Error('No session ID in response');
+              }
+
+              // Store new session locale
+              storeChatSessionLocale(locale);
+
+              return {
+                sessionId: sessionId.toString(),
+                botMessage: data?.botMessage,
+              };
+            } catch (error) {
+              console.error('[ChatSession] Failed to close old session:', error);
+              // Continue with loading existing session if close fails
+            }
+          }
+
+          console.log('[ChatSession] Loading messages from existing session...');
 
           // Load existing session messages - matches Flutter LoadSessionMessagesEvent
           const getMessagesUrl = `${baseUrl}/RetailAPI/Customer/Chat/GetMySessionMessages/${storeId}`;
@@ -435,6 +499,9 @@ export function useStartChatSession() {
           throw new Error('No session ID in response');
         }
 
+        // Store session locale
+        storeChatSessionLocale(locale);
+
         return {
           sessionId: sessionId.toString(),
           botMessage: data?.botMessage,
@@ -443,7 +510,47 @@ export function useStartChatSession() {
         // Check if HTTP error is 400 (existing session) - fallback for HTTP-level errors
         // API client throws custom error with statusCode (not response.status)
         if (error.statusCode === 400 || error.response?.status === 400 || error.data?.result?.code === 400) {
-          console.log('[ChatSession] Existing session found (HTTP 400), loading messages...');
+          console.log('[ChatSession] Existing session found (HTTP 400)');
+
+          // Check if session was created in different locale
+          const sessionLocale = getChatSessionLocale();
+          if (sessionLocale && sessionLocale !== locale) {
+            console.log(`[ChatSession] Session locale (${sessionLocale}) != current locale (${locale}), closing session...`);
+
+            // Close the existing session
+            try {
+              const closeUrl = `${baseUrl}/RetailAPI/Customer/Chat/CloseSession/${storeId}`;
+              await apiClient.post(closeUrl, {});
+              console.log('[ChatSession] Old session closed, starting new session...');
+
+              // Clear stored locale
+              clearChatSessionLocale();
+
+              // Start a new session recursively (will not have 400 this time)
+              const newSessionResponse = await apiClient.post(url, {});
+
+              // Extract session ID for new session
+              const data = newSessionResponse.data?.data || newSessionResponse.data;
+              const sessionId = data?.sessionId;
+
+              if (!sessionId) {
+                throw new Error('No session ID in response');
+              }
+
+              // Store new session locale
+              storeChatSessionLocale(locale);
+
+              return {
+                sessionId: sessionId.toString(),
+                botMessage: data?.botMessage,
+              };
+            } catch (error) {
+              console.error('[ChatSession] Failed to close old session:', error);
+              // Continue with loading existing session if close fails
+            }
+          }
+
+          console.log('[ChatSession] Loading messages from existing session...');
 
           // Load existing session messages - matches Flutter LoadSessionMessagesEvent
           const getMessagesUrl = `${baseUrl}/RetailAPI/Customer/Chat/GetMySessionMessages/${storeId}`;
