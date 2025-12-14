@@ -170,7 +170,7 @@ function ConnectionStatus({
 
 export default function ChatbotPage() {
   const router = useRouter();
-  const { isRTL } = useTranslations();
+  const { isRTL, locale } = useTranslations();
   const { isAuthenticated, isLoading: authLoading, openLoginModal } = useAuth();
   const { baseUrl } = useApiClient();
   const { data: profile } = useProfile(isAuthenticated);
@@ -268,6 +268,22 @@ export default function ChatbotPage() {
     scrollToBottom();
   }, [messages, isTyping, scrollToBottom]);
 
+  // Restart session when locale changes (to get messages in new language)
+  useEffect(() => {
+    if (sessionId) {
+      console.log('[ChatPage] Locale changed, restarting session...');
+      // Disconnect from SignalR
+      chatbotService.disconnect();
+      // Clear session and reset state
+      setSessionId(null);
+      setMessages([]);
+      setCurrentChoices([]);
+      setStatus('initial');
+      // This will trigger the session start useEffect
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [locale]);
+
   // Redirect if not authenticated
   useEffect(() => {
     // Don't redirect while still checking authentication
@@ -277,7 +293,7 @@ export default function ChatbotPage() {
       openLoginModal();
       router.push('/profile');
     }
-  }, [isAuthenticated, openLoginModal, router]);
+  }, [isAuthenticated, openLoginModal, router, authLoading]);
 
   const BackIcon = isRTL ? ArrowRight : ArrowLeft;
 
