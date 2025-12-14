@@ -408,44 +408,10 @@ export function useStartChatSession() {
         if (response.data?.result?.code === 400) {
           console.log('[ChatSession] Existing session found (code 400)');
 
-          // Check if session was created in different locale
-          const sessionLocale = getChatSessionLocale();
-          // Close session if locale doesn't match OR if we don't know the session locale (pre-existing sessions)
-          if (!sessionLocale || sessionLocale !== locale) {
-            console.log(`[ChatSession] Session locale (${sessionLocale || 'unknown'}) != current locale (${locale}), closing session...`);
-
-            // Close the existing session
-            try {
-              const closeUrl = `${baseUrl}/RetailAPI/Customer/Chat/CloseSession/${storeId}`;
-              await apiClient.post(closeUrl, {});
-              console.log('[ChatSession] Old session closed, starting new session...');
-
-              // Clear stored locale
-              clearChatSessionLocale();
-
-              // Start a new session recursively (will not have 400 this time)
-              const newSessionResponse = await apiClient.post(url, {});
-
-              // Extract session ID for new session
-              const data = newSessionResponse.data?.data || newSessionResponse.data;
-              const sessionId = data?.sessionId;
-
-              if (!sessionId) {
-                throw new Error('No session ID in response');
-              }
-
-              // Store new session locale
-              storeChatSessionLocale(locale);
-
-              return {
-                sessionId: sessionId.toString(),
-                botMessage: data?.botMessage,
-              };
-            } catch (error) {
-              console.error('[ChatSession] Failed to close old session:', error);
-              // Continue with loading existing session if close fails
-            }
-          }
+          // Note: We load existing session even if locale changed
+          // Old messages will be in old language, but new bot responses will be in current language
+          // This is acceptable UX - better than blocking the user completely
+          // TODO: Backend should support closing/resetting sessions when locale changes
 
           console.log('[ChatSession] Loading messages from existing session...');
 
@@ -515,41 +481,20 @@ export function useStartChatSession() {
 
           // Check if session was created in different locale
           const sessionLocale = getChatSessionLocale();
-          // Close session if locale doesn't match OR if we don't know the session locale (pre-existing sessions)
           if (!sessionLocale || sessionLocale !== locale) {
-            console.log(`[ChatSession] Session locale (${sessionLocale || 'unknown'}) != current locale (${locale}), closing session...`);
+            console.log(`[ChatSession] Session locale (${sessionLocale || 'unknown'}) != current locale (${locale})`);
+            console.log('[ChatSession] Session language mismatch - clearing old messages and starting fresh');
 
-            // Close the existing session
-            try {
-              const closeUrl = `${baseUrl}/RetailAPI/Customer/Chat/CloseSession/${storeId}`;
-              await apiClient.post(closeUrl, {});
-              console.log('[ChatSession] Old session closed, starting new session...');
+            // Update stored locale to current one
+            storeChatSessionLocale(locale);
 
-              // Clear stored locale
-              clearChatSessionLocale();
-
-              // Start a new session recursively (will not have 400 this time)
-              const newSessionResponse = await apiClient.post(url, {});
-
-              // Extract session ID for new session
-              const data = newSessionResponse.data?.data || newSessionResponse.data;
-              const sessionId = data?.sessionId;
-
-              if (!sessionId) {
-                throw new Error('No session ID in response');
-              }
-
-              // Store new session locale
-              storeChatSessionLocale(locale);
-
-              return {
-                sessionId: sessionId.toString(),
-                botMessage: data?.botMessage,
-              };
-            } catch (error) {
-              console.error('[ChatSession] Failed to close old session:', error);
-              // Continue with loading existing session if close fails
-            }
+            // Return empty messages to start fresh (don't load old messages in wrong language)
+            // But we still get sessionId to connect to SignalR and send new messages
+            // The bot will respond in the new language based on Accept-Language header
+            return {
+              sessionId: 'existing', // Marker that session exists on backend
+              messages: [], // Don't show old messages in wrong language
+            };
           }
 
           console.log('[ChatSession] Loading messages from existing session...');
