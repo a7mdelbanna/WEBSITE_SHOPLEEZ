@@ -105,6 +105,7 @@ export interface HomeSection {
 
 /**
  * Banner/Promotion data
+ * Matches Flutter's Spotlight model
  */
 export interface Banner {
   id: number;
@@ -114,11 +115,11 @@ export interface Banner {
   titleAr?: string;
   subtitle?: string;
   subtitleAr?: string;
-  linkType: 'category' | 'product' | 'company' | 'url' | 'none';
-  linkValue?: string;
   sortOrder: number;
   backgroundColor?: string;
   textColor?: string;
+  // Navigation: Use banner ID → /promotion/[id]
+  // No linkType/linkValue - those don't exist in API
 }
 
 /**

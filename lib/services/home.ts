@@ -378,6 +378,8 @@ export function useHomePage() {
         let sectionData = section.data || [];
 
         // Normalize banners (PromotionOffers)
+        // Banners only need id + image + title (no linkType/linkValue)
+        // Navigation handled by banner ID → /promotion/[id]
         if (section.key === 'PromotionOffers') {
           sectionData = (sectionData as Record<string, unknown>[]).map((item) => ({
             ...item,
@@ -385,8 +387,6 @@ export function useHomePage() {
             imageUrlAr: item.filePath || item.imageUrlAr || '',
             title: item.nameEn || item.nameEN || '',
             titleAr: item.nameAr || item.nameAR || '',
-            linkType: (item.linkType || 'none') as 'category' | 'product' | 'company' | 'url' | 'none',
-            linkValue: item.linkValue || '',
           }));
         }
 

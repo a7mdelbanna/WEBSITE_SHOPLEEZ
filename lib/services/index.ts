@@ -51,3 +51,10 @@ export {
   useValidateCoupon,
   useApplyCoupon,
 } from './cart';
+
+// Promotion services
+export {
+  promotionQueryKeys,
+  usePromotionDetail,
+} from './promotions';
+export type { PromotionDetail } from './promotions';

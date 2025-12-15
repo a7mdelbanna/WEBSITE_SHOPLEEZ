@@ -368,6 +368,24 @@ function normalizeProductItem(item: Record<string, unknown>): ProductSummary {
   const displayPrice = smallUnitPrice || bigUnitPrice || 0;
   const displayImage = (item.itemImageForSmallUnitUrl || item.itemImageForBigUnitUrl || item.imageUrl || '') as string;
 
+  // DEBUG: Log first few items to see what API returns
+  if (Math.random() < 0.1) {
+    console.log('[Products] Raw API item:', {
+      id: item.id,
+      name: item.nameEN || item.name,
+      discountPercent: item.discountPercent,
+      discountPercentage: item.discountPercentage,
+      discount: item.discount,
+      originalPrice: item.originalPrice,
+      beforeDiscount: item.beforeDiscount,
+      specialPrice: item.specialPrice,
+      discountPrice: item.discountPrice,
+      price: item.price,
+      bigUnitPrice: item.bigUnitPrice,
+      smallUnitPrice: item.smallUnitPrice,
+    });
+  }
+
   // Extract discount data from API
   const discountPercent = (item.discountPercent || item.discountPercentage || item.discount) as number | undefined;
   const originalPrice = item.originalPrice as number | undefined;

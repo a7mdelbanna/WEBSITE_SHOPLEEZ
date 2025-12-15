@@ -172,4 +172,9 @@ export const API_ENDPOINTS = {
     getRecent: '/RetailAPI/Customer/SearchHistory/GetRecentSearches/{storeId}',
     addRecent: '/RetailAPI/Customer/SearchHistory/AddToRecentSearches/{storeId}',
   },
+
+  // ============== Promotions ==============
+  promotions: {
+    getById: '/RetailAPI/Customer/Promotions/GetPromotionById/{storeId}',
+  },
 } as const;

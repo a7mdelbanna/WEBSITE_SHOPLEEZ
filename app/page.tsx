@@ -71,23 +71,10 @@ export default function HomePage() {
     openModal(product);
   };
 
-  // Helper to convert banner linkType + linkValue to href
-  const getBannerHref = (linkType: string, linkValue?: string): string => {
-    if (!linkValue) return '#';
-
-    switch (linkType) {
-      case 'category':
-        return `/category/${linkValue}`;
-      case 'product':
-        return `/product/${linkValue}`;
-      case 'company':
-        return `/company/${linkValue}`;
-      case 'url':
-        return linkValue;
-      case 'none':
-      default:
-        return '#';
-    }
+  // Banner navigation: Navigate to promotion detail page
+  // Matches Flutter's _showBannerDetails pattern
+  const getBannerHref = (bannerId: number): string => {
+    return `/promotion/${bannerId}`;
   };
 
   // Extract sections from home data using type guards
@@ -148,7 +135,7 @@ export default function HomePage() {
                     return (
                       <Link
                         key={banner.id}
-                        href={getBannerHref(banner.linkType, banner.linkValue)}
+                        href={getBannerHref(banner.id)}
                         className="marquee-card w-[400px] h-[240px]"
                       >
                         {hasImage ? (
@@ -212,7 +199,7 @@ export default function HomePage() {
                     return (
                       <Link
                         key={`dup-${banner.id}`}
-                        href={getBannerHref(banner.linkType, banner.linkValue)}
+                        href={getBannerHref(banner.id)}
                         className="marquee-card w-[400px] h-[240px]"
                       >
                         {hasImage ? (
