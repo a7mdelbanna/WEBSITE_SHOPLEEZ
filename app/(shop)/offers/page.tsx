@@ -171,7 +171,7 @@ export default function OffersPage() {
                       product.discountPercent
                         ? {
                             text: `-${product.discountPercent}%`,
-                            textAr: `-${product.discountPercent}%`,
+                            textAr: `${product.discountPercent}%-`,
                             variant: 'discount' as const,
                           }
                         : product.isNew
