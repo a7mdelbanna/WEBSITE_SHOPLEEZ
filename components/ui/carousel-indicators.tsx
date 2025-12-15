@@ -7,6 +7,8 @@ interface CarouselIndicatorsProps {
   itemWidth?: number;
   gap?: number;
   className?: string;
+  autoPlay?: boolean;
+  autoPlayInterval?: number;
 }
 
 /**
@@ -24,10 +26,13 @@ export function CarouselWithIndicators({
   itemWidth = 300,
   gap = 20,
   className = '',
+  autoPlay = false,
+  autoPlayInterval = 4000,
 }: CarouselIndicatorsProps) {
   const scrollRef = useRef<HTMLDivElement>(null);
   const [activeIndex, setActiveIndex] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
+  const [isHovering, setIsHovering] = useState(false);
   const itemCount = children.length;
 
   // Calculate active index based on scroll position
@@ -126,8 +131,27 @@ export function CarouselWithIndicators({
     };
   }, []);
 
+  // Auto-play functionality
+  useEffect(() => {
+    if (!autoPlay || itemCount <= 1) return;
+
+    // Pause auto-play when user is interacting
+    if (isDragging || isHovering) return;
+
+    const interval = setInterval(() => {
+      const nextIndex = (activeIndex + 1) % itemCount;
+      scrollToIndex(nextIndex);
+    }, autoPlayInterval);
+
+    return () => clearInterval(interval);
+  }, [autoPlay, autoPlayInterval, activeIndex, itemCount, isDragging, isHovering, scrollToIndex]);
+
   return (
-    <div className={`carousel-container ${className}`}>
+    <div
+      className={`carousel-container ${className}`}
+      onMouseEnter={() => setIsHovering(true)}
+      onMouseLeave={() => setIsHovering(false)}
+    >
       {/* Scroll Container */}
       <div
         ref={scrollRef}

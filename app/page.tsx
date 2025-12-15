@@ -18,6 +18,7 @@
  * (Empty sections are hidden automatically)
  */
 
+import { useState } from 'react';
 import { AppShell } from '@/components/layout';
 import { ProductCard, ProductScroll, ProductScrollSkeleton } from '@/components/products/product-card';
 import { ProductDetailModal, useProductDetailModal, type ProductDetailData } from '@/components/products/product-detail-modal';
@@ -41,6 +42,9 @@ export default function HomePage() {
   const { t, isRTL, localize } = useTranslations();
   const { isOpen, selectedProduct, openModal, closeModal } = useProductDetailModal();
   const { isAuthenticated } = useAuth();
+
+  // Track banner image load errors
+  const [bannerImageErrors, setBannerImageErrors] = useState<Set<number>>(new Set());
 
   // Fetch home page data from API
   const { data: homeData, isLoading: isLoadingHome } = useHomePage();
@@ -104,52 +108,152 @@ export default function HomePage() {
               </h1>
             </div>
 
-            {/* Banner Grid - IMAGE ONLY BANNERS */}
+            {/* Auto-scrolling Marquee - IMAGE ONLY BANNERS */}
             {isLoadingHome ? (
-              <div className="grid grid-cols-4 gap-[16px] pt-[8px]">
-                {[1, 2, 3, 4].map((i) => (
-                  <Skeleton key={i} className="aspect-[3/4] rounded-[20px]" />
+              <div className="flex gap-[16px] overflow-hidden">
+                {[1, 2, 3, 4, 5].map((i) => (
+                  <Skeleton key={i} className="w-[400px] h-[240px] rounded-[20px] shrink-0" />
                 ))}
               </div>
             ) : heroBanners.length > 0 ? (
-              <div className="grid grid-cols-4 gap-[16px] pt-[8px]">
-                {heroBanners.slice(0, 4).map((banner) => (
-                  <Link
-                    key={banner.id}
-                    href={banner.linkValue || '#'}
-                    className="group relative aspect-[3/4] rounded-[20px] overflow-hidden hover:scale-[1.02] transition-transform"
-                  >
-                    <Image
-                      src={isRTL && banner.imageUrlAr ? banner.imageUrlAr : banner.imageUrl}
-                      alt={localize(banner.title || '', banner.titleAr || '')}
-                      fill
-                      className="object-cover"
-                      unoptimized
-                    />
-                  </Link>
-                ))}
+              <div className="marquee-container">
+                <div className="marquee-track">
+                  {/* First set of banners */}
+                  {heroBanners.map((banner) => {
+                    const imageUrl = isRTL && banner.imageUrlAr ? banner.imageUrlAr : banner.imageUrl;
+                    const hasImageError = bannerImageErrors.has(banner.id);
+                    const hasImage = imageUrl && imageUrl.trim() !== '' && !hasImageError;
+                    const storeId = process.env.NEXT_PUBLIC_STORE_ID || '1';
+                    const logoPath = `/tenants/store${storeId}/logo.png`;
+
+                    return (
+                      <Link
+                        key={banner.id}
+                        href={banner.linkValue || '#'}
+                        className="marquee-card w-[400px] h-[240px]"
+                      >
+                        {hasImage ? (
+                          <Image
+                            src={imageUrl}
+                            alt={localize(banner.title || '', banner.titleAr || '')}
+                            fill
+                            className="object-cover"
+                            unoptimized
+                            onError={() => {
+                              setBannerImageErrors(prev => new Set(prev).add(banner.id));
+                            }}
+                          />
+                        ) : (
+                          // Beautiful placeholder with logo
+                          <div
+                            className="w-full h-full relative overflow-hidden flex items-center justify-center"
+                            style={{
+                              background: 'linear-gradient(135deg, var(--color-primary-light) 0%, var(--color-bg-page) 100%)'
+                            }}
+                          >
+                            {/* Decorative pattern */}
+                            <div
+                              className="absolute inset-0 opacity-[0.08]"
+                              style={{
+                                backgroundImage: 'radial-gradient(circle, var(--color-primary) 1.5px, transparent 1.5px)',
+                                backgroundSize: '24px 24px'
+                              }}
+                            />
+                            {/* Radial gradient overlay */}
+                            <div
+                              className="absolute inset-0 opacity-50"
+                              style={{
+                                background: 'radial-gradient(circle at center, transparent 40%, var(--color-primary-light) 100%)'
+                              }}
+                            />
+                            {/* Store logo */}
+                            <div className="relative w-[140px] h-[140px] opacity-75">
+                              <Image
+                                src={logoPath}
+                                alt="Store logo"
+                                fill
+                                className="object-contain drop-shadow-lg"
+                                sizes="140px"
+                                unoptimized
+                              />
+                            </div>
+                          </div>
+                        )}
+                      </Link>
+                    );
+                  })}
+                  {/* Duplicate set for seamless loop */}
+                  {heroBanners.map((banner) => {
+                    const imageUrl = isRTL && banner.imageUrlAr ? banner.imageUrlAr : banner.imageUrl;
+                    const hasImageError = bannerImageErrors.has(banner.id);
+                    const hasImage = imageUrl && imageUrl.trim() !== '' && !hasImageError;
+                    const storeId = process.env.NEXT_PUBLIC_STORE_ID || '1';
+                    const logoPath = `/tenants/store${storeId}/logo.png`;
+
+                    return (
+                      <Link
+                        key={`dup-${banner.id}`}
+                        href={banner.linkValue || '#'}
+                        className="marquee-card w-[400px] h-[240px]"
+                      >
+                        {hasImage ? (
+                          <Image
+                            src={imageUrl}
+                            alt={localize(banner.title || '', banner.titleAr || '')}
+                            fill
+                            className="object-cover"
+                            unoptimized
+                            onError={() => {
+                              setBannerImageErrors(prev => new Set(prev).add(banner.id));
+                            }}
+                          />
+                        ) : (
+                          // Beautiful placeholder with logo
+                          <div
+                            className="w-full h-full relative overflow-hidden flex items-center justify-center"
+                            style={{
+                              background: 'linear-gradient(135deg, var(--color-primary-light) 0%, var(--color-bg-page) 100%)'
+                            }}
+                          >
+                            {/* Decorative pattern */}
+                            <div
+                              className="absolute inset-0 opacity-[0.08]"
+                              style={{
+                                backgroundImage: 'radial-gradient(circle, var(--color-primary) 1.5px, transparent 1.5px)',
+                                backgroundSize: '24px 24px'
+                              }}
+                            />
+                            {/* Radial gradient overlay */}
+                            <div
+                              className="absolute inset-0 opacity-50"
+                              style={{
+                                background: 'radial-gradient(circle at center, transparent 40%, var(--color-primary-light) 100%)'
+                              }}
+                            />
+                            {/* Store logo */}
+                            <div className="relative w-[140px] h-[140px] opacity-75">
+                              <Image
+                                src={logoPath}
+                                alt="Store logo"
+                                fill
+                                className="object-contain drop-shadow-lg"
+                                sizes="140px"
+                                unoptimized
+                              />
+                            </div>
+                          </div>
+                        )}
+                      </Link>
+                    );
+                  })}
+                </div>
               </div>
             ) : (
               // Placeholder when no banners available
-              <div className="grid grid-cols-4 gap-[16px] pt-[8px]">
-                {[1, 2, 3, 4].map((i) => (
-                  <div
-                    key={i}
-                    className="aspect-[3/4] rounded-[20px] bg-gradient-to-br from-[var(--color-bg-page)] to-[var(--color-border)] flex items-center justify-center"
-                  >
-                    <span className="text-[var(--color-text-muted)] text-sm">{t('common.comingSoon')}</span>
-                  </div>
-                ))}
+              <div className="w-full h-[240px] rounded-[20px] bg-gradient-to-br from-[var(--color-bg-page)] to-[var(--color-border)] flex items-center justify-center">
+                <span className="text-[var(--color-text-muted)] text-sm">{t('common.comingSoon')}</span>
               </div>
             )}
-
-            {/* Navigation arrow - positioned outside grid on right */}
-            <button className={cn(
-              "absolute top-1/2 -translate-y-1/2 w-[40px] h-[40px] rounded-full bg-white shadow-md flex items-center justify-center hover:scale-110 transition-transform hidden",
-              isRTL ? "-left-[20px]" : "-right-[20px]"
-            )}>
-              <ChevronRight className={cn("w-[20px] h-[20px] text-[var(--color-text-primary)]", isRTL && "rotate-180")} strokeWidth={2} />
-            </button>
           </section>
 
           {/* Special Offers Section - Marquee Scroll */}
