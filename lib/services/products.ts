@@ -211,6 +211,12 @@ function normalizeRelatedProduct(item: Record<string, unknown>): ProductSummary 
   const displayPrice = smallUnitPrice || bigUnitPrice || 0;
   const displayImage = (item.itemImageForSmallUnitUrl || item.itemImageForBigUnitUrl || '') as string;
 
+  // Extract discount data from API
+  const discountPercent = (item.discountPercent || item.discountPercentage || item.discount) as number | undefined;
+  const originalPrice = item.originalPrice as number | undefined;
+  const specialPrice = (item.specialPrice || item.discountPrice) as number | undefined;
+  const discountPrice = specialPrice || (originalPrice && discountPercent ? originalPrice * (1 - discountPercent / 100) : undefined);
+
   return {
     id: item.id as number,
     itemId: item.id as number,
@@ -218,9 +224,9 @@ function normalizeRelatedProduct(item: Record<string, unknown>): ProductSummary 
     nameAr: (item.nameAR || '') as string,
     nameEn: (item.nameEN || '') as string,
     price: displayPrice,
-    originalPrice: undefined,
-    discountPrice: undefined,
-    discountPercent: undefined,
+    originalPrice,
+    discountPrice,
+    discountPercent,
     imageUrl: displayImage,
     mainImage: displayImage,
     volume: undefined,
@@ -362,6 +368,12 @@ function normalizeProductItem(item: Record<string, unknown>): ProductSummary {
   const displayPrice = smallUnitPrice || bigUnitPrice || 0;
   const displayImage = (item.itemImageForSmallUnitUrl || item.itemImageForBigUnitUrl || item.imageUrl || '') as string;
 
+  // Extract discount data from API
+  const discountPercent = (item.discountPercent || item.discountPercentage || item.discount) as number | undefined;
+  const originalPrice = item.originalPrice as number | undefined;
+  const specialPrice = (item.specialPrice || item.discountPrice) as number | undefined;
+  const discountPrice = specialPrice || (originalPrice && discountPercent ? originalPrice * (1 - discountPercent / 100) : undefined);
+
   return {
     id: item.id as number,
     itemId: item.id as number,
@@ -369,9 +381,9 @@ function normalizeProductItem(item: Record<string, unknown>): ProductSummary {
     nameAr: (item.nameAR || item.nameAr || '') as string,
     nameEn: (item.nameEN || item.name || '') as string,
     price: displayPrice,
-    originalPrice: undefined,
-    discountPrice: undefined,
-    discountPercent: undefined,
+    originalPrice,
+    discountPrice,
+    discountPercent,
     imageUrl: displayImage,
     mainImage: displayImage,
     volume: undefined,
