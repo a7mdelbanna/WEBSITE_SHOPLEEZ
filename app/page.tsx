@@ -71,6 +71,25 @@ export default function HomePage() {
     openModal(product);
   };
 
+  // Helper to convert banner linkType + linkValue to href
+  const getBannerHref = (linkType: string, linkValue?: string): string => {
+    if (!linkValue) return '#';
+
+    switch (linkType) {
+      case 'category':
+        return `/category/${linkValue}`;
+      case 'product':
+        return `/product/${linkValue}`;
+      case 'company':
+        return `/company/${linkValue}`;
+      case 'url':
+        return linkValue;
+      case 'none':
+      default:
+        return '#';
+    }
+  };
+
   // Extract sections from home data using type guards
   const bannersSection = homeData?.orderedSections?.find(isBannersSection);
   const companiesSection = homeData?.orderedSections?.find(isCompaniesSection);
@@ -129,7 +148,7 @@ export default function HomePage() {
                     return (
                       <Link
                         key={banner.id}
-                        href={banner.linkValue || '#'}
+                        href={getBannerHref(banner.linkType, banner.linkValue)}
                         className="marquee-card w-[400px] h-[240px]"
                       >
                         {hasImage ? (
@@ -193,7 +212,7 @@ export default function HomePage() {
                     return (
                       <Link
                         key={`dup-${banner.id}`}
-                        href={banner.linkValue || '#'}
+                        href={getBannerHref(banner.linkType, banner.linkValue)}
                         className="marquee-card w-[400px] h-[240px]"
                       >
                         {hasImage ? (
