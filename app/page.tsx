@@ -97,8 +97,8 @@ export default function HomePage() {
             {/* Section Header - Light first word + Bold rest */}
             <div className="pb-[32px]">
               <h1 className="text-[32px] leading-tight">
-                <span className="text-[#9CA3AF] font-light">{t('home.deliveryTitle')}</span>{' '}
-                <span className="text-[#1A1A1A] font-bold">{t('home.deliverySubtitle')}</span>
+                <span className="text-[var(--color-text-muted)] font-light">{t('home.deliveryTitle')}</span>{' '}
+                <span className="text-[var(--color-text-primary)] font-bold">{t('home.deliverySubtitle')}</span>
               </h1>
             </div>
 
@@ -133,9 +133,9 @@ export default function HomePage() {
                 {[1, 2, 3, 4].map((i) => (
                   <div
                     key={i}
-                    className="aspect-[3/4] rounded-[20px] bg-gradient-to-br from-[#F5F5F7] to-[#E5E5E5] flex items-center justify-center"
+                    className="aspect-[3/4] rounded-[20px] bg-gradient-to-br from-[var(--color-bg-page)] to-[var(--color-border)] flex items-center justify-center"
                   >
-                    <span className="text-[#9CA3AF] text-sm">{t('common.comingSoon')}</span>
+                    <span className="text-[var(--color-text-muted)] text-sm">{t('common.comingSoon')}</span>
                   </div>
                 ))}
               </div>
@@ -146,7 +146,7 @@ export default function HomePage() {
               "absolute top-1/2 -translate-y-1/2 w-[40px] h-[40px] rounded-full bg-white shadow-md flex items-center justify-center hover:scale-110 transition-transform hidden",
               isRTL ? "-left-[20px]" : "-right-[20px]"
             )}>
-              <ChevronRight className={cn("w-[20px] h-[20px] text-[#1A1A1A]", isRTL && "rotate-180")} strokeWidth={2} />
+              <ChevronRight className={cn("w-[20px] h-[20px] text-[var(--color-text-primary)]", isRTL && "rotate-180")} strokeWidth={2} />
             </button>
           </section>
 
@@ -155,13 +155,13 @@ export default function HomePage() {
             <section className="mb-[56px]">
               {/* Section Header with "See All" link */}
               <div className="flex items-center justify-between mb-[32px]">
-                <h2 className="text-[28px] font-bold text-[#1A1A1A] leading-none">
+                <h2 className="text-[28px] font-bold text-[var(--color-text-primary)] leading-none">
                   {t('home.specialOffers')}
                 </h2>
                 <Link
                   href="/offers"
                   className={cn(
-                    "flex items-center gap-[6px] text-[15px] font-semibold text-[#FF4B12] hover:text-[#E63E1C] transition-colors group",
+                    "flex items-center gap-[6px] text-[15px] font-semibold text-[var(--color-primary)] hover:text-[var(--color-primary-hover)] transition-colors group",
                     isRTL && "flex-row-reverse"
                   )}
                 >
@@ -206,7 +206,7 @@ export default function HomePage() {
                           {/* Discount badge */}
                           {product.discountPercent && product.discountPercent > 0 && (
                             <div className={cn(
-                              "absolute top-[12px] bg-[#FF4B12] text-white px-[10px] py-[4px] rounded-[8px] text-[13px] font-bold",
+                              "absolute top-[12px] bg-[var(--color-primary)] text-white px-[10px] py-[4px] rounded-[8px] text-[13px] font-bold",
                               isRTL ? "right-[12px]" : "left-[12px]"
                             )}>
                               {`-${product.discountPercent}%`}
@@ -239,7 +239,7 @@ export default function HomePage() {
                           </div>
                           {product.discountPercent && product.discountPercent > 0 && (
                             <div className={cn(
-                              "absolute top-[12px] bg-[#FF4B12] text-white px-[10px] py-[4px] rounded-[8px] text-[13px] font-bold",
+                              "absolute top-[12px] bg-[var(--color-primary)] text-white px-[10px] py-[4px] rounded-[8px] text-[13px] font-bold",
                               isRTL ? "right-[12px]" : "left-[12px]"
                             )}>
                               {`-${product.discountPercent}%`}
@@ -258,13 +258,13 @@ export default function HomePage() {
           <section className="mb-[48px]">
             {/* Section Header */}
             <div className="flex items-center justify-between mb-[20px]">
-              <h2 className="text-[24px] font-bold text-[#1A1A1A] leading-none">
+              <h2 className="text-[24px] font-bold text-[var(--color-text-primary)] leading-none">
                 {t('home.topBrands')}
               </h2>
               <Link
                 href="/brands"
                 className={cn(
-                  "flex items-center gap-[4px] text-[14px] font-medium text-[#1A1A1A] hover:text-[#FF4B12] transition-colors group",
+                  "flex items-center gap-[4px] text-[14px] font-medium text-[var(--color-text-primary)] hover:text-[var(--color-primary)] transition-colors group",
                   isRTL && "flex-row-reverse"
                 )}
               >
@@ -378,20 +378,20 @@ function LocationWidget() {
     <div className="sticky top-[76px] bg-white rounded-[20px] overflow-hidden">
       {/* Header */}
       <div className="p-[20px] pb-[12px]">
-        <h4 className="text-[16px] font-bold text-[#1A1A1A] mb-[4px]">
+        <h4 className="text-[16px] font-bold text-[var(--color-text-primary)] mb-[4px]">
           {t('location.confirmCity').replace('{city}', isRTL ? cityNameAr : cityName)}
         </h4>
-        <p className="text-[13px] text-[#666666]">
+        <p className="text-[13px] text-[var(--color-gray-500)]">
           {t('location.productsDepend')}
         </p>
       </div>
 
       {/* Buttons */}
       <div className={cn("flex gap-[8px] px-[20px] pb-[16px]", isRTL && "flex-row-reverse")}>
-        <button className="flex-1 h-[40px] rounded-full bg-[#FF4B12] text-white text-[14px] font-medium hover:bg-[#E64400] transition-colors">
+        <button className="flex-1 h-[40px] rounded-full bg-[var(--color-primary)] text-white text-[14px] font-medium hover:bg-[var(--color-primary-hover)] transition-colors">
           {t('location.yesCorrect')}
         </button>
-        <button className="flex-1 h-[40px] rounded-full border border-[#E5E5E5] bg-white text-[#1A1A1A] text-[14px] font-medium hover:bg-[#F5F5F5] transition-colors">
+        <button className="flex-1 h-[40px] rounded-full border border-[var(--color-border)] bg-white text-[var(--color-text-primary)] text-[14px] font-medium hover:bg-[var(--color-bg-page)] transition-colors">
           {t('location.noDifferent')}
         </button>
       </div>
@@ -408,7 +408,7 @@ function LocationWidget() {
         {/* Map overlay with city marker */}
         <div className="absolute inset-0 flex items-center justify-center">
           <div className="bg-white px-[14px] py-[6px] rounded-[8px] shadow-lg">
-            <span className="text-[13px] font-medium text-[#1A1A1A]">
+            <span className="text-[13px] font-medium text-[var(--color-text-primary)]">
               {isRTL ? cityNameAr : cityName}
             </span>
           </div>
@@ -418,7 +418,7 @@ function LocationWidget() {
           "absolute bottom-[8px] bg-white/90 px-[6px] py-[3px] rounded-[4px]",
           isRTL ? "left-[8px]" : "right-[8px]"
         )}>
-          <span className="text-[10px] text-[#666666]">Google Maps</span>
+          <span className="text-[10px] text-[var(--color-gray-500)]">Google Maps</span>
         </div>
       </div>
     </div>

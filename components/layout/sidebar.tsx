@@ -70,7 +70,7 @@ export function Sidebar({
     <nav className="py-[8px]">
       {/* Section title */}
       <div className="px-[16px] py-[8px]">
-        <span className="text-[12px] font-semibold text-[#9CA3AF] uppercase tracking-wide">
+        <span className="text-[12px] font-semibold text-[var(--color-gray-400)] uppercase tracking-wide">
           {t('sidebar.categories')}
         </span>
       </div>
@@ -132,7 +132,7 @@ export function Sidebar({
       {/* Empty state */}
       {!isLoading && (!categories || categories.length === 0) && (
         <div className="px-[16px] py-[24px] text-center">
-          <p className="text-[14px] text-[#9CA3AF]">
+          <p className="text-[14px] text-[var(--color-gray-400)]">
             {t('common.noResults')}
           </p>
         </div>

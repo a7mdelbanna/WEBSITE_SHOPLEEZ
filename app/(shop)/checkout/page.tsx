@@ -261,7 +261,7 @@ export default function CheckoutPage() {
         <div className="flex-1 min-w-0 bg-white rounded-2xl px-6 py-6 mx-2 my-2">
           <div className="flex flex-col items-center justify-center py-20">
             <Loader2 className="w-10 h-10 animate-spin text-[var(--color-primary)]" />
-            <p className="mt-4 text-[#6B7280]">
+            <p className="mt-4 text-[var(--color-gray-500)]">
               {isRTL ? 'جاري التحميل...' : 'Loading checkout...'}
             </p>
           </div>
@@ -277,11 +277,11 @@ export default function CheckoutPage() {
         <div className="flex items-center gap-4 mb-6">
           <Link
             href="/cart"
-            className="flex items-center justify-center w-10 h-10 rounded-full bg-[#F5F5F7] hover:bg-[#ECECEC] transition-colors"
+            className="flex items-center justify-center w-10 h-10 rounded-full bg-[var(--color-gray-50)] hover:bg-[#ECECEC] transition-colors"
           >
-            <BackIcon className="w-5 h-5 text-[#1A1A1A]" />
+            <BackIcon className="w-5 h-5 text-[var(--color-gray-900)]" />
           </Link>
-          <h1 className="text-[28px] font-bold text-[#1A1A1A]">
+          <h1 className="text-[28px] font-bold text-[var(--color-gray-900)]">
             {isRTL ? 'إتمام الطلب' : 'Checkout'}
           </h1>
         </div>
@@ -290,11 +290,11 @@ export default function CheckoutPage() {
           {/* Main Content */}
           <div className="flex-1 space-y-6">
             {/* Delivery Address Section */}
-            <div className="bg-[#F9FAFB] rounded-[16px] p-5">
+            <div className="bg-[var(--color-gray-50)] rounded-[16px] p-5">
               <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center gap-2">
                   <MapPin className="w-5 h-5" style={{ color: 'var(--color-primary)' }} />
-                  <h2 className="text-[16px] font-semibold text-[#1A1A1A]">
+                  <h2 className="text-[16px] font-semibold text-[var(--color-gray-900)]">
                     {isRTL ? 'عنوان التوصيل' : 'Delivery Address'}
                   </h2>
                 </div>
@@ -311,33 +311,33 @@ export default function CheckoutPage() {
               <div className="relative">
                 <button
                   onClick={() => setShowAddressDropdown(!showAddressDropdown)}
-                  className="w-full flex items-center justify-between p-4 bg-white rounded-[12px] border border-[#E5E5E5] hover:border-[var(--color-primary)] transition-colors"
+                  className="w-full flex items-center justify-between p-4 bg-white rounded-[12px] border border-[var(--color-border)] hover:border-[var(--color-primary)] transition-colors"
                 >
                   {selectedAddress ? (
                     <div className="flex-1 text-left">
-                      <p className="text-[14px] font-medium text-[#1A1A1A]">
+                      <p className="text-[14px] font-medium text-[var(--color-gray-900)]">
                         {selectedAddress.addressName}
                       </p>
-                      <p className="text-[13px] text-[#6B7280] mt-0.5">
+                      <p className="text-[13px] text-[var(--color-gray-500)] mt-0.5">
                         {selectedAddress.street}
                         {selectedAddress.areaName && `, ${selectedAddress.areaName}`}
                         {selectedAddress.cityName && `, ${selectedAddress.cityName}`}
                       </p>
                     </div>
                   ) : (
-                    <span className="text-[14px] text-[#9CA3AF]">
+                    <span className="text-[14px] text-[var(--color-gray-400)]">
                       {isRTL ? 'اختر عنوان التوصيل' : 'Select delivery address'}
                     </span>
                   )}
                   <ChevronDown className={cn(
-                    "w-5 h-5 text-[#6B7280] transition-transform",
+                    "w-5 h-5 text-[var(--color-gray-500)] transition-transform",
                     showAddressDropdown && "rotate-180"
                   )} />
                 </button>
 
                 {/* Dropdown Menu */}
                 {showAddressDropdown && (
-                  <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-[12px] border border-[#E5E5E5] shadow-lg z-10 overflow-hidden">
+                  <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-[12px] border border-[var(--color-border)] shadow-lg z-10 overflow-hidden">
                     {addresses?.map((address) => (
                       <button
                         key={address.id}
@@ -346,18 +346,18 @@ export default function CheckoutPage() {
                           setShowAddressDropdown(false);
                         }}
                         className={cn(
-                          "w-full flex items-center gap-3 p-4 text-left hover:bg-[#F5F5F7] transition-colors",
-                          selectedAddressId === address.id && "bg-[#F5F5F7]"
+                          "w-full flex items-center gap-3 p-4 text-left hover:bg-[var(--color-gray-50)] transition-colors",
+                          selectedAddressId === address.id && "bg-[var(--color-gray-50)]"
                         )}
                       >
-                        <div className="flex-shrink-0 w-8 h-8 rounded-full bg-[#F0F0F0] flex items-center justify-center">
-                          <MapPin className="w-4 h-4 text-[#6B7280]" />
+                        <div className="flex-shrink-0 w-8 h-8 rounded-full bg-[var(--color-bg-input)] flex items-center justify-center">
+                          <MapPin className="w-4 h-4 text-[var(--color-gray-500)]" />
                         </div>
                         <div className="flex-1 min-w-0">
-                          <p className="text-[14px] font-medium text-[#1A1A1A]">
+                          <p className="text-[14px] font-medium text-[var(--color-gray-900)]">
                             {address.addressName}
                           </p>
-                          <p className="text-[13px] text-[#6B7280] truncate">
+                          <p className="text-[13px] text-[var(--color-gray-500)] truncate">
                             {address.street}
                             {address.areaName && `, ${address.areaName}`}
                           </p>
@@ -371,7 +371,7 @@ export default function CheckoutPage() {
                     {/* Add New Address */}
                     <Link
                       href="/addresses/new"
-                      className="flex items-center gap-3 p-4 border-t border-[#E5E5E5] hover:bg-[#F5F5F7] transition-colors"
+                      className="flex items-center gap-3 p-4 border-t border-[var(--color-border)] hover:bg-[var(--color-gray-50)] transition-colors"
                       style={{ color: 'var(--color-primary)' }}
                     >
                       <div className="w-8 h-8 rounded-full flex items-center justify-center"
@@ -389,10 +389,10 @@ export default function CheckoutPage() {
             </div>
 
             {/* Coupon Section */}
-            <div className="bg-[#F9FAFB] rounded-[16px] p-5">
+            <div className="bg-[var(--color-gray-50)] rounded-[16px] p-5">
               <div className="flex items-center gap-2 mb-4">
                 <Tag className="w-5 h-5" style={{ color: 'var(--color-primary)' }} />
-                <h2 className="text-[16px] font-semibold text-[#1A1A1A]">
+                <h2 className="text-[16px] font-semibold text-[var(--color-gray-900)]">
                   {isRTL ? 'كود الخصم' : 'Discount Code'}
                 </h2>
               </div>
@@ -412,7 +412,7 @@ export default function CheckoutPage() {
                     "focus:border-[var(--color-primary)]",
                     couponApplied
                       ? "bg-green-50 border-green-200 text-green-700"
-                      : "bg-white border-[#E5E5E5]"
+                      : "bg-white border-[var(--color-border)]"
                   )}
                 />
                 <button
@@ -452,15 +452,15 @@ export default function CheckoutPage() {
 
             {/* Tip Section (if enabled) */}
             {tipsEnabled && (
-              <div className="bg-[#F9FAFB] rounded-[16px] p-5">
+              <div className="bg-[var(--color-gray-50)] rounded-[16px] p-5">
                 <div className="flex items-center gap-2 mb-4">
                   <Gift className="w-5 h-5" style={{ color: 'var(--color-primary)' }} />
-                  <h2 className="text-[16px] font-semibold text-[#1A1A1A]">
+                  <h2 className="text-[16px] font-semibold text-[var(--color-gray-900)]">
                     {isRTL ? 'إكرامية التوصيل' : 'Delivery Tip'}
                   </h2>
                 </div>
 
-                <p className="text-[13px] text-[#6B7280] mb-4">
+                <p className="text-[13px] text-[var(--color-gray-500)] mb-4">
                   {isRTL
                     ? 'أضف إكرامية لمندوب التوصيل'
                     : 'Add a tip for your delivery driver'}
@@ -475,7 +475,7 @@ export default function CheckoutPage() {
                         "h-[42px] px-5 rounded-full text-[14px] font-medium transition-colors",
                         selectedTip === amount && !customTip
                           ? "text-white"
-                          : "bg-white border border-[#E5E5E5] text-[#1A1A1A] hover:border-[var(--color-primary)]"
+                          : "bg-white border border-[var(--color-border)] text-[var(--color-gray-900)] hover:border-[var(--color-primary)]"
                       )}
                       style={
                         selectedTip === amount && !customTip
@@ -491,7 +491,7 @@ export default function CheckoutPage() {
                 </div>
 
                 <div className="flex items-center gap-2">
-                  <span className="text-[14px] text-[#6B7280]">
+                  <span className="text-[14px] text-[var(--color-gray-500)]">
                     {isRTL ? 'مبلغ آخر:' : 'Custom:'}
                   </span>
                   <input
@@ -500,9 +500,9 @@ export default function CheckoutPage() {
                     onChange={(e) => handleCustomTipChange(e.target.value)}
                     placeholder="0"
                     min="0"
-                    className="w-[100px] h-[42px] px-3 rounded-[10px] border border-[#E5E5E5] text-[14px] text-center outline-none focus:border-[var(--color-primary)]"
+                    className="w-[100px] h-[42px] px-3 rounded-[10px] border border-[var(--color-border)] text-[14px] text-center outline-none focus:border-[var(--color-primary)]"
                   />
-                  <span className="text-[14px] text-[#6B7280]">
+                  <span className="text-[14px] text-[var(--color-gray-500)]">
                     {isRTL ? 'ج.م' : 'EGP'}
                   </span>
                 </div>
@@ -510,10 +510,10 @@ export default function CheckoutPage() {
             )}
 
             {/* Payment Method Section */}
-            <div className="bg-[#F9FAFB] rounded-[16px] p-5">
+            <div className="bg-[var(--color-gray-50)] rounded-[16px] p-5">
               <div className="flex items-center gap-2 mb-4">
                 <CreditCard className="w-5 h-5" style={{ color: 'var(--color-primary)' }} />
-                <h2 className="text-[16px] font-semibold text-[#1A1A1A]">
+                <h2 className="text-[16px] font-semibold text-[var(--color-gray-900)]">
                   {isRTL ? 'طريقة الدفع' : 'Payment Method'}
                 </h2>
               </div>
@@ -529,21 +529,21 @@ export default function CheckoutPage() {
                         "w-full flex items-center gap-3 p-4 rounded-[12px] border transition-colors",
                         paymentMethod === method.id
                           ? "border-[var(--color-primary)] bg-[var(--color-primary-light,#E8F5E9)]"
-                          : "border-[#E5E5E5] bg-white hover:border-[var(--color-primary)]"
+                          : "border-[var(--color-border)] bg-white hover:border-[var(--color-primary)]"
                       )}
                     >
                       <div className={cn(
                         "w-10 h-10 rounded-full flex items-center justify-center",
                         paymentMethod === method.id
                           ? "bg-[var(--color-primary)]"
-                          : "bg-[#F0F0F0]"
+                          : "bg-[var(--color-bg-input)]"
                       )}>
                         <Icon className={cn(
                           "w-5 h-5",
-                          paymentMethod === method.id ? "text-white" : "text-[#6B7280]"
+                          paymentMethod === method.id ? "text-white" : "text-[var(--color-gray-500)]"
                         )} />
                       </div>
-                      <span className="text-[14px] font-medium text-[#1A1A1A]">
+                      <span className="text-[14px] font-medium text-[var(--color-gray-900)]">
                         {isRTL ? method.labelAr : method.labelEn}
                       </span>
                       {paymentMethod === method.id && (
@@ -556,10 +556,10 @@ export default function CheckoutPage() {
             </div>
 
             {/* Order Note Section */}
-            <div className="bg-[#F9FAFB] rounded-[16px] p-5">
+            <div className="bg-[var(--color-gray-50)] rounded-[16px] p-5">
               <div className="flex items-center gap-2 mb-4">
                 <Pencil className="w-5 h-5" style={{ color: 'var(--color-primary)' }} />
-                <h2 className="text-[16px] font-semibold text-[#1A1A1A]">
+                <h2 className="text-[16px] font-semibold text-[var(--color-gray-900)]">
                   {isRTL ? 'ملاحظات الطلب' : 'Order Notes'}
                 </h2>
               </div>
@@ -569,15 +569,15 @@ export default function CheckoutPage() {
                 onChange={(e) => setOrderNote(e.target.value)}
                 placeholder={isRTL ? 'أضف ملاحظات للطلب (اختياري)' : 'Add notes for your order (optional)'}
                 rows={3}
-                className="w-full p-4 rounded-[12px] border border-[#E5E5E5] text-[14px] outline-none focus:border-[var(--color-primary)] resize-none"
+                className="w-full p-4 rounded-[12px] border border-[var(--color-border)] text-[14px] outline-none focus:border-[var(--color-primary)] resize-none"
               />
             </div>
           </div>
 
           {/* Order Summary - Fixed Sidebar */}
           <div className="w-[320px] flex-shrink-0">
-            <div className="sticky top-4 bg-[#F9FAFB] rounded-[20px] p-6">
-              <h2 className="text-[18px] font-bold text-[#1A1A1A] mb-4">
+            <div className="sticky top-4 bg-[var(--color-gray-50)] rounded-[20px] p-6">
+              <h2 className="text-[18px] font-bold text-[var(--color-gray-900)] mb-4">
                 {isRTL ? 'ملخص الطلب' : 'Order Summary'}
               </h2>
 
@@ -596,25 +596,25 @@ export default function CheckoutPage() {
                         />
                       ) : (
                         <div className="w-full h-full flex items-center justify-center">
-                          <ShoppingBag className="w-5 h-5 text-[#D1D5DB]" />
+                          <ShoppingBag className="w-5 h-5 text-[var(--color-gray-300)]" />
                         </div>
                       )}
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="text-[13px] font-medium text-[#1A1A1A] line-clamp-1">
+                      <p className="text-[13px] font-medium text-[var(--color-gray-900)] line-clamp-1">
                         {isRTL ? item.nameAr : item.name}
                       </p>
-                      <p className="text-[12px] text-[#6B7280]">
+                      <p className="text-[12px] text-[var(--color-gray-500)]">
                         x{item.quantity}
                       </p>
                     </div>
-                    <span className="text-[13px] font-medium text-[#1A1A1A]">
+                    <span className="text-[13px] font-medium text-[var(--color-gray-900)]">
                       {formatPrice(item.totalPrice)}
                     </span>
                   </div>
                 ))}
                 {cart?.items && cart.items.length > 3 && (
-                  <p className="text-[12px] text-[#6B7280] text-center pt-2">
+                  <p className="text-[12px] text-[var(--color-gray-500)] text-center pt-2">
                     {isRTL
                       ? `+ ${cart.items.length - 3} منتجات أخرى`
                       : `+ ${cart.items.length - 3} more items`}
@@ -622,13 +622,13 @@ export default function CheckoutPage() {
                 )}
               </div>
 
-              <div className="border-t border-[#E5E5E5] pt-4 space-y-3 mb-6">
+              <div className="border-t border-[var(--color-border)] pt-4 space-y-3 mb-6">
                 {/* Subtotal */}
                 <div className="flex justify-between text-[14px]">
-                  <span className="text-[#6B7280]">
+                  <span className="text-[var(--color-gray-500)]">
                     {isRTL ? 'المجموع الفرعي' : 'Subtotal'}
                   </span>
-                  <span className="font-medium text-[#1A1A1A]">
+                  <span className="font-medium text-[var(--color-gray-900)]">
                     {formatPrice(subtotal)}
                   </span>
                 </div>
@@ -636,7 +636,7 @@ export default function CheckoutPage() {
                 {/* Discount */}
                 {discount > 0 && (
                   <div className="flex justify-between text-[14px]">
-                    <span className="text-[#6B7280]">
+                    <span className="text-[var(--color-gray-500)]">
                       {isRTL ? 'الخصم' : 'Discount'}
                     </span>
                     <span className="font-medium text-green-600">
@@ -648,7 +648,7 @@ export default function CheckoutPage() {
                 {/* Coupon Discount */}
                 {couponApplied && couponDiscount > 0 && (
                   <div className="flex justify-between text-[14px]">
-                    <span className="text-[#6B7280]">
+                    <span className="text-[var(--color-gray-500)]">
                       {isRTL ? 'خصم الكوبون' : 'Coupon'}
                     </span>
                     <span className="font-medium text-green-600">
@@ -659,10 +659,10 @@ export default function CheckoutPage() {
 
                 {/* Delivery Fee */}
                 <div className="flex justify-between text-[14px]">
-                  <span className="text-[#6B7280]">
+                  <span className="text-[var(--color-gray-500)]">
                     {isRTL ? 'رسوم التوصيل' : 'Delivery Fee'}
                   </span>
-                  <span className="font-medium text-[#1A1A1A]">
+                  <span className="font-medium text-[var(--color-gray-900)]">
                     {deliveryFee > 0 ? formatPrice(deliveryFee) : (isRTL ? 'مجاني' : 'Free')}
                   </span>
                 </div>
@@ -670,10 +670,10 @@ export default function CheckoutPage() {
                 {/* Tip */}
                 {tipsEnabled && tip > 0 && (
                   <div className="flex justify-between text-[14px]">
-                    <span className="text-[#6B7280]">
+                    <span className="text-[var(--color-gray-500)]">
                       {isRTL ? 'الإكرامية' : 'Tip'}
                     </span>
-                    <span className="font-medium text-[#1A1A1A]">
+                    <span className="font-medium text-[var(--color-gray-900)]">
                       {formatPrice(tip)}
                     </span>
                   </div>
@@ -681,9 +681,9 @@ export default function CheckoutPage() {
               </div>
 
               {/* Total */}
-              <div className="border-t border-[#E5E5E5] pt-4 mb-6">
+              <div className="border-t border-[var(--color-border)] pt-4 mb-6">
                 <div className="flex justify-between">
-                  <span className="text-[16px] font-bold text-[#1A1A1A]">
+                  <span className="text-[16px] font-bold text-[var(--color-gray-900)]">
                     {isRTL ? 'الإجمالي' : 'Total'}
                   </span>
                   <span
@@ -723,7 +723,7 @@ export default function CheckoutPage() {
               {/* Back to Cart Link */}
               <Link
                 href="/cart"
-                className="block text-center mt-4 text-[14px] text-[#6B7280] hover:text-[var(--color-primary)] transition-colors"
+                className="block text-center mt-4 text-[14px] text-[var(--color-gray-500)] hover:text-[var(--color-primary)] transition-colors"
               >
                 {isRTL ? 'العودة للسلة' : 'Back to Cart'}
               </Link>

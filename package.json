@@ -5,6 +5,10 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
+    "build:store1": "NEXT_PUBLIC_STORE_ID=1 next build",
+    "build:store20": "NEXT_PUBLIC_STORE_ID=20 next build",
+    "build:store22": "NEXT_PUBLIC_STORE_ID=22 next build",
+    "build:store23": "NEXT_PUBLIC_STORE_ID=23 next build",
     "start": "next start",
     "lint": "eslint"
   },

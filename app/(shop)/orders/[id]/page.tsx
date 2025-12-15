@@ -178,7 +178,7 @@ export default function OrderDetailsPage() {
         <div className="flex-1 min-w-0 bg-white rounded-2xl px-6 py-6 mx-2 my-2">
           <div className="flex flex-col items-center justify-center py-20">
             <Loader2 className="w-10 h-10 animate-spin text-[var(--color-primary)]" />
-            <p className="mt-4 text-[#6B7280]">
+            <p className="mt-4 text-[var(--color-gray-500)]">
               {isRTL ? 'جاري تحميل الطلب...' : 'Loading order...'}
             </p>
           </div>
@@ -192,8 +192,8 @@ export default function OrderDetailsPage() {
       <AppShell>
         <div className="flex-1 min-w-0 bg-white rounded-2xl px-6 py-6 mx-2 my-2">
           <div className="flex flex-col items-center justify-center py-20">
-            <AlertCircle className="w-16 h-16 text-[#9CA3AF] mb-4" />
-            <h2 className="text-[20px] font-semibold text-[#1A1A1A] mb-2">
+            <AlertCircle className="w-16 h-16 text-[var(--color-gray-400)] mb-4" />
+            <h2 className="text-[20px] font-semibold text-[var(--color-gray-900)] mb-2">
               {isRTL ? 'الطلب غير موجود' : 'Order not found'}
             </h2>
             <Link
@@ -221,15 +221,15 @@ export default function OrderDetailsPage() {
           <div className="flex items-center gap-4">
             <Link
               href="/orders"
-              className="flex items-center justify-center w-10 h-10 rounded-full bg-[#F5F5F7] hover:bg-[#ECECEC] transition-colors"
+              className="flex items-center justify-center w-10 h-10 rounded-full bg-[var(--color-gray-50)] hover:bg-[#ECECEC] transition-colors"
             >
-              <BackIcon className="w-5 h-5 text-[#1A1A1A]" />
+              <BackIcon className="w-5 h-5 text-[var(--color-gray-900)]" />
             </Link>
             <div>
-              <h1 className="text-[24px] font-bold text-[#1A1A1A]">
+              <h1 className="text-[24px] font-bold text-[var(--color-gray-900)]">
                 {order.orderNumber}
               </h1>
-              <p className="text-[13px] text-[#6B7280]">
+              <p className="text-[13px] text-[var(--color-gray-500)]">
                 {formatDate(order.createdAt)}
               </p>
             </div>
@@ -251,14 +251,14 @@ export default function OrderDetailsPage() {
           <div className="flex-1 space-y-6">
             {/* Status Timeline */}
             {!['Cancelled', 'Rejected', 'Refunded'].includes(order.status) && (
-              <div className="bg-[#F9FAFB] rounded-[16px] p-5">
-                <h2 className="text-[16px] font-semibold text-[#1A1A1A] mb-4">
+              <div className="bg-[var(--color-gray-50)] rounded-[16px] p-5">
+                <h2 className="text-[16px] font-semibold text-[var(--color-gray-900)] mb-4">
                   {isRTL ? 'حالة الطلب' : 'Order Status'}
                 </h2>
 
                 <div className="relative">
                   {/* Progress Line */}
-                  <div className="absolute top-3 left-3 right-3 h-[2px] bg-[#E5E5E5]" />
+                  <div className="absolute top-3 left-3 right-3 h-[2px] bg-[var(--color-border)]" />
                   <div
                     className="absolute top-3 h-[2px] transition-all duration-500"
                     style={{
@@ -282,7 +282,7 @@ export default function OrderDetailsPage() {
                               "w-6 h-6 rounded-full flex items-center justify-center border-2 transition-colors",
                               isCompleted
                                 ? "border-[var(--color-primary)] bg-[var(--color-primary)]"
-                                : "border-[#E5E5E5] bg-white"
+                                : "border-[var(--color-border)] bg-white"
                             )}
                           >
                             {isCompleted && (
@@ -291,7 +291,7 @@ export default function OrderDetailsPage() {
                           </div>
                           <span className={cn(
                             "text-[11px] mt-2 text-center max-w-[60px]",
-                            isCurrent ? "font-medium text-[#1A1A1A]" : "text-[#9CA3AF]"
+                            isCurrent ? "font-medium text-[var(--color-gray-900)]" : "text-[var(--color-gray-400)]"
                           )}>
                             {isRTL ? config.labelAr : config.labelEn}
                           </span>
@@ -304,15 +304,15 @@ export default function OrderDetailsPage() {
             )}
 
             {/* Order Items */}
-            <div className="bg-[#F9FAFB] rounded-[16px] p-5">
-              <h2 className="text-[16px] font-semibold text-[#1A1A1A] mb-4">
+            <div className="bg-[var(--color-gray-50)] rounded-[16px] p-5">
+              <h2 className="text-[16px] font-semibold text-[var(--color-gray-900)] mb-4">
                 {isRTL ? 'المنتجات' : 'Items'} ({order.itemCount})
               </h2>
 
               <div className="space-y-4">
                 {order.items.map((item, index) => (
                   <div key={`${item.itemId}-${index}`} className="flex gap-4 p-3 bg-white rounded-[12px]">
-                    <div className="w-[70px] h-[70px] rounded-[8px] bg-[#F5F5F7] overflow-hidden flex-shrink-0">
+                    <div className="w-[70px] h-[70px] rounded-[8px] bg-[var(--color-gray-50)] overflow-hidden flex-shrink-0">
                       {item.image ? (
                         <Image
                           src={item.image}
@@ -323,23 +323,23 @@ export default function OrderDetailsPage() {
                         />
                       ) : (
                         <div className="w-full h-full flex items-center justify-center">
-                          <ShoppingBag className="w-6 h-6 text-[#D1D5DB]" />
+                          <ShoppingBag className="w-6 h-6 text-[var(--color-gray-300)]" />
                         </div>
                       )}
                     </div>
 
                     <div className="flex-1 min-w-0">
-                      <h3 className="text-[14px] font-medium text-[#1A1A1A] line-clamp-2">
+                      <h3 className="text-[14px] font-medium text-[var(--color-gray-900)] line-clamp-2">
                         {isRTL ? item.nameAr : item.name}
                       </h3>
                       {(item.unitName || item.flavorName) && (
-                        <p className="text-[12px] text-[#6B7280] mt-0.5">
+                        <p className="text-[12px] text-[var(--color-gray-500)] mt-0.5">
                           {item.unitName && (isRTL ? item.unitNameAr : item.unitName)}
                           {item.flavorName && ` - ${isRTL ? item.flavorNameAr : item.flavorName}`}
                         </p>
                       )}
                       <div className="flex items-center justify-between mt-2">
-                        <span className="text-[13px] text-[#6B7280]">
+                        <span className="text-[13px] text-[var(--color-gray-500)]">
                           {formatPrice(item.unitPrice)} x {item.quantity}
                         </span>
                         <span className="text-[14px] font-semibold" style={{ color: 'var(--color-primary)' }}>
@@ -354,19 +354,19 @@ export default function OrderDetailsPage() {
 
             {/* Delivery Address */}
             {order.address && (
-              <div className="bg-[#F9FAFB] rounded-[16px] p-5">
+              <div className="bg-[var(--color-gray-50)] rounded-[16px] p-5">
                 <div className="flex items-center gap-2 mb-4">
                   <MapPin className="w-5 h-5" style={{ color: 'var(--color-primary)' }} />
-                  <h2 className="text-[16px] font-semibold text-[#1A1A1A]">
+                  <h2 className="text-[16px] font-semibold text-[var(--color-gray-900)]">
                     {isRTL ? 'عنوان التوصيل' : 'Delivery Address'}
                   </h2>
                 </div>
 
                 <div className="bg-white rounded-[12px] p-4">
-                  <p className="text-[14px] font-medium text-[#1A1A1A]">
+                  <p className="text-[14px] font-medium text-[var(--color-gray-900)]">
                     {order.address.addressTitle}
                   </p>
-                  <p className="text-[13px] text-[#6B7280] mt-1">
+                  <p className="text-[13px] text-[var(--color-gray-500)] mt-1">
                     {order.address.fullAddress}
                   </p>
                 </div>
@@ -375,11 +375,11 @@ export default function OrderDetailsPage() {
 
             {/* Order Note */}
             {order.note && (
-              <div className="bg-[#F9FAFB] rounded-[16px] p-5">
-                <h2 className="text-[16px] font-semibold text-[#1A1A1A] mb-3">
+              <div className="bg-[var(--color-gray-50)] rounded-[16px] p-5">
+                <h2 className="text-[16px] font-semibold text-[var(--color-gray-900)] mb-3">
                   {isRTL ? 'ملاحظات' : 'Notes'}
                 </h2>
-                <p className="text-[14px] text-[#6B7280] bg-white rounded-[12px] p-4">
+                <p className="text-[14px] text-[var(--color-gray-500)] bg-white rounded-[12px] p-4">
                   {order.note}
                 </p>
               </div>
@@ -387,10 +387,10 @@ export default function OrderDetailsPage() {
 
             {/* Tip Section (for delivered orders) */}
             {canTip && (
-              <div className="bg-[#F9FAFB] rounded-[16px] p-5">
+              <div className="bg-[var(--color-gray-50)] rounded-[16px] p-5">
                 <div className="flex items-center gap-2 mb-4">
                   <Gift className="w-5 h-5" style={{ color: 'var(--color-primary)' }} />
-                  <h2 className="text-[16px] font-semibold text-[#1A1A1A]">
+                  <h2 className="text-[16px] font-semibold text-[var(--color-gray-900)]">
                     {isRTL ? 'إكرامية للمندوب' : 'Tip Your Driver'}
                   </h2>
                 </div>
@@ -404,7 +404,7 @@ export default function OrderDetailsPage() {
                         "h-[42px] px-5 rounded-full text-[14px] font-medium transition-colors",
                         selectedTip === amount
                           ? "text-white"
-                          : "bg-white border border-[#E5E5E5] text-[#1A1A1A]"
+                          : "bg-white border border-[var(--color-border)] text-[var(--color-gray-900)]"
                       )}
                       style={selectedTip === amount ? { backgroundColor: 'var(--color-primary)' } : undefined}
                     >
@@ -432,10 +432,10 @@ export default function OrderDetailsPage() {
 
             {/* Rating Section (for delivered orders) */}
             {canRate && (
-              <div className="bg-[#F9FAFB] rounded-[16px] p-5">
+              <div className="bg-[var(--color-gray-50)] rounded-[16px] p-5">
                 <div className="flex items-center gap-2 mb-4">
                   <Star className="w-5 h-5" style={{ color: 'var(--color-primary)' }} />
-                  <h2 className="text-[16px] font-semibold text-[#1A1A1A]">
+                  <h2 className="text-[16px] font-semibold text-[var(--color-gray-900)]">
                     {isRTL ? 'قيم طلبك' : 'Rate Your Order'}
                   </h2>
                 </div>
@@ -452,7 +452,7 @@ export default function OrderDetailsPage() {
                           "w-8 h-8 transition-colors",
                           star <= rating
                             ? "fill-amber-400 text-amber-400"
-                            : "text-[#E5E5E5]"
+                            : "text-[var(--color-border)]"
                         )}
                       />
                     </button>
@@ -466,7 +466,7 @@ export default function OrderDetailsPage() {
                       onChange={(e) => setReview(e.target.value)}
                       placeholder={isRTL ? 'أضف تعليقاً (اختياري)' : 'Add a comment (optional)'}
                       rows={3}
-                      className="w-full p-3 rounded-[12px] border border-[#E5E5E5] text-[14px] mb-4 resize-none"
+                      className="w-full p-3 rounded-[12px] border border-[var(--color-border)] text-[14px] mb-4 resize-none"
                     />
 
                     <button
@@ -504,22 +504,22 @@ export default function OrderDetailsPage() {
 
           {/* Order Summary - Fixed Sidebar */}
           <div className="w-[320px] flex-shrink-0">
-            <div className="sticky top-4 bg-[#F9FAFB] rounded-[20px] p-6">
-              <h2 className="text-[18px] font-bold text-[#1A1A1A] mb-4">
+            <div className="sticky top-4 bg-[var(--color-gray-50)] rounded-[20px] p-6">
+              <h2 className="text-[18px] font-bold text-[var(--color-gray-900)] mb-4">
                 {isRTL ? 'ملخص الطلب' : 'Order Summary'}
               </h2>
 
               <div className="space-y-3 mb-6">
                 {/* Subtotal */}
                 <div className="flex justify-between text-[14px]">
-                  <span className="text-[#6B7280]">{isRTL ? 'المجموع الفرعي' : 'Subtotal'}</span>
-                  <span className="font-medium text-[#1A1A1A]">{formatPrice(order.subtotal)}</span>
+                  <span className="text-[var(--color-gray-500)]">{isRTL ? 'المجموع الفرعي' : 'Subtotal'}</span>
+                  <span className="font-medium text-[var(--color-gray-900)]">{formatPrice(order.subtotal)}</span>
                 </div>
 
                 {/* Discount */}
                 {order.discount > 0 && (
                   <div className="flex justify-between text-[14px]">
-                    <span className="text-[#6B7280]">{isRTL ? 'الخصم' : 'Discount'}</span>
+                    <span className="text-[var(--color-gray-500)]">{isRTL ? 'الخصم' : 'Discount'}</span>
                     <span className="font-medium text-green-600">-{formatPrice(order.discount)}</span>
                   </div>
                 )}
@@ -527,15 +527,15 @@ export default function OrderDetailsPage() {
                 {/* Coupon */}
                 {order.couponDiscount > 0 && (
                   <div className="flex justify-between text-[14px]">
-                    <span className="text-[#6B7280]">{isRTL ? 'خصم الكوبون' : 'Coupon'}</span>
+                    <span className="text-[var(--color-gray-500)]">{isRTL ? 'خصم الكوبون' : 'Coupon'}</span>
                     <span className="font-medium text-green-600">-{formatPrice(order.couponDiscount)}</span>
                   </div>
                 )}
 
                 {/* Delivery */}
                 <div className="flex justify-between text-[14px]">
-                  <span className="text-[#6B7280]">{isRTL ? 'التوصيل' : 'Delivery'}</span>
-                  <span className="font-medium text-[#1A1A1A]">
+                  <span className="text-[var(--color-gray-500)]">{isRTL ? 'التوصيل' : 'Delivery'}</span>
+                  <span className="font-medium text-[var(--color-gray-900)]">
                     {order.deliveryFee > 0 ? formatPrice(order.deliveryFee) : (isRTL ? 'مجاني' : 'Free')}
                   </span>
                 </div>
@@ -543,16 +543,16 @@ export default function OrderDetailsPage() {
                 {/* Tip */}
                 {order.tip > 0 && (
                   <div className="flex justify-between text-[14px]">
-                    <span className="text-[#6B7280]">{isRTL ? 'إكرامية' : 'Tip'}</span>
-                    <span className="font-medium text-[#1A1A1A]">{formatPrice(order.tip)}</span>
+                    <span className="text-[var(--color-gray-500)]">{isRTL ? 'إكرامية' : 'Tip'}</span>
+                    <span className="font-medium text-[var(--color-gray-900)]">{formatPrice(order.tip)}</span>
                   </div>
                 )}
               </div>
 
               {/* Total */}
-              <div className="border-t border-[#E5E5E5] pt-4 mb-6">
+              <div className="border-t border-[var(--color-border)] pt-4 mb-6">
                 <div className="flex justify-between">
-                  <span className="text-[16px] font-bold text-[#1A1A1A]">
+                  <span className="text-[16px] font-bold text-[var(--color-gray-900)]">
                     {isRTL ? 'الإجمالي' : 'Total'}
                   </span>
                   <span className="text-[20px] font-bold" style={{ color: 'var(--color-primary)' }}>
@@ -563,14 +563,14 @@ export default function OrderDetailsPage() {
 
               {/* Payment Method */}
               <div className="flex items-center gap-3 p-4 bg-white rounded-[12px]">
-                <div className="w-10 h-10 rounded-full bg-[#F5F5F7] flex items-center justify-center">
-                  <CreditCard className="w-5 h-5 text-[#6B7280]" />
+                <div className="w-10 h-10 rounded-full bg-[var(--color-gray-50)] flex items-center justify-center">
+                  <CreditCard className="w-5 h-5 text-[var(--color-gray-500)]" />
                 </div>
                 <div>
-                  <p className="text-[12px] text-[#6B7280]">
+                  <p className="text-[12px] text-[var(--color-gray-500)]">
                     {isRTL ? 'طريقة الدفع' : 'Payment Method'}
                   </p>
-                  <p className="text-[14px] font-medium text-[#1A1A1A]">
+                  <p className="text-[14px] font-medium text-[var(--color-gray-900)]">
                     {(order.paymentMethod === 'CashOnDelivery' || order.paymentMethod === 'CashOnDeliver')
                       ? (isRTL ? 'الدفع عند الاستلام' : 'Cash on Delivery')
                       : order.paymentMethod}
@@ -586,7 +586,7 @@ export default function OrderDetailsPage() {
               {/* Existing Rating */}
               {order.rating && (
                 <div className="mt-4 p-4 bg-white rounded-[12px]">
-                  <p className="text-[12px] text-[#6B7280] mb-2">
+                  <p className="text-[12px] text-[var(--color-gray-500)] mb-2">
                     {isRTL ? 'تقييمك' : 'Your Rating'}
                   </p>
                   <div className="flex gap-1">
@@ -597,13 +597,13 @@ export default function OrderDetailsPage() {
                           "w-5 h-5",
                           star <= order.rating!
                             ? "fill-amber-400 text-amber-400"
-                            : "text-[#E5E5E5]"
+                            : "text-[var(--color-border)]"
                         )}
                       />
                     ))}
                   </div>
                   {order.review && (
-                    <p className="text-[13px] text-[#6B7280] mt-2">
+                    <p className="text-[13px] text-[var(--color-gray-500)] mt-2">
                       "{order.review}"
                     </p>
                   )}

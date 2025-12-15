@@ -132,15 +132,15 @@ export default function CartPage() {
           <div className="flex items-center gap-4">
             <Link
               href="/"
-              className="flex items-center justify-center w-10 h-10 rounded-full bg-[#F5F5F7] hover:bg-[#ECECEC] transition-colors"
+              className="flex items-center justify-center w-10 h-10 rounded-full bg-[var(--color-gray-50)] hover:bg-[var(--color-gray-200)] transition-colors"
             >
-              <BackIcon className="w-5 h-5 text-[#1A1A1A]" />
+              <BackIcon className="w-5 h-5 text-[var(--color-gray-900)]" />
             </Link>
-            <h1 className="text-[28px] font-bold text-[#1A1A1A]">
+            <h1 className="text-[28px] font-bold text-[var(--color-gray-900)]">
               {isRTL ? 'سلة التسوق' : 'Shopping Cart'}
             </h1>
             {!isEmpty && (
-              <span className="text-[14px] text-[#6B7280]">
+              <span className="text-[14px] text-[var(--color-gray-500)]">
                 ({totalQuantity} {isRTL ? 'منتج' : 'items'})
                 {isEnriching && itemsNeedingEnrichment > 0 && (
                   <span className="ml-2 text-[12px] text-blue-500 animate-pulse">
@@ -164,13 +164,13 @@ export default function CartPage() {
         {/* Empty Cart State */}
         {isEmpty && (
           <div className="flex flex-col items-center justify-center py-20">
-            <div className="w-24 h-24 rounded-full bg-[#F5F5F7] flex items-center justify-center mb-6">
-              <ShoppingBag className="w-12 h-12 text-[#9CA3AF]" />
+            <div className="w-24 h-24 rounded-full bg-[var(--color-gray-50)] flex items-center justify-center mb-6">
+              <ShoppingBag className="w-12 h-12 text-[var(--color-gray-400)]" />
             </div>
-            <h2 className="text-[20px] font-semibold text-[#1A1A1A] mb-2">
+            <h2 className="text-[20px] font-semibold text-[var(--color-gray-900)] mb-2">
               {isRTL ? 'سلة التسوق فارغة' : 'Your cart is empty'}
             </h2>
-            <p className="text-[14px] text-[#6B7280] mb-6 text-center max-w-sm">
+            <p className="text-[14px] text-[var(--color-gray-500)] mb-6 text-center max-w-sm">
               {isRTL
                 ? 'ابدأ التسوق وأضف المنتجات إلى سلتك'
                 : 'Start shopping and add products to your cart'}
@@ -197,7 +197,7 @@ export default function CartPage() {
                 return (
                   <div
                     key={`${item.itemId}-${item.selectedUnitId}-${item.selectedFlavorId}-${index}`}
-                    className="flex gap-4 p-4 rounded-[16px] bg-[#F9FAFB] transition-opacity"
+                    className="flex gap-4 p-4 rounded-[16px] bg-[var(--color-bg-page)] transition-opacity"
                   >
                     {/* Product Image */}
                     <div className="w-[100px] h-[100px] rounded-[12px] bg-white overflow-hidden flex-shrink-0">
@@ -212,7 +212,7 @@ export default function CartPage() {
                         />
                       ) : (
                         <div className="w-full h-full flex items-center justify-center">
-                          <ShoppingCart className="w-8 h-8 text-[#D1D5DB]" />
+                          <ShoppingCart className="w-8 h-8 text-[var(--color-gray-300)]" />
                         </div>
                       )}
                     </div>
@@ -220,7 +220,7 @@ export default function CartPage() {
                     {/* Product Details */}
                     <div className="flex-1 min-w-0">
                       <h3 className={cn(
-                        "text-[16px] font-semibold text-[#1A1A1A] line-clamp-2 mb-1",
+                        "text-[16px] font-semibold text-[var(--color-gray-900)] line-clamp-2 mb-1",
                         isRTL && "text-right"
                       )}>
                         {itemName || (isRTL ? 'منتج' : 'Product')}
@@ -229,7 +229,7 @@ export default function CartPage() {
                       {/* Unit/Flavor info */}
                       {(item.selectedUnit || item.selectedFlavorName) && (
                         <p className={cn(
-                          "text-[13px] text-[#6B7280] mb-2",
+                          "text-[13px] text-[var(--color-gray-500)] mb-2",
                           isRTL && "text-right"
                         )}>
                           {item.selectedUnit && (isRTL ? item.selectedUnit.nameAr : item.selectedUnit.name)}
@@ -249,7 +249,7 @@ export default function CartPage() {
                           {formatPrice(item.discountedUnitPrice || item.unitPrice, currency, locale)}
                         </span>
                         {hasDiscount && (
-                          <span className="text-[13px] text-[#9CA3AF] line-through">
+                          <span className="text-[13px] text-[var(--color-gray-400)] line-through">
                             {formatPrice(item.unitPrice, currency, locale)}
                           </span>
                         )}
@@ -260,7 +260,7 @@ export default function CartPage() {
                         "flex items-center gap-3",
                         isRTL && "flex-row-reverse justify-end"
                       )}>
-                        <div className="flex items-center gap-1 bg-white rounded-full border border-[#E5E5E5]">
+                        <div className="flex items-center gap-1 bg-white rounded-full border border-[var(--color-border)]">
                           <button
                             onClick={() => handleQuantityChange(
                               item.itemId,
@@ -269,12 +269,12 @@ export default function CartPage() {
                               -1,
                               item.quantity
                             )}
-                            className="w-8 h-8 flex items-center justify-center hover:bg-[#F5F5F5] rounded-full transition-colors"
+                            className="w-8 h-8 flex items-center justify-center hover:bg-[var(--color-gray-50)] rounded-full transition-colors"
                           >
                             {item.quantity === 1 ? (
                               <X className="w-4 h-4 text-red-400" />
                             ) : (
-                              <Minus className="w-4 h-4 text-[#6B7280]" />
+                              <Minus className="w-4 h-4 text-[var(--color-gray-500)]" />
                             )}
                           </button>
                           <span className="w-8 text-center text-[15px] font-medium">
@@ -288,14 +288,14 @@ export default function CartPage() {
                               1,
                               item.quantity
                             )}
-                            className="w-8 h-8 flex items-center justify-center hover:bg-[#F5F5F5] rounded-full transition-colors"
+                            className="w-8 h-8 flex items-center justify-center hover:bg-[var(--color-gray-50)] rounded-full transition-colors"
                           >
-                            <Plus className="w-4 h-4 text-[#6B7280]" />
+                            <Plus className="w-4 h-4 text-[var(--color-gray-500)]" />
                           </button>
                         </div>
 
                         {/* Total for this item */}
-                        <span className="text-[14px] text-[#6B7280]">
+                        <span className="text-[14px] text-[var(--color-gray-500)]">
                           = {formatPrice(item.totalPrice, currency, locale)}
                         </span>
                       </div>
@@ -315,8 +315,8 @@ export default function CartPage() {
 
             {/* Cart Summary - Fixed Sidebar */}
             <div className="w-[320px] flex-shrink-0">
-              <div className="sticky top-4 bg-[#F9FAFB] rounded-[20px] p-6">
-                <h2 className="text-[18px] font-bold text-[#1A1A1A] mb-4">
+              <div className="sticky top-4 bg-[var(--color-bg-page)] rounded-[20px] p-6">
+                <h2 className="text-[18px] font-bold text-[var(--color-gray-900)] mb-4">
                   {isRTL ? 'ملخص الطلب' : 'Order Summary'}
                 </h2>
 
@@ -326,10 +326,10 @@ export default function CartPage() {
                     "flex justify-between text-[14px]",
                     isRTL && "flex-row-reverse"
                   )}>
-                    <span className="text-[#6B7280]">
+                    <span className="text-[var(--color-gray-500)]">
                       {isRTL ? 'المجموع الفرعي' : 'Subtotal'}
                     </span>
-                    <span className="font-medium text-[#1A1A1A]">
+                    <span className="font-medium text-[var(--color-gray-900)]">
                       {formatPrice(subtotal, currency, locale)}
                     </span>
                   </div>
@@ -340,7 +340,7 @@ export default function CartPage() {
                       "flex justify-between text-[14px]",
                       isRTL && "flex-row-reverse"
                     )}>
-                      <span className="text-[#6B7280]">
+                      <span className="text-[var(--color-gray-500)]">
                         {isRTL ? 'الخصم' : 'Discount'}
                       </span>
                       <span className="font-medium text-green-600">
@@ -354,10 +354,10 @@ export default function CartPage() {
                     "flex justify-between text-[14px]",
                     isRTL && "flex-row-reverse"
                   )}>
-                    <span className="text-[#6B7280]">
+                    <span className="text-[var(--color-gray-500)]">
                       {isRTL ? 'رسوم التوصيل' : 'Delivery Fee'}
                     </span>
-                    <span className="font-medium text-[#1A1A1A]">
+                    <span className="font-medium text-[var(--color-gray-900)]">
                       {deliveryFee > 0
                         ? formatPrice(deliveryFee, currency, locale)
                         : (isRTL ? 'يحسب عند الدفع' : 'Calculated at checkout')}
@@ -366,12 +366,12 @@ export default function CartPage() {
                 </div>
 
                 {/* Total */}
-                <div className="border-t border-[#E5E5E5] pt-4 mb-6">
+                <div className="border-t border-[var(--color-border)] pt-4 mb-6">
                   <div className={cn(
                     "flex justify-between",
                     isRTL && "flex-row-reverse"
                   )}>
-                    <span className="text-[16px] font-bold text-[#1A1A1A]">
+                    <span className="text-[16px] font-bold text-[var(--color-gray-900)]">
                       {isRTL ? 'الإجمالي' : 'Total'}
                     </span>
                     <span
@@ -395,7 +395,7 @@ export default function CartPage() {
                 {/* Continue Shopping Link */}
                 <Link
                   href="/"
-                  className="block text-center mt-4 text-[14px] text-[#6B7280] hover:text-[var(--color-primary)] transition-colors"
+                  className="block text-center mt-4 text-[14px] text-[var(--color-gray-500)] hover:text-[var(--color-primary)] transition-colors"
                 >
                   {isRTL ? 'متابعة التسوق' : 'Continue Shopping'}
                 </Link>

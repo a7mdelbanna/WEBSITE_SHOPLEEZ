@@ -124,29 +124,29 @@ export default function AddAddressPage() {
     placeholder: string
   ) => (
     <div className="relative">
-      <label className="block text-[14px] font-medium text-[#1A1A1A] mb-2">{label}</label>
+      <label className="block text-[14px] font-medium text-[var(--color-gray-900)] mb-2">{label}</label>
       <button
         type="button"
         onClick={() => setIsOpen(!isOpen)}
         className={cn(
-          "w-full h-[52px] rounded-[16px] bg-[#F0F0F0] px-4",
+          "w-full h-[52px] rounded-[16px] bg-[var(--color-bg-input)] px-4",
           "flex items-center justify-between",
-          "text-[15px] text-[#1A1A1A]",
+          "text-[15px] text-[var(--color-gray-900)]",
           "outline-none focus:ring-2 focus:ring-[var(--color-primary)]",
           "transition-all"
         )}
       >
-        <span className={!value ? "text-[#9CA3AF]" : ""}>
+        <span className={!value ? "text-[var(--color-gray-400)]" : ""}>
           {value ? localize({ en: (value as any).nameEn || (value as any).name, ar: (value as any).nameAr || (value as any).name }) : placeholder}
         </span>
         {loading ? (
-          <Loader2 className="h-5 w-5 animate-spin text-[#6B7280]" />
+          <Loader2 className="h-5 w-5 animate-spin text-[var(--color-gray-500)]" />
         ) : (
-          <ChevronDown className={cn("h-5 w-5 text-[#6B7280] transition-transform", isOpen && "rotate-180")} />
+          <ChevronDown className={cn("h-5 w-5 text-[var(--color-gray-500)] transition-transform", isOpen && "rotate-180")} />
         )}
       </button>
       {isOpen && items.length > 0 && (
-        <div className="absolute z-50 mt-2 w-full max-h-[200px] overflow-y-auto rounded-[16px] bg-white shadow-lg border border-[#E5E5E5]">
+        <div className="absolute z-50 mt-2 w-full max-h-[200px] overflow-y-auto rounded-[16px] bg-white shadow-lg border border-[var(--color-border)]">
           {items.map((item) => (
             <button
               key={item.id}
@@ -156,7 +156,7 @@ export default function AddAddressPage() {
                 setIsOpen(false);
               }}
               className={cn(
-                "w-full px-4 py-3 text-left text-[15px] hover:bg-[#F5F5F5] transition-colors",
+                "w-full px-4 py-3 text-left text-[15px] hover:bg-[var(--color-gray-50)] transition-colors",
                 "first:rounded-t-[16px] last:rounded-b-[16px]",
                 isRTL && "text-right"
               )}
@@ -354,13 +354,13 @@ export default function AddAddressPage() {
             <div className="flex items-center gap-4 mb-6">
               <Link
                 href="/checkout"
-                className="flex items-center justify-center w-10 h-10 rounded-full bg-[#F5F5F7] hover:bg-[#ECECEC] transition-colors"
+                className="flex items-center justify-center w-10 h-10 rounded-full bg-[var(--color-gray-50)] hover:bg-[#ECECEC] transition-colors"
               >
-                <BackIcon className="w-5 h-5 text-[#1A1A1A]" />
+                <BackIcon className="w-5 h-5 text-[var(--color-gray-900)]" />
               </Link>
               <div className="flex items-center gap-2">
                 <MapPin className="w-6 h-6 text-[var(--color-primary)]" />
-                <h1 className="text-[28px] font-bold text-[#1A1A1A]">
+                <h1 className="text-[28px] font-bold text-[var(--color-gray-900)]">
                   {isRTL ? 'إضافة عنوان جديد' : 'Add New Address'}
                 </h1>
               </div>
@@ -377,7 +377,7 @@ export default function AddAddressPage() {
             <form onSubmit={handleSubmit} className="max-w-2xl space-y-6">
           {/* Address Name */}
           <div>
-            <label className="block text-[14px] font-medium text-[#1A1A1A] mb-2">
+            <label className="block text-[14px] font-medium text-[var(--color-gray-900)] mb-2">
               {isRTL ? 'اسم العنوان' : 'Address Name'} <span className="text-red-500">*</span>
             </label>
             <input
@@ -386,8 +386,8 @@ export default function AddAddressPage() {
               onChange={(e) => setAddressName(e.target.value)}
               placeholder={isRTL ? 'مثال: المنزل، العمل' : 'e.g., Home, Office'}
               className={cn(
-                "w-full h-[52px] rounded-[16px] bg-[#F0F0F0] px-4",
-                "text-[15px] text-[#1A1A1A] placeholder-[#9CA3AF]",
+                "w-full h-[52px] rounded-[16px] bg-[var(--color-bg-input)] px-4",
+                "text-[15px] text-[var(--color-gray-900)] placeholder-[var(--color-gray-400)]",
                 "outline-none focus:ring-2 focus:ring-[var(--color-primary)]",
                 isRTL && "text-right"
               )}
@@ -411,7 +411,7 @@ export default function AddAddressPage() {
             )
           ) : (
             <div>
-              <label className="block text-[14px] font-medium text-[#1A1A1A] mb-2">
+              <label className="block text-[14px] font-medium text-[var(--color-gray-900)] mb-2">
                 {isRTL ? 'المدينة' : 'City'} <span className="text-red-500">*</span>
               </label>
               <input
@@ -420,8 +420,8 @@ export default function AddAddressPage() {
                 onChange={(e) => setCityText(e.target.value)}
                 placeholder={isRTL ? 'أدخل اسم المدينة' : 'Enter city name'}
                 className={cn(
-                  "w-full h-[52px] rounded-[16px] bg-[#F0F0F0] px-4",
-                  "text-[15px] text-[#1A1A1A] placeholder-[#9CA3AF]",
+                  "w-full h-[52px] rounded-[16px] bg-[var(--color-bg-input)] px-4",
+                  "text-[15px] text-[var(--color-gray-900)] placeholder-[var(--color-gray-400)]",
                   "outline-none focus:ring-2 focus:ring-[var(--color-primary)]",
                   isRTL && "text-right"
                 )}
@@ -443,7 +443,7 @@ export default function AddAddressPage() {
             )
           ) : (
             <div>
-              <label className="block text-[14px] font-medium text-[#1A1A1A] mb-2">
+              <label className="block text-[14px] font-medium text-[var(--color-gray-900)] mb-2">
                 {isRTL ? 'المنطقة' : 'Area'} <span className="text-red-500">*</span>
               </label>
               <input
@@ -452,8 +452,8 @@ export default function AddAddressPage() {
                 onChange={(e) => setAreaText(e.target.value)}
                 placeholder={isRTL ? 'أدخل اسم المنطقة' : 'Enter area name'}
                 className={cn(
-                  "w-full h-[52px] rounded-[16px] bg-[#F0F0F0] px-4",
-                  "text-[15px] text-[#1A1A1A] placeholder-[#9CA3AF]",
+                  "w-full h-[52px] rounded-[16px] bg-[var(--color-bg-input)] px-4",
+                  "text-[15px] text-[var(--color-gray-900)] placeholder-[var(--color-gray-400)]",
                   "outline-none focus:ring-2 focus:ring-[var(--color-primary)]",
                   isRTL && "text-right"
                 )}
@@ -463,7 +463,7 @@ export default function AddAddressPage() {
 
           {/* Street */}
           <div>
-            <label className="block text-[14px] font-medium text-[#1A1A1A] mb-2">
+            <label className="block text-[14px] font-medium text-[var(--color-gray-900)] mb-2">
               {isRTL ? 'الشارع' : 'Street'} <span className="text-red-500">*</span>
             </label>
             <input
@@ -472,8 +472,8 @@ export default function AddAddressPage() {
               onChange={(e) => setStreet(e.target.value)}
               placeholder={isRTL ? 'أدخل اسم الشارع' : 'Enter street name'}
               className={cn(
-                "w-full h-[52px] rounded-[16px] bg-[#F0F0F0] px-4",
-                "text-[15px] text-[#1A1A1A] placeholder-[#9CA3AF]",
+                "w-full h-[52px] rounded-[16px] bg-[var(--color-bg-input)] px-4",
+                "text-[15px] text-[var(--color-gray-900)] placeholder-[var(--color-gray-400)]",
                 "outline-none focus:ring-2 focus:ring-[var(--color-primary)]",
                 isRTL && "text-right"
               )}
@@ -483,7 +483,7 @@ export default function AddAddressPage() {
           {/* Building, Floor, Apartment - Customer only */}
           <div className={cn("flex gap-2", isRTL && "flex-row-reverse")}>
             <div className="flex-1">
-              <label className="block text-[13px] font-medium text-[#1A1A1A] mb-2">
+              <label className="block text-[13px] font-medium text-[var(--color-gray-900)] mb-2">
                 {isRTL ? 'المبنى' : 'Building'}
               </label>
               <input
@@ -492,15 +492,15 @@ export default function AddAddressPage() {
                 onChange={(e) => setBuilding(e.target.value)}
                 placeholder={isRTL ? 'رقم' : 'No.'}
                 className={cn(
-                  "w-full h-[48px] rounded-[12px] bg-[#F0F0F0] px-3",
-                  "text-[14px] text-[#1A1A1A] placeholder-[#9CA3AF]",
+                  "w-full h-[48px] rounded-[12px] bg-[var(--color-bg-input)] px-3",
+                  "text-[14px] text-[var(--color-gray-900)] placeholder-[var(--color-gray-400)]",
                   "outline-none focus:ring-2 focus:ring-[var(--color-primary)]",
                   isRTL && "text-right"
                 )}
               />
             </div>
             <div className="flex-1">
-              <label className="block text-[13px] font-medium text-[#1A1A1A] mb-2">
+              <label className="block text-[13px] font-medium text-[var(--color-gray-900)] mb-2">
                 {isRTL ? 'الطابق' : 'Floor'}
               </label>
               <input
@@ -509,15 +509,15 @@ export default function AddAddressPage() {
                 onChange={(e) => setFloor(e.target.value)}
                 placeholder={isRTL ? 'رقم' : 'No.'}
                 className={cn(
-                  "w-full h-[48px] rounded-[12px] bg-[#F0F0F0] px-3",
-                  "text-[14px] text-[#1A1A1A] placeholder-[#9CA3AF]",
+                  "w-full h-[48px] rounded-[12px] bg-[var(--color-bg-input)] px-3",
+                  "text-[14px] text-[var(--color-gray-900)] placeholder-[var(--color-gray-400)]",
                   "outline-none focus:ring-2 focus:ring-[var(--color-primary)]",
                   isRTL && "text-right"
                 )}
               />
             </div>
             <div className="flex-1">
-              <label className="block text-[13px] font-medium text-[#1A1A1A] mb-2">
+              <label className="block text-[13px] font-medium text-[var(--color-gray-900)] mb-2">
                 {isRTL ? 'الشقة' : 'Apartment'}
               </label>
               <input
@@ -526,8 +526,8 @@ export default function AddAddressPage() {
                 onChange={(e) => setApartment(e.target.value)}
                 placeholder={isRTL ? 'رقم' : 'No.'}
                 className={cn(
-                  "w-full h-[48px] rounded-[12px] bg-[#F0F0F0] px-3",
-                  "text-[14px] text-[#1A1A1A] placeholder-[#9CA3AF]",
+                  "w-full h-[48px] rounded-[12px] bg-[var(--color-bg-input)] px-3",
+                  "text-[14px] text-[var(--color-gray-900)] placeholder-[var(--color-gray-400)]",
                   "outline-none focus:ring-2 focus:ring-[var(--color-primary)]",
                   isRTL && "text-right"
                 )}
@@ -537,7 +537,7 @@ export default function AddAddressPage() {
 
           {/* Delivery Notes */}
           <div>
-            <label className="block text-[14px] font-medium text-[#1A1A1A] mb-2">
+            <label className="block text-[14px] font-medium text-[var(--color-gray-900)] mb-2">
               {isRTL ? 'ملاحظات التوصيل' : 'Delivery Notes'}
             </label>
             <textarea
@@ -546,8 +546,8 @@ export default function AddAddressPage() {
               placeholder={isRTL ? 'أي تفاصيل إضافية...' : 'Any additional details...'}
               rows={3}
               className={cn(
-                "w-full rounded-[16px] bg-[#F0F0F0] px-4 py-3",
-                "text-[15px] text-[#1A1A1A] placeholder-[#9CA3AF]",
+                "w-full rounded-[16px] bg-[var(--color-bg-input)] px-4 py-3",
+                "text-[15px] text-[var(--color-gray-900)] placeholder-[var(--color-gray-400)]",
                 "outline-none focus:ring-2 focus:ring-[var(--color-primary)]",
                 "resize-none",
                 isRTL && "text-right"
@@ -556,9 +556,9 @@ export default function AddAddressPage() {
           </div>
 
           {/* "For Someone Else" Toggle */}
-          <div className="bg-[#F5F5F7] rounded-[16px] p-4">
+          <div className="bg-[var(--color-gray-50)] rounded-[16px] p-4">
             <div className={cn("flex items-center justify-between mb-3", isRTL && "flex-row-reverse")}>
-              <span className="text-[14px] font-medium text-[#1A1A1A]">
+              <span className="text-[14px] font-medium text-[var(--color-gray-900)]">
                 {isRTL ? 'هذا العنوان لشخص آخر' : "This is someone else's address"}
               </span>
               <button
@@ -592,7 +592,7 @@ export default function AddAddressPage() {
                       placeholder={isRTL ? 'الاسم الأول *' : 'First Name *'}
                       className={cn(
                         "w-full h-[48px] rounded-[12px] bg-white px-3",
-                        "text-[14px] text-[#1A1A1A] placeholder-[#9CA3AF]",
+                        "text-[14px] text-[var(--color-gray-900)] placeholder-[var(--color-gray-400)]",
                         "outline-none focus:ring-2 focus:ring-[var(--color-primary)]",
                         "border border-[#E5E7EB]",
                         isRTL && "text-right"
@@ -607,7 +607,7 @@ export default function AddAddressPage() {
                       placeholder={isRTL ? 'اسم العائلة *' : 'Last Name *'}
                       className={cn(
                         "w-full h-[48px] rounded-[12px] bg-white px-3",
-                        "text-[14px] text-[#1A1A1A] placeholder-[#9CA3AF]",
+                        "text-[14px] text-[var(--color-gray-900)] placeholder-[var(--color-gray-400)]",
                         "outline-none focus:ring-2 focus:ring-[var(--color-primary)]",
                         "border border-[#E5E7EB]",
                         isRTL && "text-right"
@@ -622,7 +622,7 @@ export default function AddAddressPage() {
                   placeholder={isRTL ? 'رقم الهاتف *' : 'Phone Number *'}
                   className={cn(
                     "w-full h-[48px] rounded-[12px] bg-white px-3",
-                    "text-[14px] text-[#1A1A1A] placeholder-[#9CA3AF]",
+                    "text-[14px] text-[var(--color-gray-900)] placeholder-[var(--color-gray-400)]",
                     "outline-none focus:ring-2 focus:ring-[var(--color-primary)]",
                     "border border-[#E5E7EB]",
                     isRTL && "text-right"
@@ -640,7 +640,7 @@ export default function AddAddressPage() {
                 "flex-1 h-[52px] rounded-full",
                 "flex items-center justify-center",
                 "text-[16px] font-semibold",
-                "bg-[#F5F5F7] text-[#1A1A1A]",
+                "bg-[var(--color-gray-50)] text-[var(--color-gray-900)]",
                 "hover:bg-[#ECECEC] transition-colors"
               )}
             >
@@ -677,13 +677,13 @@ export default function AddAddressPage() {
             <div className="flex items-center gap-4 mb-6">
               <button
                 onClick={() => setShowMapPicker(false)}
-                className="flex items-center justify-center w-10 h-10 rounded-full bg-[#F5F5F7] hover:bg-[#ECECEC] transition-colors"
+                className="flex items-center justify-center w-10 h-10 rounded-full bg-[var(--color-gray-50)] hover:bg-[#ECECEC] transition-colors"
               >
-                <BackIcon className="w-5 h-5 text-[#1A1A1A]" />
+                <BackIcon className="w-5 h-5 text-[var(--color-gray-900)]" />
               </button>
               <div className="flex items-center gap-2">
                 <MapPin className="w-6 h-6 text-[var(--color-primary)]" />
-                <h1 className="text-[28px] font-bold text-[#1A1A1A]">
+                <h1 className="text-[28px] font-bold text-[var(--color-gray-900)]">
                   {isRTL ? 'حدد موقعك على الخريطة' : 'Select Your Location'}
                 </h1>
               </div>
@@ -697,7 +697,7 @@ export default function AddAddressPage() {
             )}
 
             {/* Map Container */}
-            <div className="relative rounded-[20px] overflow-hidden border-2 border-[#E5E5E5] mb-6">
+            <div className="relative rounded-[20px] overflow-hidden border-2 border-[var(--color-border)] mb-6">
               <MapLocationPicker
                 initialCenter={{
                   lat: parseFloat(process.env.NEXT_PUBLIC_DEFAULT_MAP_CENTER_LAT || '30.0444'),
@@ -711,11 +711,11 @@ export default function AddAddressPage() {
 
             {/* Coordinates Display */}
             {selectedLocation && (
-              <div className="bg-[#F5F5F7] rounded-[16px] p-4 mb-6">
-                <p className="text-[14px] font-medium text-[#6B7280] mb-1">
+              <div className="bg-[var(--color-gray-50)] rounded-[16px] p-4 mb-6">
+                <p className="text-[14px] font-medium text-[var(--color-gray-500)] mb-1">
                   {isRTL ? 'الإحداثيات المحددة' : 'Selected Coordinates'}
                 </p>
-                <p className="text-[16px] font-semibold text-[#1A1A1A]">
+                <p className="text-[16px] font-semibold text-[var(--color-gray-900)]">
                   {selectedLocation.lat.toFixed(6)}, {selectedLocation.lng.toFixed(6)}
                 </p>
               </div>
@@ -725,7 +725,7 @@ export default function AddAddressPage() {
             <div className={cn("flex gap-3", isRTL && "flex-row-reverse")}>
               <button
                 onClick={() => setShowMapPicker(false)}
-                className="flex-1 h-[52px] rounded-full bg-[#F5F5F7] text-[#1A1A1A] text-[16px] font-semibold hover:bg-[#ECECEC] transition-colors"
+                className="flex-1 h-[52px] rounded-full bg-[var(--color-gray-50)] text-[var(--color-gray-900)] text-[16px] font-semibold hover:bg-[#ECECEC] transition-colors"
               >
                 {isRTL ? 'رجوع' : 'Back'}
               </button>

@@ -11,16 +11,21 @@
    DESIGN TOKENS - Samokat Clone
    ================================ */
 :root {
-  /* === BRAND COLORS === */
-  --color-brand: #FF4B26;
-  --color-brand-hover: #E63E1C;
-  --color-brand-active: #CC3518;
-  --color-brand-light: #FFF0ED;
+  /* === THEME COLORS (Dynamically injected from tenant config in layout.tsx) === */
+  /* These are fallback values - actual values come from tenant theme */
+  --color-primary: #f4b324;
+  --color-primary-hover: #d49a1e;
+  --color-primary-light: #fef5e0;
+  --color-secondary: #2C3E50;
+  --color-secondary-hover: #1a252f;
+  --color-accent: #FF6B35;
+  --color-accent-hover: #E55A2B;
 
-  /* Legacy aliases for compatibility */
-  --color-primary: var(--color-brand);
-  --color-primary-hover: var(--color-brand-hover);
-  --color-primary-light: var(--color-brand-light);
+  /* === BRAND COLORS (Alias to primary for compatibility) === */
+  --color-brand: var(--color-primary);
+  --color-brand-hover: var(--color-primary-hover);
+  --color-brand-active: var(--color-primary-hover);
+  --color-brand-light: var(--color-primary-light);
 
   /* === BACKGROUND COLORS === */
   --color-bg-page: #F5F5F7;
@@ -46,11 +51,29 @@
   --color-border: #E5E7EB;
   --color-border-light: #F3F4F6;
 
+  /* === GRAY SCALE === */
+  --color-gray-50: #F9FAFB;
+  --color-gray-100: #F3F4F6;
+  --color-gray-200: #E5E7EB;
+  --color-gray-300: #D1D5DB;
+  --color-gray-400: #9CA3AF;
+  --color-gray-500: #6B7280;
+  --color-gray-600: #4B5563;
+  --color-gray-700: #374151;
+  --color-gray-800: #1F2937;
+  --color-gray-900: #1A1A1A;
+
   /* === STATUS COLORS === */
   --color-success: #10B981;
   --color-warning: #F59E0B;
   --color-error: #EF4444;
   --color-info: #3B82F6;
+
+  /* === BADGE COLORS === */
+  --color-badge-discount: #1F1F1F;
+  --color-badge-tag: #00B894;
+  --color-badge-new: #6C5CE7;
+  --color-badge-promo: var(--color-primary);
 
   /* === TYPOGRAPHY === */
   --font-primary: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
@@ -166,9 +189,13 @@
   --sidebar-icon-size: 40px;
   --sidebar-item-height: 48px;
   --sidebar-item-gap: 8px;
-  --sidebar-hover-bg: #F5F5F7;
-  --sidebar-active-bg: #FFF0ED;
-  --sidebar-active-color: #FF4B26;
+  --sidebar-hover-bg: var(--color-bg-page);
+  --sidebar-active-bg: var(--color-primary-light);
+  --sidebar-active-color: var(--color-primary);
+
+  /* === GRADIENTS === */
+  --gradient-primary: linear-gradient(135deg, var(--color-primary) 0%, var(--color-accent) 100%);
+  --gradient-primary-hover: linear-gradient(135deg, var(--color-primary-hover) 0%, var(--color-accent-hover) 100%);
 
   /* === BUTTON SPECIFIC === */
   --btn-height-sm: 32px;
@@ -1680,4 +1707,61 @@ html[dir="rtl"] .marquee-container {
     width: 6px;
     height: 6px;
   }
+}
+
+/* ================================
+   CUSTOM ANIMATIONS - Preloader
+   ================================ */
+@keyframes spin-slow {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes spin-reverse {
+  from {
+    transform: rotate(360deg);
+  }
+  to {
+    transform: rotate(0deg);
+  }
+}
+
+@keyframes pulse-subtle {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.9;
+    transform: scale(1.02);
+  }
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.animate-spin-slow {
+  animation: spin-slow 3s linear infinite;
+}
+
+.animate-spin-reverse {
+  animation: spin-reverse 2s linear infinite;
+}
+
+.animate-pulse-subtle {
+  animation: pulse-subtle 2s ease-in-out infinite;
+}
+
+.animate-fade-in {
+  animation: fade-in 0.5s ease-in;
 }

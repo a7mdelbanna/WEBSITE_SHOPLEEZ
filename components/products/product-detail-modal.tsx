@@ -127,31 +127,33 @@ function CollapsibleSection({
   onToggle: () => void;
 }) {
   return (
-    <div className="border-t border-[#F0F0F0]">
+    <div style={{ borderTop: '1px solid var(--color-border-light)' }}>
       <button
         onClick={onToggle}
         className="w-full flex items-center justify-between py-[12px] text-left"
       >
-        <span className="text-[13px] text-[#1A1A1A]">{title}</span>
+        <span className="text-[13px]" style={{ color: 'var(--color-text-primary)' }}>{title}</span>
         <ChevronUp
           className={cn(
-            "w-[16px] h-[16px] text-[#999] transition-transform duration-200",
+            "w-[16px] h-[16px] transition-transform duration-200",
             !isExpanded && "rotate-180"
           )}
+          style={{ color: 'var(--color-text-muted)' }}
         />
       </button>
       <div className="relative">
         <div
           className={cn(
-            "text-[13px] text-[#1A1A1A] leading-[1.6] overflow-hidden transition-all duration-200",
+            "text-[13px] leading-[1.6] overflow-hidden transition-all duration-200",
             isExpanded ? "max-h-[2000px] pb-[12px]" : "max-h-[60px]"
           )}
+          style={{ color: 'var(--color-text-primary)' }}
         >
           {content}
         </div>
         {/* Fade-out gradient when collapsed */}
         {!isExpanded && (
-          <div className="absolute bottom-0 left-0 right-0 h-[40px] bg-gradient-to-t from-white to-transparent pointer-events-none" />
+          <div className="absolute bottom-0 left-0 right-0 h-[40px] pointer-events-none" style={{ background: 'linear-gradient(to top, var(--color-bg-card), transparent)' }} />
         )}
       </div>
     </div>
@@ -537,12 +539,15 @@ export function ProductDetailModal({
           <button
             onClick={onClose}
             className={cn(
-              "absolute top-[16px] z-30 w-[32px] h-[32px] rounded-full flex items-center justify-center hover:bg-[#F5F5F5] transition-colors bg-white/80",
+              "absolute top-[16px] z-30 w-[32px] h-[32px] rounded-full flex items-center justify-center transition-colors bg-white/80",
               isRTL ? "left-[16px]" : "right-[16px]"
             )}
+            style={{ '--hover-bg': 'var(--color-bg-page)' } as React.CSSProperties}
+            onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'var(--color-bg-page)'}
+            onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.8)'}
             aria-label={t('common.close')}
           >
-            <X className="w-[20px] h-[20px] text-[#666]" />
+            <X className="w-[20px] h-[20px]" style={{ color: 'var(--color-text-secondary)' }} />
           </button>
 
           {/* Two-column layout - both columns scroll independently */}
@@ -552,17 +557,21 @@ export function ProductDetailModal({
             <div className="w-full md:w-[480px] shrink-0 p-[16px] space-y-[16px] overflow-y-auto">
 
               {/* Block 1: Image Card - with unit toggle */}
-              <div className="relative bg-[#F5F5F5] rounded-[24px] overflow-hidden">
+              <div className="relative rounded-[24px] overflow-hidden" style={{ backgroundColor: 'var(--color-bg-page)' }}>
                   {/* Discount badge */}
                   {displayProduct.badge && (
                     <div
                       className={cn(
                         'absolute top-[16px] px-[12px] py-[6px] rounded-[8px] text-[13px] font-semibold text-white z-10',
-                        isRTL ? 'right-[16px]' : 'left-[16px]',
-                        displayProduct.badge.variant === 'discount' && 'bg-[#1F1F1F]',
-                        displayProduct.badge.variant === 'tag' && 'bg-[#00B894]',
-                        displayProduct.badge.variant === 'new' && 'bg-[#6C5CE7]'
+                        isRTL ? 'right-[16px]' : 'left-[16px]'
                       )}
+                      style={{
+                        backgroundColor:
+                          displayProduct.badge.variant === 'discount' ? 'var(--color-badge-discount)' :
+                          displayProduct.badge.variant === 'tag' ? 'var(--color-badge-tag)' :
+                          displayProduct.badge.variant === 'new' ? 'var(--color-badge-new)' :
+                          'var(--color-badge-discount)'
+                      }}
                     >
                       {getBadgeText()}
                     </div>
@@ -571,7 +580,7 @@ export function ProductDetailModal({
                   {/* Loading indicator */}
                   {isLoadingProduct && (
                     <div className="absolute inset-0 flex items-center justify-center bg-white/50 z-20">
-                      <Loader2 className="w-[32px] h-[32px] text-[#FF4B12] animate-spin" />
+                      <Loader2 className="w-[32px] h-[32px] animate-spin" style={{ color: 'var(--color-primary)' }} />
                     </div>
                   )}
 
@@ -588,8 +597,8 @@ export function ProductDetailModal({
                         unoptimized
                       />
                     ) : (
-                      <div className="w-full h-full flex items-center justify-center bg-[#F0F0F0] rounded-[16px]">
-                        <span className="text-[#9CA3AF]">{t('common.noImage')}</span>
+                      <div className="w-full h-full flex items-center justify-center rounded-[16px]" style={{ backgroundColor: 'var(--color-bg-input)' }}>
+                        <span style={{ color: 'var(--color-text-muted)' }}>{t('common.noImage')}</span>
                       </div>
                     )}
                   </div>
@@ -601,11 +610,12 @@ export function ProductDetailModal({
                         {/* Sliding Background */}
                         <div
                           className={cn(
-                            "absolute top-[4px] bottom-[4px] w-[calc(50%-2px)] rounded-[12px] bg-gradient-to-r from-[#FF4B12] to-[#FF6B3D] shadow-md transition-all duration-300 ease-out",
+                            "absolute top-[4px] bottom-[4px] w-[calc(50%-2px)] rounded-[12px] shadow-md transition-all duration-300 ease-out",
                             selectedUnit === 'big'
                               ? (isRTL ? "left-[4px]" : "left-[calc(50%+2px)]")
                               : (isRTL ? "left-[calc(50%+2px)]" : "left-[4px]")
                           )}
+                          style={{ background: 'var(--gradient-primary)' }}
                         />
 
                         {/* Small Unit Option */}
@@ -613,19 +623,20 @@ export function ProductDetailModal({
                           onClick={() => setSelectedUnit('small')}
                           className={cn(
                             "relative flex-1 flex flex-col items-center py-[10px] px-[8px] rounded-[12px] transition-all duration-300 z-10",
-                            selectedUnit === 'small' ? "text-white" : "text-[#666]"
+                            selectedUnit === 'small' ? "text-white" : ""
                           )}
+                          style={{ color: selectedUnit === 'small' ? 'white' : 'var(--color-text-secondary)' }}
                         >
                           <span className={cn(
-                            "text-[13px] font-semibold transition-colors duration-300",
-                            selectedUnit === 'small' ? "text-white" : "text-[#1A1A1A]"
-                          )}>
+                            "text-[13px] font-semibold transition-colors duration-300"
+                          )}
+                          style={{ color: selectedUnit === 'small' ? 'white' : 'var(--color-text-primary)' }}>
                             {getSmallUnitName()}
                           </span>
                           <span className={cn(
-                            "text-[12px] font-bold mt-[2px] transition-colors duration-300",
-                            selectedUnit === 'small' ? "text-white/90" : "text-[#FF4B12]"
-                          )}>
+                            "text-[12px] font-bold mt-[2px] transition-colors duration-300"
+                          )}
+                          style={{ color: selectedUnit === 'small' ? 'rgba(255, 255, 255, 0.9)' : 'var(--color-primary)' }}>
                             {formatPrice(displayProduct.smallUnitPrice || displayProduct.price, currency, locale)}
                           </span>
                         </button>
@@ -635,19 +646,20 @@ export function ProductDetailModal({
                           onClick={() => setSelectedUnit('big')}
                           className={cn(
                             "relative flex-1 flex flex-col items-center py-[10px] px-[8px] rounded-[12px] transition-all duration-300 z-10",
-                            selectedUnit === 'big' ? "text-white" : "text-[#666]"
+                            selectedUnit === 'big' ? "text-white" : ""
                           )}
+                          style={{ color: selectedUnit === 'big' ? 'white' : 'var(--color-text-secondary)' }}
                         >
                           <span className={cn(
-                            "text-[13px] font-semibold transition-colors duration-300",
-                            selectedUnit === 'big' ? "text-white" : "text-[#1A1A1A]"
-                          )}>
+                            "text-[13px] font-semibold transition-colors duration-300"
+                          )}
+                          style={{ color: selectedUnit === 'big' ? 'white' : 'var(--color-text-primary)' }}>
                             {getBigUnitName()}
                           </span>
                           <span className={cn(
-                            "text-[12px] font-bold mt-[2px] transition-colors duration-300",
-                            selectedUnit === 'big' ? "text-white/90" : "text-[#FF4B12]"
-                          )}>
+                            "text-[12px] font-bold mt-[2px] transition-colors duration-300"
+                          )}
+                          style={{ color: selectedUnit === 'big' ? 'rgba(255, 255, 255, 0.9)' : 'var(--color-primary)' }}>
                             {formatPrice(displayProduct.bigUnitPrice || displayProduct.price, currency, locale)}
                           </span>
                         </button>
@@ -658,8 +670,8 @@ export function ProductDetailModal({
                   {/* Single unit indicator - Clean pill design */}
                   {!hasMultipleUnits && currentUnitName && (
                     <div className="absolute bottom-[16px] left-1/2 -translate-x-1/2">
-                      <div className="bg-white/95 backdrop-blur-md rounded-[12px] px-[20px] py-[10px] shadow-xl border border-white/20">
-                        <span className="text-[13px] font-semibold text-[#1A1A1A]">
+                      <div className="backdrop-blur-md rounded-[12px] px-[20px] py-[10px] shadow-xl border border-white/20" style={{ background: 'var(--gradient-primary)' }}>
+                        <span className="text-[13px] font-semibold text-white">
                           {currentUnitName}
                         </span>
                       </div>
@@ -672,27 +684,27 @@ export function ProductDetailModal({
                   <div style={{ marginTop: '16px' }}>
                     <h3
                       className={cn(
-                        "text-[16px] font-bold text-[#1A1A1A]",
+                        "text-[16px] font-bold",
                         isRTL && "text-right"
                       )}
-                      style={{ marginBottom: '16px' }}
+                      style={{ marginBottom: '16px', color: 'var(--color-text-primary)' }}
                     >
                       {t('product.relatedProducts')}
                     </h3>
                     {isLoadingRelated ? (
                       <div className="flex items-center justify-center" style={{ padding: '24px 0' }}>
-                        <Loader2 className="w-[24px] h-[24px] text-[#FF4B12] animate-spin" />
+                        <Loader2 className="w-[24px] h-[24px] animate-spin" style={{ color: 'var(--color-primary)' }} />
                       </div>
                     ) : (
                       <div className="flex overflow-x-auto scrollbar-hide" style={{ gap: '12px', paddingBottom: '12px' }}>
                         {displayProduct.relatedProducts.map((related) => (
                           <div
                             key={related.id}
-                            className="shrink-0 bg-white rounded-[16px] border border-[#F0F0F0] overflow-hidden"
-                            style={{ width: '160px' }}
+                            className="shrink-0 rounded-[16px] overflow-hidden"
+                            style={{ width: '160px', backgroundColor: 'var(--color-bg-card)', border: '1px solid var(--color-border-light)' }}
                           >
                             {/* Card image */}
-                            <div className="relative aspect-square bg-[#FAFAFA] rounded-t-[16px]">
+                            <div className="relative aspect-square rounded-t-[16px]" style={{ backgroundColor: 'var(--color-bg-page)' }}>
                               {related.image ? (
                                 <Image
                                   src={related.image}
@@ -705,14 +717,14 @@ export function ProductDetailModal({
                                 />
                               ) : (
                                 <div className="w-full h-full flex items-center justify-center">
-                                  <span className="text-[#D1D5DB] text-[12px]">{t('common.noImage')}</span>
+                                  <span className="text-[12px]" style={{ color: 'var(--color-gray-300)' }}>{t('common.noImage')}</span>
                                 </div>
                               )}
                               {related.badge && (
                                 <div className={cn(
-                                  "absolute px-[8px] py-[3px] rounded-[6px] bg-[#1F1F1F] text-[11px] font-semibold text-white",
+                                  "absolute px-[8px] py-[3px] rounded-[6px] text-[11px] font-semibold text-white",
                                   isRTL ? "right-[8px]" : "left-[8px]"
-                                )} style={{ bottom: '10px' }}>
+                                )} style={{ bottom: '10px', backgroundColor: 'var(--color-badge-discount)' }}>
                                   {getRelatedBadgeText(related)}
                                 </div>
                               )}
@@ -721,28 +733,28 @@ export function ProductDetailModal({
                             <div style={{ padding: '12px', paddingTop: '10px' }}>
                               <p
                                 className={cn(
-                                  "text-[13px] text-[#1A1A1A] leading-[1.3] line-clamp-2",
+                                  "text-[13px] leading-[1.3] line-clamp-2",
                                   isRTL && "text-right"
                                 )}
-                                style={{ height: '34px', marginBottom: '8px' }}
+                                style={{ height: '34px', marginBottom: '8px', color: 'var(--color-text-primary)' }}
                               >
                                 {getRelatedName(related)}
                               </p>
                               {/* Price row */}
                               <div className={cn("flex items-center", isRTL && "justify-end")}>
                                 <div
-                                  className="flex items-center bg-[#FFF0F0] rounded-full"
-                                  style={{ gap: '6px', padding: '6px 12px' }}
+                                  className="flex items-center rounded-full"
+                                  style={{ gap: '6px', padding: '6px 12px', backgroundColor: 'var(--color-primary-light)' }}
                                 >
                                   {related.originalPrice && (
-                                    <span className="text-[11px] text-[#BEBEBE] line-through">
+                                    <span className="text-[11px] line-through" style={{ color: 'var(--color-text-muted)' }}>
                                       {formatPrice(related.originalPrice, currency, locale)}
                                     </span>
                                   )}
-                                  <span className="text-[14px] font-semibold text-[#1A1A1A]">
+                                  <span className="text-[14px] font-semibold" style={{ color: 'var(--color-text-primary)' }}>
                                     {formatPrice(related.price, currency, locale)}
                                   </span>
-                                  <span className="text-[#FF6B6B] text-[16px]">+</span>
+                                  <span className="text-[16px]" style={{ color: 'var(--color-primary)' }}>+</span>
                                 </div>
                               </div>
                             </div>
@@ -764,10 +776,10 @@ export function ProductDetailModal({
                   {/* Product name */}
                   <h1
                     className={cn(
-                      "text-[22px] font-bold text-[#1A1A1A] leading-[1.25]",
+                      "text-[22px] font-bold leading-[1.25]",
                       isRTL ? "text-right pl-[32px]" : "pr-[32px]"
                     )}
-                    style={{ marginBottom: '20px' }}
+                    style={{ marginBottom: '20px', color: 'var(--color-text-primary)' }}
                   >
                     {getName()}
                   </h1>
@@ -775,10 +787,19 @@ export function ProductDetailModal({
                   {/* Share button - grey pill */}
                   <button
                     className={cn(
-                      "inline-flex items-center gap-[8px] rounded-full bg-[#F5F5F5] text-[13px] text-[#1A1A1A] hover:bg-[#EBEBEB] transition-colors",
+                      "inline-flex items-center gap-[8px] rounded-full text-[13px] transition-colors",
                       isRTL && "flex-row-reverse"
                     )}
-                    style={{ height: '40px', paddingLeft: '18px', paddingRight: '18px', marginBottom: '24px' }}
+                    style={{
+                      height: '40px',
+                      paddingLeft: '18px',
+                      paddingRight: '18px',
+                      marginBottom: '24px',
+                      backgroundColor: 'var(--color-bg-page)',
+                      color: 'var(--color-text-primary)'
+                    }}
+                    onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'var(--color-border)'}
+                    onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'var(--color-bg-page)'}
                   >
                     <Share2 className="w-[16px] h-[16px]" />
                     {t('product.share')}
@@ -787,9 +808,10 @@ export function ProductDetailModal({
                   {/* Volume - lighter, smaller */}
                   {product.volume && (
                     <p className={cn(
-                      "text-[15px] text-[#999] mb-[14px]",
+                      "text-[15px] mb-[14px]",
                       isRTL && "text-right"
-                    )}>
+                    )}
+                    style={{ color: 'var(--color-text-muted)' }}>
                       {product.volume}
                     </p>
                   )}
@@ -799,10 +821,11 @@ export function ProductDetailModal({
                     <ul className="mb-[14px] space-y-[4px]">
                       {getHighlights()!.map((highlight, idx) => (
                         <li key={idx} className={cn(
-                          "flex items-start gap-[8px] text-[14px] text-[#1A1A1A] leading-[1.4]",
+                          "flex items-start gap-[8px] text-[14px] leading-[1.4]",
                           isRTL && "flex-row-reverse text-right"
-                        )}>
-                          <span className="text-[#BEBEBE] mt-[8px] text-[4px]">●</span>
+                        )}
+                        style={{ color: 'var(--color-text-primary)' }}>
+                          <span className="mt-[8px] text-[4px]" style={{ color: 'var(--color-text-muted)' }}>●</span>
                           <span>{highlight}</span>
                         </li>
                       ))}
@@ -812,9 +835,10 @@ export function ProductDetailModal({
                   {/* Description */}
                   {getDescription() && (
                     <p className={cn(
-                      "text-[14px] text-[#1A1A1A] leading-[1.65] mb-[16px]",
+                      "text-[14px] leading-[1.65] mb-[16px]",
                       isRTL && "text-right"
-                    )}>
+                    )}
+                    style={{ color: 'var(--color-text-primary)' }}>
                       {getDescription()}
                     </p>
                   )}
@@ -840,83 +864,84 @@ export function ProductDetailModal({
                   )}
 
                   {/* Additional details */}
-                  <div className="border-t border-[#F0F0F0] pt-[14px] space-y-[12px] mt-[4px]">
+                  <div className="pt-[14px] space-y-[12px] mt-[4px]" style={{ borderTop: '1px solid var(--color-border-light)' }}>
                     {product.shelfLife && (
                       <div className={isRTL ? "text-right" : ""}>
-                        <p className="text-[12px] text-[#999] mb-[2px]">{t('product.shelfLife')}</p>
-                        <p className="text-[14px] text-[#1A1A1A]">{product.shelfLife}</p>
+                        <p className="text-[12px] mb-[2px]" style={{ color: 'var(--color-text-muted)' }}>{t('product.shelfLife')}</p>
+                        <p className="text-[14px]" style={{ color: 'var(--color-text-primary)' }}>{product.shelfLife}</p>
                       </div>
                     )}
                     {getStorageConditions() && (
                       <div className={isRTL ? "text-right" : ""}>
-                        <p className="text-[12px] text-[#999] mb-[2px]">{t('product.storageConditions')}</p>
-                        <p className="text-[14px] text-[#1A1A1A]">{getStorageConditions()}</p>
+                        <p className="text-[12px] mb-[2px]" style={{ color: 'var(--color-text-muted)' }}>{t('product.storageConditions')}</p>
+                        <p className="text-[14px]" style={{ color: 'var(--color-text-primary)' }}>{getStorageConditions()}</p>
                       </div>
                     )}
                     {getManufacturer() && (
                       <div className={isRTL ? "text-right" : ""}>
-                        <p className="text-[12px] text-[#999] mb-[2px]">{t('product.manufacturer')}</p>
-                        <p className="text-[14px] text-[#1A1A1A]">{getManufacturer()}</p>
+                        <p className="text-[12px] mb-[2px]" style={{ color: 'var(--color-text-muted)' }}>{t('product.manufacturer')}</p>
+                        <p className="text-[14px]" style={{ color: 'var(--color-text-primary)' }}>{getManufacturer()}</p>
                       </div>
                     )}
                     {product.quantity && (
                       <div className={isRTL ? "text-right" : ""}>
-                        <p className="text-[12px] text-[#999] mb-[2px]">{t('product.quantityInPackage')}</p>
-                        <p className="text-[14px] text-[#1A1A1A]">{product.quantity}</p>
+                        <p className="text-[12px] mb-[2px]" style={{ color: 'var(--color-text-muted)' }}>{t('product.quantityInPackage')}</p>
+                        <p className="text-[14px]" style={{ color: 'var(--color-text-primary)' }}>{product.quantity}</p>
                       </div>
                     )}
                     {getProductType() && (
                       <div className={isRTL ? "text-right" : ""}>
-                        <p className="text-[12px] text-[#999] mb-[2px]">{t('product.productType')}</p>
-                        <p className="text-[14px] text-[#1A1A1A]">{getProductType()}</p>
+                        <p className="text-[12px] mb-[2px]" style={{ color: 'var(--color-text-muted)' }}>{t('product.productType')}</p>
+                        <p className="text-[14px]" style={{ color: 'var(--color-text-primary)' }}>{getProductType()}</p>
                       </div>
                     )}
                     {getBrand() && (
                       <div className={isRTL ? "text-right" : ""}>
-                        <p className="text-[12px] text-[#999] mb-[2px]">{t('product.brand')}</p>
-                        <p className="text-[14px] text-[#1A1A1A]">{getBrand()}</p>
+                        <p className="text-[12px] mb-[2px]" style={{ color: 'var(--color-text-muted)' }}>{t('product.brand')}</p>
+                        <p className="text-[14px]" style={{ color: 'var(--color-text-primary)' }}>{getBrand()}</p>
                       </div>
                     )}
                     {getApplicationArea() && (
                       <div className={isRTL ? "text-right" : ""}>
-                        <p className="text-[12px] text-[#999] mb-[2px]">{t('product.applicationArea')}</p>
-                        <p className="text-[14px] text-[#1A1A1A]">{getApplicationArea()}</p>
+                        <p className="text-[12px] mb-[2px]" style={{ color: 'var(--color-text-muted)' }}>{t('product.applicationArea')}</p>
+                        <p className="text-[14px]" style={{ color: 'var(--color-text-primary)' }}>{getApplicationArea()}</p>
                       </div>
                     )}
                   </div>
 
                   {/* Nutrition Info */}
                   {(displayProduct.calories || displayProduct.protein || displayProduct.fat || displayProduct.carbs) && (
-                    <div className="border-t border-[#F0F0F0] pt-[14px] mt-[4px]">
+                    <div className="pt-[14px] mt-[4px]" style={{ borderTop: '1px solid var(--color-border-light)' }}>
                       <h4 className={cn(
-                        "text-[14px] font-semibold text-[#1A1A1A] mb-[12px]",
+                        "text-[14px] font-semibold mb-[12px]",
                         isRTL && "text-right"
-                      )}>
+                      )}
+                      style={{ color: 'var(--color-text-primary)' }}>
                         {t('product.nutritionInfo')}
                       </h4>
                       <div className="grid grid-cols-4 gap-[8px]">
                         {displayProduct.calories !== undefined && displayProduct.calories > 0 && (
-                          <div className="bg-[#F5F5F7] rounded-[12px] p-[12px] text-center">
-                            <p className="text-[18px] font-bold text-[#1A1A1A]">{displayProduct.calories}</p>
-                            <p className="text-[11px] text-[#999]">{t('product.calories')}</p>
+                          <div className="rounded-[12px] p-[12px] text-center" style={{ backgroundColor: 'var(--color-bg-page)' }}>
+                            <p className="text-[18px] font-bold" style={{ color: 'var(--color-text-primary)' }}>{displayProduct.calories}</p>
+                            <p className="text-[11px]" style={{ color: 'var(--color-text-muted)' }}>{t('product.calories')}</p>
                           </div>
                         )}
                         {displayProduct.protein !== undefined && displayProduct.protein > 0 && (
-                          <div className="bg-[#F5F5F7] rounded-[12px] p-[12px] text-center">
-                            <p className="text-[18px] font-bold text-[#1A1A1A]">{displayProduct.protein}g</p>
-                            <p className="text-[11px] text-[#999]">{t('product.protein')}</p>
+                          <div className="rounded-[12px] p-[12px] text-center" style={{ backgroundColor: 'var(--color-bg-page)' }}>
+                            <p className="text-[18px] font-bold" style={{ color: 'var(--color-text-primary)' }}>{displayProduct.protein}g</p>
+                            <p className="text-[11px]" style={{ color: 'var(--color-text-muted)' }}>{t('product.protein')}</p>
                           </div>
                         )}
                         {displayProduct.fat !== undefined && displayProduct.fat > 0 && (
-                          <div className="bg-[#F5F5F7] rounded-[12px] p-[12px] text-center">
-                            <p className="text-[18px] font-bold text-[#1A1A1A]">{displayProduct.fat}g</p>
-                            <p className="text-[11px] text-[#999]">{t('product.fat')}</p>
+                          <div className="rounded-[12px] p-[12px] text-center" style={{ backgroundColor: 'var(--color-bg-page)' }}>
+                            <p className="text-[18px] font-bold" style={{ color: 'var(--color-text-primary)' }}>{displayProduct.fat}g</p>
+                            <p className="text-[11px]" style={{ color: 'var(--color-text-muted)' }}>{t('product.fat')}</p>
                           </div>
                         )}
                         {displayProduct.carbs !== undefined && displayProduct.carbs > 0 && (
-                          <div className="bg-[#F5F5F7] rounded-[12px] p-[12px] text-center">
-                            <p className="text-[18px] font-bold text-[#1A1A1A]">{displayProduct.carbs}g</p>
-                            <p className="text-[11px] text-[#999]">{t('product.carbs')}</p>
+                          <div className="rounded-[12px] p-[12px] text-center" style={{ backgroundColor: 'var(--color-bg-page)' }}>
+                            <p className="text-[18px] font-bold" style={{ color: 'var(--color-text-primary)' }}>{displayProduct.carbs}g</p>
+                            <p className="text-[11px]" style={{ color: 'var(--color-text-muted)' }}>{t('product.carbs')}</p>
                           </div>
                         )}
                       </div>
@@ -925,12 +950,18 @@ export function ProductDetailModal({
                 </div>
 
               {/* STICKY Add to Cart bar - FULL WIDTH of right column */}
-              <div className="sticky bottom-0 left-0 right-0 bg-white px-[16px] py-[16px] z-10">
+              <div className="sticky bottom-0 left-0 right-0 px-[16px] py-[16px] z-10" style={{ backgroundColor: 'var(--color-bg-card)' }}>
                 {/* Out of Stock - Show Notify Me Button */}
                 {(isOutOfStock || isUnavailable) ? (
                   <button
                     onClick={handleNotifyMe}
-                    className="w-full h-[56px] rounded-full bg-[#F0F0F0] text-[#1A1A1A] text-[18px] font-semibold flex items-center justify-center gap-[8px] transition-colors hover:bg-[#E5E5E5]"
+                    className="w-full h-[56px] rounded-full text-[18px] font-semibold flex items-center justify-center gap-[8px] transition-colors"
+                    style={{
+                      backgroundColor: 'var(--color-bg-input)',
+                      color: 'var(--color-text-primary)'
+                    }}
+                    onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'var(--color-border)'}
+                    onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'var(--color-bg-input)'}
                   >
                     <Bell className="w-[20px] h-[20px]" />
                     <span>{isRTL ? 'أعلمني عند التوفر' : 'Notify Me'}</span>
@@ -941,7 +972,7 @@ export function ProductDetailModal({
                     {/* Price display */}
                     <div className={cn("flex-1 flex items-center", isRTL ? "flex-row-reverse justify-end" : "justify-start")}>
                       {hasDiscount && (
-                        <span className="text-[14px] text-[#9CA3AF] line-through mr-[8px]">
+                        <span className="text-[14px] line-through mr-[8px]" style={{ color: 'var(--color-text-muted)' }}>
                           {formatPrice(displayProduct.originalPrice!, currency, locale)}
                         </span>
                       )}
@@ -951,7 +982,7 @@ export function ProductDetailModal({
                     </div>
 
                     {/* Quantity Stepper */}
-                    <div className="flex items-center rounded-full overflow-hidden" style={{ background: 'linear-gradient(to right, #FF4B12, #FF6B3D)' }}>
+                    <div className="flex items-center rounded-full overflow-hidden" style={{ background: 'var(--gradient-primary)' }}>
                       {/* Minus Button */}
                       <button
                         onClick={handleDecrement}
@@ -988,7 +1019,7 @@ export function ProductDetailModal({
                   <button
                     onClick={handleAddToCart}
                     className="w-full h-[56px] rounded-full text-white text-[18px] font-semibold flex items-center justify-center gap-[8px] transition-colors"
-                    style={{ background: 'linear-gradient(to right, #FF4B12, #FF6B3D)' }}
+                    style={{ background: 'var(--gradient-primary)' }}
                   >
                     {hasDiscount && (
                       <span className="text-[16px] text-white/60 line-through">

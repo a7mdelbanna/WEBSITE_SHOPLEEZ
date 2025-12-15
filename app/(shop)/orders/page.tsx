@@ -184,11 +184,11 @@ export default function OrdersPage() {
         <div className="flex items-center gap-4 mb-6">
           <Link
             href="/"
-            className="flex items-center justify-center w-10 h-10 rounded-full bg-[#F5F5F7] hover:bg-[#ECECEC] transition-colors"
+            className="flex items-center justify-center w-10 h-10 rounded-full bg-[var(--color-gray-50)] hover:bg-[#ECECEC] transition-colors"
           >
-            <BackIcon className="w-5 h-5 text-[#1A1A1A]" />
+            <BackIcon className="w-5 h-5 text-[var(--color-gray-900)]" />
           </Link>
-          <h1 className="text-[28px] font-bold text-[#1A1A1A]">
+          <h1 className="text-[28px] font-bold text-[var(--color-gray-900)]">
             {isRTL ? 'طلباتي' : 'My Orders'}
           </h1>
         </div>
@@ -222,7 +222,7 @@ export default function OrdersPage() {
         {isLoading && (
           <div className="flex flex-col items-center justify-center py-20">
             <Loader2 className="w-10 h-10 animate-spin text-[var(--color-primary)]" />
-            <p className="mt-4 text-[#6B7280]">
+            <p className="mt-4 text-[var(--color-gray-500)]">
               {isRTL ? 'جاري تحميل الطلبات...' : 'Loading orders...'}
             </p>
           </div>
@@ -231,13 +231,13 @@ export default function OrdersPage() {
         {/* Empty State */}
         {!isLoading && (!orders || orders.length === 0) && (
           <div className="flex flex-col items-center justify-center py-20">
-            <div className="w-24 h-24 rounded-full bg-[#F5F5F7] flex items-center justify-center mb-6">
-              <ShoppingBag className="w-12 h-12 text-[#9CA3AF]" />
+            <div className="w-24 h-24 rounded-full bg-[var(--color-gray-50)] flex items-center justify-center mb-6">
+              <ShoppingBag className="w-12 h-12 text-[var(--color-gray-400)]" />
             </div>
-            <h2 className="text-[20px] font-semibold text-[#1A1A1A] mb-2">
+            <h2 className="text-[20px] font-semibold text-[var(--color-gray-900)] mb-2">
               {isRTL ? 'لا توجد طلبات' : 'No orders yet'}
             </h2>
-            <p className="text-[14px] text-[#6B7280] mb-6 text-center max-w-sm">
+            <p className="text-[14px] text-[var(--color-gray-500)] mb-6 text-center max-w-sm">
               {isRTL
                 ? 'لم تقم بإجراء أي طلبات بعد. ابدأ التسوق الآن!'
                 : 'You haven\'t placed any orders yet. Start shopping now!'}
@@ -259,7 +259,7 @@ export default function OrdersPage() {
               <Link
                 key={order.id}
                 href={`/orders/${order.id}`}
-                className="block bg-[#F9FAFB] rounded-[16px] p-5 hover:bg-[#F0F1F3] transition-colors"
+                className="block bg-[var(--color-gray-50)] rounded-[16px] p-5 hover:bg-[#F0F1F3] transition-colors"
               >
                 <div className="flex items-start gap-4">
                   {/* Order Icon/Image */}
@@ -301,10 +301,10 @@ export default function OrdersPage() {
                   <div className="flex-1 min-w-0">
                     <div className="flex items-start justify-between gap-3 mb-2">
                       <div>
-                        <h3 className="text-[16px] font-semibold text-[#1A1A1A]">
+                        <h3 className="text-[16px] font-semibold text-[var(--color-gray-900)]">
                           {order.orderNumber}
                         </h3>
-                        <p className="text-[13px] text-[#6B7280]">
+                        <p className="text-[13px] text-[var(--color-gray-500)]">
                           {formatDate(order.createdAt)}
                         </p>
                       </div>
@@ -312,7 +312,7 @@ export default function OrdersPage() {
                     </div>
 
                     <div className="flex items-center justify-between mt-3">
-                      <p className="text-[13px] text-[#6B7280]">
+                      <p className="text-[13px] text-[var(--color-gray-500)]">
                         {order.itemCount} {isRTL ? (order.itemCount === 1 ? 'منتج' : 'منتجات') : (order.itemCount === 1 ? 'item' : 'items')}
                       </p>
                       <div className="flex items-center gap-2">
@@ -323,7 +323,7 @@ export default function OrdersPage() {
                           {formatPrice(order.total)}
                         </span>
                         <ChevronRight className={cn(
-                          "w-5 h-5 text-[#9CA3AF]",
+                          "w-5 h-5 text-[var(--color-gray-400)]",
                           isRTL && "rotate-180"
                         )} />
                       </div>

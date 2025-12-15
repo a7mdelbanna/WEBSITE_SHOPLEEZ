@@ -6,7 +6,7 @@
  * Reference: Samokat "Выгодная полка" section
  *
  * Key Design Details:
- * - Light gray card background (#F5F5F7)
+ * - Light gray card background (var(--color-bg-page))
  * - DARK badge (not orange!) for discounts
  * - Large product name (15px, semi-bold)
  * - Light pink price pill with strikethrough + current price + plus icon
@@ -203,7 +203,7 @@ export function ProductCard({
       )}
     >
       {/* Image container - gray background, fully rounded corners */}
-      <div className="relative aspect-square overflow-hidden bg-[#F5F5F7] rounded-[16px] m-[6px] mb-0">
+      <div className="relative aspect-square overflow-hidden bg-[var(--color-bg-page)] rounded-[16px] m-[6px] mb-0">
         <Image
           src={currentImage}
           alt={displayName}
@@ -222,9 +222,9 @@ export function ProductCard({
               'px-[10px] py-[6px] rounded-[8px]',
               'text-[13px] font-semibold text-white',
               // Dark badge for discount (Samokat reference)
-              badge.variant === 'discount' && 'bg-[#1F1F1F]',
-              badge.variant === 'tag' && 'bg-[#00B894]',
-              badge.variant === 'new' && 'bg-[#6C5CE7]'
+              badge.variant === 'discount' && 'bg-[var(--color-badge-discount)]',
+              badge.variant === 'tag' && 'bg-[var(--color-badge-tag)]',
+              badge.variant === 'new' && 'bg-[var(--color-badge-new)]'
             )}
           >
             {displayBadge}
@@ -235,7 +235,7 @@ export function ProductCard({
       {/* Content section - consistent height for all cards */}
       <div className="flex flex-col p-[6px] pt-[5px] bg-white h-[105px]">
         {/* Product name - 11px, 2 lines */}
-        <h3 className="text-[11px] font-medium text-[#1A1A1A] leading-[1.3] line-clamp-2 h-[30px] mb-[4px]">
+        <h3 className="text-[11px] font-medium text-[var(--color-gray-900)] leading-[1.3] line-clamp-2 h-[30px] mb-[4px]">
           {displayName}
         </h3>
 
@@ -250,29 +250,29 @@ export function ProductCard({
                 className={cn(
                   "font-medium transition-all duration-200 relative pb-[2px]",
                   selectedUnit === 'small'
-                    ? "text-[#FF4B12]"
-                    : "text-[#999] hover:text-[#666]"
+                    ? "text-[var(--color-primary)]"
+                    : "text-[var(--color-gray-500)] hover:text-[var(--color-gray-500)]"
                 )}
               >
                 {smallUnitName}
                 {selectedUnit === 'small' && (
-                  <span className="absolute bottom-0 left-0 right-0 h-[2px] bg-[#FF4B12] rounded-full" />
+                  <span className="absolute bottom-0 left-0 right-0 h-[2px] bg-[var(--color-primary)] rounded-full" />
                 )}
               </button>
-              <span style={{ fontSize: '13px' }} className="text-[#E0E0E0]">|</span>
+              <span style={{ fontSize: '13px' }} className="text-[var(--color-border)]">|</span>
               <button
                 onClick={(e) => handleUnitToggle(e, 'big')}
                 style={{ fontSize: '12px' }}
                 className={cn(
                   "font-medium transition-all duration-200 relative pb-[2px]",
                   selectedUnit === 'big'
-                    ? "text-[#FF4B12]"
-                    : "text-[#999] hover:text-[#666]"
+                    ? "text-[var(--color-primary)]"
+                    : "text-[var(--color-gray-500)] hover:text-[var(--color-gray-500)]"
                 )}
               >
                 {bigUnitName}
                 {selectedUnit === 'big' && (
-                  <span className="absolute bottom-0 left-0 right-0 h-[2px] bg-[#FF4B12] rounded-full" />
+                  <span className="absolute bottom-0 left-0 right-0 h-[2px] bg-[var(--color-primary)] rounded-full" />
                 )}
               </button>
             </div>
@@ -282,10 +282,10 @@ export function ProductCard({
               <button
                 type="button"
                 style={{ fontSize: '12px' }}
-                className="font-medium text-[#FF4B12] relative pb-[2px] cursor-default"
+                className="font-medium text-[var(--color-primary)] relative pb-[2px] cursor-default"
               >
                 {singleUnitDisplayName || t('product.bigUnit')}
-                <span className="absolute bottom-0 left-0 right-0 h-[2px] bg-[#FF4B12] rounded-full" />
+                <span className="absolute bottom-0 left-0 right-0 h-[2px] bg-[var(--color-primary)] rounded-full" />
               </button>
             </div>
           )}
@@ -302,7 +302,7 @@ export function ProductCard({
                 'h-[32px] px-[12px] rounded-full',
                 'bg-[#FFF3E0] hover:bg-[#FFE0B2]',
                 'transition-colors duration-200',
-                'text-[#FF6D00] font-medium text-[12px]',
+                'text-[var(--color-primary)] font-medium text-[12px]',
                 'whitespace-nowrap'
               )}
             >
@@ -373,7 +373,7 @@ export function ProductCard({
               className={cn(
                 'inline-flex items-center justify-center',
                 'h-[32px] px-[8px] rounded-full',
-                'bg-[#F0F0F0] hover:bg-[#E8E8E8]',
+                'bg-[var(--color-bg-input)] hover:bg-[var(--color-border)]',
                 'transition-colors duration-200',
                 'disabled:opacity-50 disabled:cursor-not-allowed',
                 'whitespace-nowrap'
@@ -390,7 +390,7 @@ export function ProductCard({
               )}
 
               {/* Current price */}
-              <span className="text-[13px] font-bold text-[#1A1A1A]">
+              <span className="text-[13px] font-bold text-[var(--color-gray-900)]">
                 {formatPrice(currentPrice, tenant.currency, locale)}
               </span>
 
@@ -408,7 +408,7 @@ export function ProductCard({
                 >
                   <path
                     d="M7 2.5V11.5M2.5 7H11.5"
-                    stroke="#1A1A1A"
+                    stroke="var(--color-gray-900)"
                     strokeWidth="1.5"
                     strokeLinecap="round"
                   />
@@ -453,7 +453,7 @@ export function ProductScroll({
           className={cn(
             'absolute -right-[22px] top-[35%] -translate-y-1/2 z-10',
             'w-[44px] h-[44px] rounded-full',
-            'bg-white shadow-lg border border-[#F0F0F0]',
+            'bg-white shadow-lg border border-[var(--color-bg-input)]',
             'flex items-center justify-center',
             'opacity-0 group-hover/scroll:opacity-100',
             'transition-all duration-200',
@@ -469,7 +469,7 @@ export function ProductScroll({
             strokeWidth="2"
             strokeLinecap="round"
             strokeLinejoin="round"
-            className="text-[#1A1A1A]"
+            className="text-[var(--color-gray-900)]"
           >
             <path d="M9 18l6-6-6-6" />
           </svg>
@@ -508,10 +508,10 @@ export function ProductGrid({
 export function ProductCardSkeleton() {
   return (
     <div className="flex flex-col rounded-[20px] bg-white overflow-hidden">
-      <div className="aspect-square animate-pulse bg-[#F5F5F7] rounded-[16px] m-[6px] mb-0" />
+      <div className="aspect-square animate-pulse bg-[var(--color-bg-page)] rounded-[16px] m-[6px] mb-0" />
       <div className="p-[6px] h-[95px] bg-white">
-        <div className="mb-[2px] h-[30px] animate-pulse rounded-[6px] bg-[#F0F0F0]" />
-        <div className="mb-[4px] h-[13px] w-[30px] animate-pulse rounded-[4px] bg-[#F0F0F0]" />
+        <div className="mb-[2px] h-[30px] animate-pulse rounded-[6px] bg-[var(--color-bg-input)]" />
+        <div className="mb-[4px] h-[13px] w-[30px] animate-pulse rounded-[4px] bg-[var(--color-bg-input)]" />
         <div className="h-[32px] w-[70px] animate-pulse rounded-full bg-[#FFEAE8]" />
       </div>
     </div>

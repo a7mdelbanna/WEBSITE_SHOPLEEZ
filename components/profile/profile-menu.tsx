@@ -27,12 +27,12 @@ export function MenuSection({ title, children }: MenuSectionProps) {
   return (
     <div className="mb-[24px]">
       <h3 className={cn(
-        "text-[12px] font-semibold text-[#9CA3AF] uppercase tracking-wider mb-[12px] px-[4px]",
+        "text-[12px] font-semibold text-[var(--color-gray-400)] uppercase tracking-wider mb-[12px] px-[4px]",
         isRTL && "text-right"
       )}>
         {title}
       </h3>
-      <div className="bg-white rounded-[16px] overflow-hidden divide-y divide-[#F0F0F0]">
+      <div className="bg-white rounded-[16px] overflow-hidden divide-y divide-[var(--color-bg-input)]">
         {children}
       </div>
     </div>
@@ -69,12 +69,12 @@ export function MenuItem({
       isRTL && "flex-row-reverse"
     )}>
       {/* Icon */}
-      <div className="w-[40px] h-[40px] rounded-[10px] bg-[#F5F5F7] flex items-center justify-center">
-        <Icon className="w-[20px] h-[20px] text-[#6B7280]" />
+      <div className="w-[40px] h-[40px] rounded-[10px] bg-[var(--color-gray-50)] flex items-center justify-center">
+        <Icon className="w-[20px] h-[20px] text-[var(--color-gray-500)]" />
       </div>
 
       {/* Label */}
-      <span className={cn("flex-1 text-[14px] font-medium text-[#1A1A1A]", isRTL && "text-right")}>
+      <span className={cn("flex-1 text-[14px] font-medium text-[var(--color-gray-900)]", isRTL && "text-right")}>
         {label}
       </span>
 
@@ -90,7 +90,7 @@ export function MenuItem({
 
       {/* Arrow */}
       <ChevronRight
-        className={cn("w-[18px] h-[18px] text-[#9CA3AF]", isRTL && "rotate-180")}
+        className={cn("w-[18px] h-[18px] text-[var(--color-gray-400)]", isRTL && "rotate-180")}
       />
     </div>
   );

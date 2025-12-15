@@ -8,6 +8,7 @@
  * - RTL/LTR direction setting
  * - Font loading
  * - Provider wrapping
+ * - PWA support (manifest, splash screens, service worker)
  */
 
 import type { Metadata, Viewport } from 'next';
@@ -15,6 +16,8 @@ import { headers, cookies } from 'next/headers';
 import { Inter, Cairo } from 'next/font/google';
 import { getTenantById, getDefaultTenant } from '@/config/tenants';
 import { Providers } from './providers';
+import { SplashScreen } from '@/components/splash-screen';
+import { ServiceWorkerRegistration } from '@/components/service-worker-registration';
 import './globals.css';
 
 // Load fonts
@@ -35,6 +38,7 @@ export async function generateMetadata(): Promise<Metadata> {
   const headersList = await headers();
   const tenantId = headersList.get('x-tenant-id') || 'store1';
   const tenant = getTenantById(tenantId) || getDefaultTenant();
+  const storeId = tenant.storeId;
 
   // Get locale from cookies
   const cookieStore = await cookies();
@@ -50,19 +54,44 @@ export async function generateMetadata(): Promise<Metadata> {
       default: `${name} - ${tagline}`,
     },
     description: tagline,
+    manifest: '/manifest.json',
+    appleWebApp: {
+      capable: true,
+      statusBarStyle: 'default',
+      title: name,
+    },
+    formatDetection: {
+      telephone: false,
+    },
     icons: {
-      icon: tenant.favicon,
+      icon: [
+        { url: `/tenants/store${storeId}/icons/icon-192x192.png`, sizes: '192x192', type: 'image/png' },
+        { url: `/tenants/store${storeId}/icons/icon-512x512.png`, sizes: '512x512', type: 'image/png' },
+      ],
+      apple: [
+        { url: `/tenants/store${storeId}/icons/icon-152x152.png`, sizes: '152x152', type: 'image/png' },
+      ],
+      other: [
+        { rel: 'mask-icon', url: tenant.logo, color: tenant.theme.primaryColor },
+      ],
     },
   };
 }
 
-// Viewport configuration
-export const viewport: Viewport = {
-  width: 'device-width',
-  initialScale: 1,
-  maximumScale: 1,
-  themeColor: '#FF6B6B', // Will be dynamic per tenant in the future
-};
+// Dynamic viewport configuration
+export async function generateViewport(): Promise<Viewport> {
+  const headersList = await headers();
+  const tenantId = headersList.get('x-tenant-id') || 'store1';
+  const tenant = getTenantById(tenantId) || getDefaultTenant();
+
+  return {
+    width: 'device-width',
+    initialScale: 1,
+    maximumScale: 5,
+    userScalable: true,
+    themeColor: tenant.theme.primaryColor,
+  };
+}
 
 export default async function RootLayout({
   children,
@@ -122,6 +151,8 @@ export default async function RootLayout({
     }
   `;
 
+  const storeId = tenant.storeId;
+
   return (
     <html
       lang={locale}
@@ -130,8 +161,37 @@ export default async function RootLayout({
     >
       <head>
         <style dangerouslySetInnerHTML={{ __html: themeStyles }} />
+
+        {/* Apple Splash Screens */}
+        <link
+          rel="apple-touch-startup-image"
+          media="screen and (device-width: 430px) and (device-height: 932px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)"
+          href={`/tenants/store${storeId}/splash/splash-1242x2688.png`}
+        />
+        <link
+          rel="apple-touch-startup-image"
+          media="screen and (device-width: 393px) and (device-height: 852px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)"
+          href={`/tenants/store${storeId}/splash/splash-1125x2436.png`}
+        />
+        <link
+          rel="apple-touch-startup-image"
+          media="screen and (device-width: 428px) and (device-height: 926px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)"
+          href={`/tenants/store${storeId}/splash/splash-1242x2688.png`}
+        />
+        <link
+          rel="apple-touch-startup-image"
+          media="screen and (device-width: 375px) and (device-height: 667px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)"
+          href={`/tenants/store${storeId}/splash/splash-750x1334.png`}
+        />
+        <link
+          rel="apple-touch-startup-image"
+          media="screen and (device-width: 414px) and (device-height: 896px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)"
+          href={`/tenants/store${storeId}/splash/splash-828x1792.png`}
+        />
       </head>
       <body className="min-h-screen bg-[var(--color-background)] text-[var(--color-text-primary)] antialiased">
+        <SplashScreen />
+        <ServiceWorkerRegistration />
         <Providers tenant={tenant} locale={locale}>
           {children}
         </Providers>

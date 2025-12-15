@@ -25,20 +25,20 @@ export const store1Config: TenantConfig = {
   logoLight: '/tenants/store1/logo-light.svg',
   favicon: '/tenants/store1/favicon.ico',
 
-  // Theme - Primary coral/salmon like Samokat
+  // Theme - Golden yellow matching logo
   theme: {
-    // Primary colors (Coral/Salmon)
-    primaryColor: '#FF6B6B',
-    primaryHover: '#FF5252',
-    primaryLight: '#FFE5E5',
+    // Primary colors (Golden Yellow)
+    primaryColor: '#f4b324',
+    primaryHover: '#d49a1e',
+    primaryLight: '#fef5e0',
 
-    // Secondary colors (Teal)
-    secondaryColor: '#4ECDC4',
-    secondaryHover: '#3DBDB5',
+    // Secondary colors (Dark Blue-Gray)
+    secondaryColor: '#2C3E50',
+    secondaryHover: '#1a252f',
 
-    // Accent colors (Orange)
-    accentColor: '#FF9F43',
-    accentHover: '#FF8C29',
+    // Accent colors (Orange - complementary to gold)
+    accentColor: '#FF6B35',
+    accentHover: '#E55A2B',
 
     // Background colors
     backgroundColor: '#F8F9FA',

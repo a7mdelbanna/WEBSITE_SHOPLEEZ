@@ -75,7 +75,7 @@ export function FloatingCart() {
           "relative flex items-center justify-center w-[48px] h-[48px] rounded-full transition-all duration-200",
           isHovered
             ? "bg-[var(--color-primary)] text-white scale-105"
-            : "bg-[#F5F5F7] text-[#1A1A1A] hover:bg-[#ECECEC]"
+            : "bg-[var(--color-bg-page)] text-[var(--color-text-primary)] hover:bg-[var(--color-gray-200)]"
         )}
         aria-label={t('common.cart')}
       >
@@ -98,17 +98,17 @@ export function FloatingCart() {
       {isHovered && totalQuantity > 0 && (
         <div
           className={cn(
-            "absolute top-full mt-[8px] w-[360px] bg-white rounded-[20px] shadow-[0_8px_40px_rgba(0,0,0,0.15)] border border-[#F0F0F0] overflow-hidden z-50 animate-in fade-in slide-in-from-top-2 duration-200",
+            "absolute top-full mt-[8px] w-[360px] bg-white rounded-[20px] shadow-[0_8px_40px_rgba(0,0,0,0.15)] border border-[var(--color-border-light)] overflow-hidden z-50 animate-in fade-in slide-in-from-top-2 duration-200",
             isRTL ? "left-0" : "right-0"
           )}
         >
           {/* Header */}
-          <div className="px-[20px] py-[16px] border-b border-[#F0F0F0]">
+          <div className="px-[20px] py-[16px] border-b border-[var(--color-border-light)]">
             <div className="flex items-center justify-between">
-              <h3 className="text-[16px] font-bold text-[#1A1A1A]">
+              <h3 className="text-[16px] font-bold text-[var(--color-text-primary)]">
                 {t('cart.title')}
               </h3>
-              <span className="text-[13px] text-[#9CA3AF]">
+              <span className="text-[13px] text-[var(--color-text-tertiary)]">
                 {totalQuantity} {isRTL ? 'منتج' : 'items'}
               </span>
             </div>
@@ -119,10 +119,10 @@ export function FloatingCart() {
             {displayItems.map((item, index) => (
               <div
                 key={`${item.itemId}-${item.selectedUnitId}-${item.selectedFlavorId}-${index}`}
-                className="flex items-center gap-[12px] px-[20px] py-[12px] border-b border-[#F5F5F5] last:border-0 hover:bg-[#FAFAFA] transition-colors"
+                className="flex items-center gap-[12px] px-[20px] py-[12px] border-b border-[var(--color-border-ultralight)] last:border-0 hover:bg-[var(--color-bg-page)] transition-colors"
               >
                 {/* Item Image */}
-                <div className="w-[56px] h-[56px] bg-[#F5F5F7] rounded-[12px] shrink-0 overflow-hidden relative">
+                <div className="w-[56px] h-[56px] bg-[var(--color-bg-page)] rounded-[12px] shrink-0 overflow-hidden relative">
                   {item.image ? (
                     <Image
                       src={item.image}
@@ -134,7 +134,7 @@ export function FloatingCart() {
                     />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center">
-                      <ShoppingCart className="w-[20px] h-[20px] text-[#D1D5DB]" />
+                      <ShoppingCart className="w-[20px] h-[20px] text-[var(--color-gray-300)]" />
                     </div>
                   )}
                 </div>
@@ -142,7 +142,7 @@ export function FloatingCart() {
                 {/* Item Details */}
                 <div className="flex-1 min-w-0">
                   <p className={cn(
-                    "text-[13px] font-medium text-[#1A1A1A] line-clamp-1",
+                    "text-[13px] font-medium text-[var(--color-text-primary)] line-clamp-1",
                     isRTL && "text-right"
                   )}>
                     {isRTL ? (item.nameAr || item.name) : item.name}
@@ -155,7 +155,7 @@ export function FloatingCart() {
                       {formatPrice(item.discountedUnitPrice || item.unitPrice, currency, locale)}
                     </span>
                     {item.discountedUnitPrice && item.discountedUnitPrice < item.unitPrice && (
-                      <span className="text-[11px] text-[#9CA3AF] line-through">
+                      <span className="text-[11px] text-[var(--color-text-tertiary)] line-through">
                         {formatPrice(item.unitPrice, currency, locale)}
                       </span>
                     )}
@@ -169,15 +169,15 @@ export function FloatingCart() {
                       e.preventDefault();
                       handleQuantityChange(item.itemId, item.selectedUnitId, item.selectedFlavorId, item.quantity - 1);
                     }}
-                    className="w-[28px] h-[28px] rounded-full bg-[#F5F5F7] flex items-center justify-center hover:bg-[#ECECEC] transition-colors"
+                    className="w-[28px] h-[28px] rounded-full bg-[var(--color-bg-page)] flex items-center justify-center hover:bg-[var(--color-gray-200)] transition-colors"
                   >
                     {item.quantity === 1 ? (
-                      <X className="w-[14px] h-[14px] text-[#EF4444]" />
+                      <X className="w-[14px] h-[14px] text-[var(--color-error)]" />
                     ) : (
-                      <Minus className="w-[14px] h-[14px] text-[#666]" />
+                      <Minus className="w-[14px] h-[14px] text-[var(--color-text-secondary)]" />
                     )}
                   </button>
-                  <span className="w-[24px] text-center text-[14px] font-semibold text-[#1A1A1A]">
+                  <span className="w-[24px] text-center text-[14px] font-semibold text-[var(--color-text-primary)]">
                     {item.quantity}
                   </span>
                   <button
@@ -196,7 +196,7 @@ export function FloatingCart() {
             {/* More items indicator */}
             {hasMoreItems && (
               <div className="px-[20px] py-[12px] text-center">
-                <span className="text-[13px] text-[#9CA3AF]">
+                <span className="text-[13px] text-[var(--color-text-tertiary)]">
                   +{cartItems.length - 4} {isRTL ? 'منتجات أخرى' : 'more items'}
                 </span>
               </div>
@@ -204,16 +204,16 @@ export function FloatingCart() {
           </div>
 
           {/* Footer with Total and CTA */}
-          <div className="px-[20px] py-[16px] bg-[#FAFAFA] border-t border-[#F0F0F0]">
+          <div className="px-[20px] py-[16px] bg-[var(--color-bg-page)] border-t border-[var(--color-border-light)]">
             {/* Subtotal */}
             <div className={cn(
               "flex items-center justify-between mb-[12px]",
               isRTL && "flex-row-reverse"
             )}>
-              <span className="text-[14px] text-[#666]">
+              <span className="text-[14px] text-[var(--color-text-secondary)]">
                 {t('cart.subtotal')}
               </span>
-              <span className="text-[18px] font-bold text-[#1A1A1A]">
+              <span className="text-[18px] font-bold text-[var(--color-text-primary)]">
                 {formatPrice(subtotal, currency, locale)}
               </span>
             </div>
@@ -225,7 +225,7 @@ export function FloatingCart() {
                 "flex items-center justify-center gap-[8px] w-full h-[48px] rounded-full text-white text-[15px] font-semibold transition-all hover:opacity-90 hover:scale-[1.02]",
                 isRTL && "flex-row-reverse"
               )}
-              style={{ background: 'linear-gradient(to right, #FF4B12, #FF6B3D)' }}
+              style={{ background: 'var(--gradient-primary)' }}
             >
               {t('cart.checkout')}
               <ChevronRight className={cn("w-[18px] h-[18px]", isRTL && "rotate-180")} />
@@ -238,18 +238,18 @@ export function FloatingCart() {
       {isHovered && totalQuantity === 0 && (
         <div
           className={cn(
-            "absolute top-full mt-[8px] w-[280px] bg-white rounded-[16px] shadow-[0_8px_40px_rgba(0,0,0,0.15)] border border-[#F0F0F0] overflow-hidden z-50 animate-in fade-in slide-in-from-top-2 duration-200",
+            "absolute top-full mt-[8px] w-[280px] bg-white rounded-[16px] shadow-[0_8px_40px_rgba(0,0,0,0.15)] border border-[var(--color-border-light)] overflow-hidden z-50 animate-in fade-in slide-in-from-top-2 duration-200",
             isRTL ? "left-0" : "right-0"
           )}
         >
           <div className="p-[24px] text-center">
-            <div className="w-[64px] h-[64px] mx-auto mb-[12px] bg-[#F5F5F7] rounded-full flex items-center justify-center">
-              <ShoppingCart className="w-[28px] h-[28px] text-[#D1D5DB]" />
+            <div className="w-[64px] h-[64px] mx-auto mb-[12px] bg-[var(--color-bg-page)] rounded-full flex items-center justify-center">
+              <ShoppingCart className="w-[28px] h-[28px] text-[var(--color-gray-300)]" />
             </div>
-            <p className="text-[15px] font-medium text-[#1A1A1A] mb-[4px]">
+            <p className="text-[15px] font-medium text-[var(--color-text-primary)] mb-[4px]">
               {t('cart.empty')}
             </p>
-            <p className="text-[13px] text-[#9CA3AF]">
+            <p className="text-[13px] text-[var(--color-text-tertiary)]">
               {t('cart.emptyMessage')}
             </p>
           </div>
