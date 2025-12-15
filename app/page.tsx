@@ -392,7 +392,7 @@ export default function HomePage() {
               sectionId="spotlight"
               title={t('home.spotlight')}
               products={spotlightProducts}
-              seeAllLink="/spotlight"
+              seeAllLink="/deals"
               onProductClick={handleProductClick}
               onAddToCart={handleAddToCart}
             />
