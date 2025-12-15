@@ -119,8 +119,9 @@ export function usePromotionDetail(promotionId: number, enabled = true) {
     queryKey: promotionQueryKeys.detail(storeId, promotionId),
     queryFn: async () => {
       const url = buildEndpoint(API_ENDPOINTS.promotions.getById);
+      // IMPORTANT: Flutter uses 'id' parameter, NOT 'promotionId'
       const { data } = await apiClient.get(url, {
-        params: { promotionId },
+        params: { id: promotionId },
       });
 
       const apiData = data.data || data;
