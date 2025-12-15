@@ -126,14 +126,18 @@ export function usePromotionDetail(promotionId: number, enabled = true) {
 
       const apiData = data.data || data;
 
+      // Extract image URL from nested image object
+      const imageObject = apiData.image as Record<string, unknown> | undefined;
+      const imageUrl = imageObject?.path as string || apiData.imageUrl as string || apiData.imagePath as string || '';
+
       // Normalize the response
       return {
         id: apiData.id as number,
-        title: (apiData.titleEN || apiData.title || '') as string,
-        titleAr: (apiData.titleAR || apiData.titleAr || '') as string,
-        description: (apiData.descriptionEN || apiData.description || '') as string | undefined,
+        title: (apiData.nameEn || apiData.nameEN || apiData.titleEN || apiData.title || '') as string,
+        titleAr: (apiData.nameAr || apiData.nameAR || apiData.titleAR || apiData.titleAr || '') as string,
+        description: (apiData.descriptionEN || apiData.descriptionEn || apiData.description || '') as string | undefined,
         descriptionAr: (apiData.descriptionAR || apiData.descriptionAr || '') as string | undefined,
-        imageUrl: (apiData.imageUrl || apiData.imagePath || '') as string | undefined,
+        imageUrl,
         fromDate: apiData.fromDate as string | undefined,
         toDate: apiData.toDate as string | undefined,
         items: (apiData.items || []).map((item: Record<string, unknown>) => normalizePromotionItem(item)),

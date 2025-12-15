@@ -10,6 +10,7 @@
 import { useState, useMemo, useCallback } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
+import Image from 'next/image';
 import { AppShell } from '@/components/layout';
 import { ProductCard, ProductGrid, ProductGridSkeleton } from '@/components/products/product-card';
 import { ProductDetailModal } from '@/components/products/product-detail-modal';
@@ -143,16 +144,38 @@ export default function PromotionDetailPage() {
           <span>{t('common.back')}</span>
         </button>
 
-        {/* Page title */}
+        {/* Promotion Banner Image - Hero Section */}
         {promotionLoading ? (
-          <div className="h-10 w-64 bg-gray-200 animate-pulse rounded mb-8" />
+          <>
+            <div className="w-full aspect-[16/7] max-h-[400px] bg-gray-200 animate-pulse rounded-[20px] mb-6" />
+            <div className="h-10 w-64 bg-gray-200 animate-pulse rounded mb-12" />
+          </>
         ) : (
-          <h1
-            className="text-[36px] font-bold text-[#1A1A1A] leading-[1.1]"
-            style={{ marginBottom: '32px' }}
-          >
-            {localize(promotion?.title || '', promotion?.titleAr || '')}
-          </h1>
+          promotion?.imageUrl && (
+            <div className="mb-12">
+              {/* Enhanced banner with shadow and responsive sizing */}
+              <div
+                className="w-full aspect-[16/7] max-h-[400px] rounded-[20px] overflow-hidden relative bg-gradient-to-br from-[#FEF5E0] to-[#F5F5F7] shadow-[0_4px_24px_rgba(0,0,0,0.08)] transition-transform duration-300 hover:shadow-[0_8px_32px_rgba(0,0,0,0.12)] mb-6"
+              >
+                <Image
+                  src={promotion.imageUrl}
+                  alt={localize(promotion.title || '', promotion.titleAr || '')}
+                  fill
+                  className="object-cover"
+                  unoptimized
+                  priority
+                  sizes="(max-width: 768px) 100vw, (max-width: 1200px) 80vw, 1200px"
+                />
+              </div>
+
+              {/* Title below banner */}
+              <h1
+                className="text-[36px] font-bold text-[#1A1A1A] leading-[1.1]"
+              >
+                {localize(promotion?.title || '', promotion?.titleAr || '')} 🔥
+              </h1>
+            </div>
+          )
         )}
 
         {/* Products Grid */}
