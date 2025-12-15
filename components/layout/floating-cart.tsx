@@ -74,12 +74,18 @@ export function FloatingCart() {
         className={cn(
           "relative flex items-center justify-center w-[48px] h-[48px] rounded-full transition-all duration-200",
           isHovered
-            ? "bg-[var(--color-primary)] text-white scale-105"
-            : "bg-[var(--color-bg-page)] text-[var(--color-text-primary)] hover:bg-[var(--color-gray-200)]"
+            ? "bg-[var(--color-primary)] scale-105"
+            : "bg-[var(--color-bg-page)] hover:bg-[var(--color-gray-200)]"
         )}
         aria-label={t('common.cart')}
       >
-        <ShoppingCart className="h-[20px] w-[20px]" strokeWidth={2} />
+        <ShoppingCart
+          className={cn(
+            "h-[20px] w-[20px] transition-colors",
+            isHovered ? "text-white" : "text-[var(--color-text-primary)]"
+          )}
+          strokeWidth={2}
+        />
         {totalQuantity > 0 && (
           <span
             className={cn(
@@ -222,13 +228,13 @@ export function FloatingCart() {
             <Link
               href="/cart"
               className={cn(
-                "flex items-center justify-center gap-[8px] w-full h-[48px] rounded-full text-white text-[15px] font-semibold transition-all hover:opacity-90 hover:scale-[1.02]",
+                "flex items-center justify-center gap-[8px] w-full h-[48px] rounded-full text-[15px] font-semibold transition-all hover:opacity-90 hover:scale-[1.02]",
                 isRTL && "flex-row-reverse"
               )}
-              style={{ background: 'var(--gradient-primary)' }}
+              style={{ background: 'var(--gradient-primary)', color: 'white' }}
             >
               {t('cart.checkout')}
-              <ChevronRight className={cn("w-[18px] h-[18px]", isRTL && "rotate-180")} />
+              <ChevronRight className={cn("w-[18px] h-[18px] text-white", isRTL && "rotate-180")} />
             </Link>
           </div>
         </div>

@@ -25,6 +25,7 @@ import { toast } from '@/lib/stores/toast-store';
 import { formatPrice } from '@/lib/utils/format';
 import { cn } from '@/lib/utils';
 import { FloatingCart } from './floating-cart';
+import { ProductPlaceholder } from '../products/product-placeholder';
 import type { ProductSummary } from '@/types/product';
 
 interface HeaderProps {
@@ -293,13 +294,18 @@ export function Header({ onMenuClick }: HeaderProps) {
             </button>
 
             {/* Logo */}
-            <Link href="/" className="flex items-center gap-[10px]">
-              <div className="w-[40px] h-[40px] rounded-full bg-[var(--color-brand)] flex items-center justify-center flex-shrink-0">
-                <div className="w-[20px] h-[20px] rounded-full border-[3px] border-white" />
+            <Link href="/" className="flex items-center">
+              <div className="w-[48px] h-[48px] relative flex-shrink-0">
+                <Image
+                  src={`/tenants/store${process.env.NEXT_PUBLIC_STORE_ID || '1'}/logo.png`}
+                  alt={storeName}
+                  fill
+                  className="object-contain"
+                  sizes="48px"
+                  unoptimized
+                  priority
+                />
               </div>
-              <span className="hidden text-[22px] font-bold text-[var(--color-brand)] lg:block tracking-[-0.02em] leading-none">
-                {storeName}
-              </span>
             </Link>
           </div>
 
@@ -324,19 +330,19 @@ export function Header({ onMenuClick }: HeaderProps) {
             </div>
           </form>
 
-          {/* Right: Language + Login + Chat */}
+          {/* Right: Chat + Cart + Login + Language */}
           <div className="flex items-center gap-[10px] shrink-0">
-            {/* Language Toggle */}
-            <button
-              onClick={toggleLocale}
-              className="flex h-[44px] items-center gap-[6px] rounded-full bg-[var(--color-bg-input)] px-[16px] text-[var(--color-gray-900)] transition-colors hover:bg-[var(--color-gray-200)]"
-              title={locale === 'ar' ? 'Switch to English' : 'التبديل للعربية'}
+            {/* Chat Support */}
+            <Link
+              href="/profile/chatbot"
+              className="flex items-center justify-center w-[48px] h-[48px] bg-[var(--color-bg-input)] rounded-full transition-colors hover:bg-[var(--color-gray-200)]"
+              aria-label={t('common.supportChat')}
             >
-              <Globe className="h-[18px] w-[18px]" strokeWidth={2} />
-              <span className="text-[14px] font-medium leading-none">
-                {locale === 'ar' ? 'EN' : 'عربي'}
-              </span>
-            </button>
+              <MessageCircle className="h-[20px] w-[20px] text-[var(--color-gray-900)]" strokeWidth={2} />
+            </Link>
+
+            {/* Floating Cart with Hover Preview */}
+            <FloatingCart />
 
             {/* Login/User Button */}
             {isAuthenticated ? (
@@ -348,7 +354,7 @@ export function Header({ onMenuClick }: HeaderProps) {
                 >
                   <div
                     className="w-[28px] h-[28px] rounded-full flex items-center justify-center text-white text-[12px] font-bold"
-                    style={{ backgroundColor: 'var(--color-primary)' }}
+                    style={{ backgroundColor: 'var(--color-primary)', color: 'white' }}
                   >
                     {user?.fullName?.charAt(0)?.toUpperCase() || <User className="h-[16px] w-[16px]" />}
                   </div>
@@ -377,17 +383,17 @@ export function Header({ onMenuClick }: HeaderProps) {
               </button>
             )}
 
-            {/* Floating Cart with Hover Preview */}
-            <FloatingCart />
-
-            {/* Chat Support */}
-            <Link
-              href="/profile/chatbot"
-              className="flex items-center justify-center w-[48px] h-[48px] bg-[var(--color-bg-input)] rounded-full transition-colors hover:bg-[var(--color-gray-200)]"
-              aria-label={t('common.supportChat')}
+            {/* Language Toggle */}
+            <button
+              onClick={toggleLocale}
+              className="flex h-[44px] items-center gap-[6px] rounded-full bg-[var(--color-bg-input)] px-[16px] text-[var(--color-gray-900)] transition-colors hover:bg-[var(--color-gray-200)]"
+              title={locale === 'ar' ? 'Switch to English' : 'التبديل للعربية'}
             >
-              <MessageCircle className="h-[20px] w-[20px] text-[var(--color-gray-900)]" strokeWidth={2} />
-            </Link>
+              <Globe className="h-[18px] w-[18px]" strokeWidth={2} />
+              <span className="text-[14px] font-medium leading-none">
+                {locale === 'ar' ? 'EN' : 'عربي'}
+              </span>
+            </button>
           </div>
         </div>
 
@@ -489,9 +495,7 @@ function SearchResultItem({
             unoptimized
           />
         ) : (
-          <div className="w-full h-full flex items-center justify-center">
-            <ShoppingCart className="w-[24px] h-[24px] text-[var(--color-gray-300)]" />
-          </div>
+          <ProductPlaceholder className="rounded-[12px]" logoSize="sm" />
         )}
       </div>
 
@@ -513,7 +517,7 @@ function SearchResultItem({
           </span>
         ) : cartQuantity > 0 ? (
           /* Quantity Stepper */
-          <div className="flex items-center rounded-full overflow-hidden" style={{ backgroundColor: 'var(--color-primary)' }}>
+          <div className="flex items-center rounded-full overflow-hidden" style={{ backgroundColor: 'var(--color-primary)', color: 'white' }}>
             <button
               onClick={handleDecrement}
               className="w-[36px] h-[36px] flex items-center justify-center text-white hover:bg-black/10 transition-colors"
@@ -543,7 +547,7 @@ function SearchResultItem({
           <button
             onClick={handleIncrement}
             className="w-[36px] h-[36px] flex items-center justify-center rounded-full text-white transition-colors"
-            style={{ backgroundColor: 'var(--color-primary)' }}
+            style={{ backgroundColor: 'var(--color-primary)', color: 'white' }}
           >
             <Plus className="w-[18px] h-[18px]" />
           </button>

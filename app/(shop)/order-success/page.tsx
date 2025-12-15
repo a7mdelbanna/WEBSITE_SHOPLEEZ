@@ -129,7 +129,7 @@ export default function OrderSuccessPage() {
               <Link
                 href={`/orders/${orderId}`}
                 className="flex items-center justify-center gap-2 w-full h-[52px] rounded-full text-white text-[16px] font-semibold transition-opacity hover:opacity-90"
-                style={{ backgroundColor: 'var(--color-primary)' }}
+                style={{ backgroundColor: 'var(--color-primary)', color: 'white' }}
               >
                 <Package className="w-5 h-5" />
                 {isRTL ? 'تتبع الطلب' : 'Track Order'}

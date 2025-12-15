@@ -199,7 +199,7 @@ export default function OrderDetailsPage() {
             <Link
               href="/orders"
               className="mt-4 px-6 py-3 rounded-full text-white font-medium"
-              style={{ backgroundColor: 'var(--color-primary)' }}
+              style={{ backgroundColor: 'var(--color-primary)', color: 'white' }}
             >
               {isRTL ? 'العودة للطلبات' : 'Back to Orders'}
             </Link>
@@ -418,7 +418,7 @@ export default function OrderDetailsPage() {
                     onClick={handleSubmitTip}
                     disabled={leaveTip.isPending}
                     className="w-full h-[48px] rounded-full text-white font-medium disabled:opacity-50"
-                    style={{ backgroundColor: 'var(--color-primary)' }}
+                    style={{ backgroundColor: 'var(--color-primary)', color: 'white' }}
                   >
                     {leaveTip.isPending ? (
                       <Loader2 className="w-5 h-5 animate-spin mx-auto" />
@@ -473,7 +473,7 @@ export default function OrderDetailsPage() {
                       onClick={handleSubmitRating}
                       disabled={rateOrder.isPending}
                       className="w-full h-[48px] rounded-full text-white font-medium disabled:opacity-50"
-                      style={{ backgroundColor: 'var(--color-primary)' }}
+                      style={{ backgroundColor: 'var(--color-primary)', color: 'white' }}
                     >
                       {rateOrder.isPending ? (
                         <Loader2 className="w-5 h-5 animate-spin mx-auto" />

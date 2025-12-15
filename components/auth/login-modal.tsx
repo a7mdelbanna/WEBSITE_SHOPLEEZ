@@ -719,7 +719,7 @@ export function LoginModal() {
                   "w-full h-[52px] rounded-full text-white text-[16px] font-semibold",
                   "disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                 )}
-                style={{ backgroundColor: 'var(--color-primary)' }}
+                style={{ backgroundColor: 'var(--color-primary)', color: 'white' }}
               >
                 {isLoading ? <Loader2 className="h-5 w-5 animate-spin" /> : t('common.next')}
               </button>
@@ -757,7 +757,7 @@ export function LoginModal() {
                 )}
               </div>
               {error && <p className="text-[13px] text-center" style={{ color: 'var(--color-error)' }}>{error}</p>}
-              <button type="submit" disabled={isLoading || otp.length < 4} className="w-full h-[52px] rounded-full text-white text-[16px] font-semibold disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2" style={{ backgroundColor: 'var(--color-primary)' }}>
+              <button type="submit" disabled={isLoading || otp.length < 4} className="w-full h-[52px] rounded-full text-white text-[16px] font-semibold disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2" style={{ backgroundColor: 'var(--color-primary)', color: 'white' }}>
                 {isLoading ? <Loader2 className="h-5 w-5 animate-spin" /> : t('auth.verifyOtp')}
               </button>
             </form>
@@ -788,7 +788,7 @@ export function LoginModal() {
                 </div>
               </div>
               {error && <p className="text-[13px] text-center" style={{ color: 'var(--color-error)' }}>{error}</p>}
-              <button type="submit" disabled={isLoading || !password} className="w-full h-[52px] rounded-full text-white text-[16px] font-semibold disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2" style={{ backgroundColor: 'var(--color-primary)' }}>
+              <button type="submit" disabled={isLoading || !password} className="w-full h-[52px] rounded-full text-white text-[16px] font-semibold disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2" style={{ backgroundColor: 'var(--color-primary)', color: 'white' }}>
                 {isLoading ? <Loader2 className="h-5 w-5 animate-spin" /> : (isRTL ? 'تأكيد' : 'Submit')}
               </button>
             </form>
@@ -816,7 +816,7 @@ export function LoginModal() {
                 {confirmPassword && password !== confirmPassword && <p className="text-[12px] mt-1" style={{ color: 'var(--color-error)' }}>{isRTL ? 'كلمات المرور غير متطابقة' : 'Passwords do not match'}</p>}
               </div>
               {error && <p className="text-[13px] text-center" style={{ color: 'var(--color-error)' }}>{error}</p>}
-              <button type="submit" disabled={!password || password.length < 8 || password !== confirmPassword} className="w-full h-[52px] rounded-full text-white text-[16px] font-semibold disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2" style={{ backgroundColor: 'var(--color-primary)' }}>{t('common.next')}</button>
+              <button type="submit" disabled={!password || password.length < 8 || password !== confirmPassword} className="w-full h-[52px] rounded-full text-white text-[16px] font-semibold disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2" style={{ backgroundColor: 'var(--color-primary)', color: 'white' }}>{t('common.next')}</button>
             </form>
           )}
 
@@ -838,7 +838,7 @@ export function LoginModal() {
                 </div>
               </div>
               {error && <p className="text-[13px] text-center" style={{ color: 'var(--color-error)' }}>{error}</p>}
-              <button type="submit" disabled={isLoading || !firstName.trim() || !lastName.trim()} className="w-full h-[52px] rounded-full text-white text-[16px] font-semibold disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2" style={{ backgroundColor: 'var(--color-primary)' }}>
+              <button type="submit" disabled={isLoading || !firstName.trim() || !lastName.trim()} className="w-full h-[52px] rounded-full text-white text-[16px] font-semibold disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2" style={{ backgroundColor: 'var(--color-primary)', color: 'white' }}>
                 {isLoading ? <Loader2 className="h-5 w-5 animate-spin" /> : t('common.next')}
               </button>
             </form>
@@ -1074,7 +1074,7 @@ export function LoginModal() {
                 type="submit"
                 disabled={isLoading || !isAddressFormValid()}
                 className="w-full h-[52px] rounded-full text-white text-[16px] font-semibold disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-                style={{ backgroundColor: 'var(--color-primary)' }}
+                style={{ backgroundColor: 'var(--color-primary)', color: 'white' }}
               >
                 {isLoading ? <Loader2 className="h-5 w-5 animate-spin" /> : (isRTL ? 'حفظ العنوان' : 'Save Address')}
               </button>
@@ -1111,7 +1111,7 @@ export function LoginModal() {
                       onClick={handleGetLocation}
                       disabled={isLocating}
                       className="px-6 py-3 rounded-full text-white text-[14px] font-medium flex items-center gap-2"
-                      style={{ backgroundColor: 'var(--color-primary)' }}
+                      style={{ backgroundColor: 'var(--color-primary)', color: 'white' }}
                     >
                       {isLocating ? (
                         <Loader2 className="h-5 w-5 animate-spin" />
@@ -1130,7 +1130,7 @@ export function LoginModal() {
                 type="submit"
                 disabled={isLoading || !userLocation}
                 className="w-full h-[52px] rounded-full text-white text-[16px] font-semibold disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-                style={{ backgroundColor: 'var(--color-primary)' }}
+                style={{ backgroundColor: 'var(--color-primary)', color: 'white' }}
               >
                 {isLoading ? <Loader2 className="h-5 w-5 animate-spin" /> : (isRTL ? 'تأكيد الموقع' : 'Confirm Location')}
               </button>
@@ -1152,7 +1152,7 @@ export function LoginModal() {
           {/* Success Step */}
           {step === 'success' && (
             <div className="flex flex-col items-center justify-center py-8">
-              <div className="w-16 h-16 rounded-full flex items-center justify-center mb-4" style={{ backgroundColor: 'var(--color-primary)' }}>
+              <div className="w-16 h-16 rounded-full flex items-center justify-center mb-4" style={{ backgroundColor: 'var(--color-primary)', color: 'white' }}>
                 <CheckCircle2 className="h-8 w-8 text-white" />
               </div>
               <p className="text-[18px] font-semibold" style={{ color: 'var(--color-text-primary)' }}>

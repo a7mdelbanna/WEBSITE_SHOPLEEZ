@@ -177,8 +177,8 @@ export default function CartPage() {
             </p>
             <Link
               href="/"
-              className="px-6 py-3 rounded-full text-white font-medium"
-              style={{ backgroundColor: 'var(--color-primary)' }}
+              className="px-6 py-3 rounded-full font-medium"
+              style={{ backgroundColor: 'var(--color-primary)', color: 'white' }}
             >
               {isRTL ? 'تصفح المنتجات' : 'Browse Products'}
             </Link>
@@ -386,8 +386,8 @@ export default function CartPage() {
                 {/* Checkout Button */}
                 <button
                   onClick={handleCheckout}
-                  className="w-full h-[52px] rounded-full text-white text-[16px] font-semibold flex items-center justify-center gap-2 transition-opacity hover:opacity-90"
-                  style={{ backgroundColor: 'var(--color-primary)' }}
+                  className="w-full h-[52px] rounded-full text-[16px] font-semibold flex items-center justify-center gap-2 transition-opacity hover:opacity-90"
+                  style={{ backgroundColor: 'var(--color-primary)', color: 'white' }}
                 >
                   {isRTL ? 'متابعة الدفع' : 'Proceed to Checkout'}
                 </button>

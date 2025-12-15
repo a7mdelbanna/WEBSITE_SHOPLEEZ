@@ -61,22 +61,30 @@ export function ProductPlaceholder({
         background: 'linear-gradient(135deg, var(--color-primary-light) 0%, var(--color-bg-page) 100%)'
       }}
     >
-      {/* Decorative pattern - subtle dots */}
+      {/* Decorative pattern - visible dots */}
       <div
-        className="absolute inset-0 opacity-[0.03]"
+        className="absolute inset-0 opacity-[0.08]"
         style={{
-          backgroundImage: 'radial-gradient(var(--color-primary) 1px, transparent 1px)',
-          backgroundSize: '20px 20px'
+          backgroundImage: 'radial-gradient(circle, var(--color-primary) 1.5px, transparent 1.5px)',
+          backgroundSize: '24px 24px'
         }}
       />
 
-      {/* Store logo */}
-      <div className={`relative ${logoSizes[logoSize]} opacity-40 grayscale`}>
+      {/* Radial gradient overlay for depth */}
+      <div
+        className="absolute inset-0 opacity-50"
+        style={{
+          background: 'radial-gradient(circle at center, transparent 40%, var(--color-primary-light) 100%)'
+        }}
+      />
+
+      {/* Store logo - visible and branded */}
+      <div className={`relative ${logoSizes[logoSize]} opacity-75 transition-transform duration-300 hover:scale-105`}>
         <Image
           src={logoPath}
           alt={tenant.name}
           fill
-          className="object-contain"
+          className="object-contain drop-shadow-lg"
           sizes="200px"
           unoptimized
         />

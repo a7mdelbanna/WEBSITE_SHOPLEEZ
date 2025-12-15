@@ -36,6 +36,7 @@ export default function CategoryPage({ params }: CategoryPageProps) {
   const { id } = use(params);
   const categoryId = parseInt(id) || 0;
   const { t, isRTL, localize } = useTranslations();
+  const { isAuthenticated } = useAuth();
 
   // Filter state
   const [selectedFilterId, setSelectedFilterId] = useState<number | null>(null);
@@ -290,10 +291,12 @@ export default function CategoryPage({ params }: CategoryPageProps) {
           </section>
         </div>
 
-        {/* Right sidebar - Location widget (desktop only) */}
-        <aside className="hidden xl:block w-[320px] shrink-0 p-4 lg:p-6">
-          <LocationWidget isRTL={isRTL} t={t} />
-        </aside>
+        {/* Right sidebar - Location widget (desktop only, hidden when authenticated) */}
+        {!isAuthenticated && (
+          <aside className="hidden xl:block w-[320px] shrink-0 p-4 lg:p-6">
+            <LocationWidget isRTL={isRTL} t={t} />
+          </aside>
+        )}
       </div>
 
       {/* Product Detail Modal */}
@@ -309,25 +312,33 @@ export default function CategoryPage({ params }: CategoryPageProps) {
 
 /**
  * Location Widget - Samokat style
- * Requires authentication for location confirmation
+ * Only shown to non-authenticated users
+ * Clicking buttons opens login modal
  */
 function LocationWidget({ isRTL, t }: { isRTL: boolean; t: (key: string) => string }) {
-  const { requireAuth } = useAuth();
+  const { isAuthenticated, openLoginModal } = useAuth();
+
+  console.log('[LocationWidget] isAuthenticated:', isAuthenticated);
+  console.log('[LocationWidget] openLoginModal:', typeof openLoginModal);
+
+  // Don't show widget if user is already logged in
+  if (isAuthenticated) {
+    console.log('[LocationWidget] User is authenticated, hiding widget');
+    return null;
+  }
 
   const handleYesClick = () => {
-    // Require auth before confirming location
-    requireAuth(() => {
-      // TODO: Confirm location logic
-      console.log('Location confirmed');
-    });
+    console.log('[LocationWidget] Yes button clicked');
+    console.log('[LocationWidget] Calling openLoginModal...');
+    // Open login modal - user needs to sign in to confirm location
+    openLoginModal();
   };
 
   const handleNoClick = () => {
-    // Require auth before changing location
-    requireAuth(() => {
-      // TODO: Open location selector
-      console.log('Change location');
-    });
+    console.log('[LocationWidget] No button clicked');
+    console.log('[LocationWidget] Calling openLoginModal...');
+    // Open login modal - user needs to sign in to change location
+    openLoginModal();
   };
 
   return (
@@ -335,7 +346,7 @@ function LocationWidget({ isRTL, t }: { isRTL: boolean; t: (key: string) => stri
       <div className="flex items-start gap-3 mb-4">
         <div
           className="w-10 h-10 rounded-full flex items-center justify-center shrink-0"
-          style={{ backgroundColor: 'var(--color-primary)' }}
+          style={{ backgroundColor: 'var(--color-primary)', color: 'white' }}
         >
           <MapPin className="w-5 h-5 text-white" />
         </div>
@@ -356,7 +367,7 @@ function LocationWidget({ isRTL, t }: { isRTL: boolean; t: (key: string) => stri
         <button
           onClick={handleYesClick}
           className="flex-1 h-10 rounded-full text-white text-sm font-medium transition-colors hover:opacity-90"
-          style={{ backgroundColor: 'var(--color-primary)' }}
+          style={{ backgroundColor: 'var(--color-primary)', color: 'white' }}
         >
           {t('location.yesCorrect')}
         </button>

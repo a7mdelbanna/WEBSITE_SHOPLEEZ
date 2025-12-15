@@ -229,7 +229,7 @@ export function SearchResultsContent() {
           <Link
             href="/"
             className="px-6 py-3 rounded-full text-white font-medium"
-            style={{ backgroundColor: 'var(--color-primary)' }}
+            style={{ backgroundColor: 'var(--color-primary)', color: 'white' }}
           >
             {isRTL ? 'العودة للرئيسية' : 'Back to Home'}
           </Link>

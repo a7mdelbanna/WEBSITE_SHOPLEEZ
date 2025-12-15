@@ -28,6 +28,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { useTranslations } from '@/lib/hooks/use-translations';
 import { useTenant } from '@/lib/hooks/use-tenant';
+import { useAuth } from '@/lib/contexts/auth-context';
 import { useHomePage, useSpecialOffers, useSpotlightItems } from '@/lib/services';
 // LOCAL-FIRST: Cart operations handled by ProductSection via local cart store
 // No API calls here - only toast notifications
@@ -39,6 +40,7 @@ import type { ProductSummary } from '@/types/product';
 export default function HomePage() {
   const { t, isRTL, localize } = useTranslations();
   const { isOpen, selectedProduct, openModal, closeModal } = useProductDetailModal();
+  const { isAuthenticated } = useAuth();
 
   // Fetch home page data from API
   const { data: homeData, isLoading: isLoadingHome } = useHomePage();
@@ -354,10 +356,12 @@ export default function HomePage() {
           )}
         </div>
 
-        {/* Right sidebar - Location widget (desktop only) */}
-        <aside className="hidden xl:block w-[320px] shrink-0">
-          <LocationWidget />
-        </aside>
+        {/* Right sidebar - Location widget (desktop only, hidden when authenticated) */}
+        {!isAuthenticated && (
+          <aside className="hidden xl:block w-[320px] shrink-0">
+            <LocationWidget />
+          </aside>
+        )}
       </div>
     </AppShell>
   );
@@ -365,14 +369,31 @@ export default function HomePage() {
 
 /**
  * Location Widget - City confirmation with map
+ * Only shown to non-authenticated users
  */
 function LocationWidget() {
   const { t, isRTL } = useTranslations();
   const { tenant } = useTenant();
+  const { isAuthenticated, openLoginModal } = useAuth();
+
+  // Don't show widget if user is already logged in
+  if (isAuthenticated) {
+    return null;
+  }
 
   // Get city name based on tenant config (could be from user location in future)
   const cityName = tenant.defaultCity || 'Cairo';
   const cityNameAr = tenant.defaultCityAr || 'القاهرة';
+
+  const handleYesClick = () => {
+    // Open login modal - user needs to sign in to confirm location
+    openLoginModal();
+  };
+
+  const handleNoClick = () => {
+    // Open login modal - user needs to sign in to change location
+    openLoginModal();
+  };
 
   return (
     <div className="sticky top-[76px] bg-white rounded-[20px] overflow-hidden">
@@ -388,10 +409,17 @@ function LocationWidget() {
 
       {/* Buttons */}
       <div className={cn("flex gap-[8px] px-[20px] pb-[16px]", isRTL && "flex-row-reverse")}>
-        <button className="flex-1 h-[40px] rounded-full bg-[var(--color-primary)] text-white text-[14px] font-medium hover:bg-[var(--color-primary-hover)] transition-colors">
+        <button
+          onClick={handleYesClick}
+          className="flex-1 h-[40px] rounded-full text-white text-[14px] font-medium transition-colors hover:opacity-90"
+          style={{ backgroundColor: 'var(--color-primary)', color: 'white' }}
+        >
           {t('location.yesCorrect')}
         </button>
-        <button className="flex-1 h-[40px] rounded-full border border-[var(--color-border)] bg-white text-[var(--color-text-primary)] text-[14px] font-medium hover:bg-[var(--color-bg-page)] transition-colors">
+        <button
+          onClick={handleNoClick}
+          className="flex-1 h-[40px] rounded-full border border-[var(--color-border)] bg-white text-[var(--color-text-primary)] text-[14px] font-medium hover:bg-[var(--color-bg-page)] transition-colors"
+        >
           {t('location.noDifferent')}
         </button>
       </div>

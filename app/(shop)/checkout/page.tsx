@@ -708,7 +708,7 @@ export default function CheckoutPage() {
                 onClick={handlePlaceOrder}
                 disabled={isSubmitting || !selectedAddressId}
                 className="w-full h-[52px] rounded-full text-white text-[16px] font-semibold flex items-center justify-center gap-2 transition-opacity hover:opacity-90 disabled:opacity-50"
-                style={{ backgroundColor: 'var(--color-primary)' }}
+                style={{ backgroundColor: 'var(--color-primary)', color: 'white' }}
               >
                 {isSubmitting ? (
                   <>
