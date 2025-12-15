@@ -28,6 +28,7 @@ import { useProductById, useRelatedProducts } from '@/lib/services/products';
 import { useCartStore, useLocalCartItems } from '@/lib/stores/cart-store';
 import { getCartItemKey } from '@/lib/services/cart';
 import { toast } from '@/lib/stores/toast-store';
+import { ProductPlaceholder } from './product-placeholder';
 
 /**
  * Unit info for modal display
@@ -587,19 +588,34 @@ export function ProductDetailModal({
                   {/* Product image */}
                   <div className="relative aspect-square p-[32px]">
                     {currentImage ? (
-                      <Image
-                        src={currentImage}
-                        alt={getName()}
-                        fill
-                        className="object-contain"
-                        sizes="450px"
-                        priority
-                        unoptimized
-                      />
+                      <>
+                        <Image
+                          src={currentImage}
+                          alt={getName()}
+                          fill
+                          className="object-contain"
+                          sizes="450px"
+                          priority
+                          unoptimized
+                        />
+                        {/* Out of Stock Overlay - Minimal pill badge in corner */}
+                        {(isOutOfStock || isUnavailable) && (
+                          <div className="absolute inset-0 bg-black/50 pointer-events-none">
+                            <div className={cn(
+                              "absolute top-[20px]",
+                              isRTL ? "right-[20px]" : "left-[20px]"
+                            )}>
+                              <div className="bg-white/90 backdrop-blur-sm rounded-full px-[16px] py-[6px] shadow-lg">
+                                <span className="text-[11px] font-bold tracking-wide uppercase text-[var(--color-gray-700)]">
+                                  {isRTL ? 'غير متوفر' : 'Out of Stock'}
+                                </span>
+                              </div>
+                            </div>
+                          </div>
+                        )}
+                      </>
                     ) : (
-                      <div className="w-full h-full flex items-center justify-center rounded-[16px]" style={{ backgroundColor: 'var(--color-bg-input)' }}>
-                        <span style={{ color: 'var(--color-text-muted)' }}>{t('common.noImage')}</span>
-                      </div>
+                      <ProductPlaceholder className="rounded-[16px]" logoSize="lg" />
                     )}
                   </div>
 
@@ -716,9 +732,7 @@ export function ProductDetailModal({
                                   unoptimized
                                 />
                               ) : (
-                                <div className="w-full h-full flex items-center justify-center">
-                                  <span className="text-[12px]" style={{ color: 'var(--color-gray-300)' }}>{t('common.noImage')}</span>
-                                </div>
+                                <ProductPlaceholder className="rounded-t-[16px]" logoSize="sm" />
                               )}
                               {related.badge && (
                                 <div className={cn(

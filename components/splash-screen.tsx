@@ -48,12 +48,12 @@ export function SplashScreen({ duration = 2000 }: SplashScreenProps) {
         opacity: isLoaded ? 1 : 0,
       }}
     >
-      {/* Preloader/Logo */}
+      {/* Preloader/Logo - Minimal design without store name */}
       <div className="flex flex-col items-center gap-8">
         <div className="relative h-32 w-32 animate-pulse">
           <Image
             src={`/tenants/store${storeId}/preloader.png`}
-            alt={config.name}
+            alt="Loading"
             fill
             priority
             className="object-contain"
@@ -64,11 +64,6 @@ export function SplashScreen({ duration = 2000 }: SplashScreenProps) {
             }}
           />
         </div>
-
-        {/* Store Name */}
-        <h1 className="text-4xl font-bold text-white">
-          {config.name}
-        </h1>
 
         {/* Loading indicator */}
         <div className="flex gap-2">

@@ -27,6 +27,7 @@ import { useTranslations } from '@/lib/hooks/use-translations';
 import { useAuth } from '@/lib/contexts/auth-context';
 import { cn } from '@/lib/utils';
 import { formatPrice } from '@/lib/utils/format';
+import { ProductPlaceholder } from './product-placeholder';
 import type { UnitInfo } from '@/types/product';
 
 interface ProductCardProps {
@@ -204,17 +205,38 @@ export function ProductCard({
     >
       {/* Image container - gray background, fully rounded corners */}
       <div className="relative aspect-square overflow-hidden bg-[var(--color-bg-page)] rounded-[16px] m-[6px] mb-0">
-        <Image
-          src={currentImage}
-          alt={displayName}
-          fill
-          className="object-cover"
-          sizes="(max-width: 768px) 50vw, 25vw"
-          unoptimized
-        />
+        {currentImage ? (
+          <Image
+            src={currentImage}
+            alt={displayName}
+            fill
+            className="object-cover"
+            sizes="(max-width: 768px) 50vw, 25vw"
+            unoptimized
+          />
+        ) : (
+          <ProductPlaceholder className="rounded-[16px]" logoSize="md" />
+        )}
 
-        {/* Discount Badge - DARK background (Samokat style) */}
-        {badge && (
+        {/* Out of Stock Overlay - Minimal design with tiny pill badge */}
+        {isOutOfStock && (
+          <div className="absolute inset-0 bg-black/60 pointer-events-none">
+            {/* Tiny pill badge in corner - minimal and elegant */}
+            <div className={cn(
+              "absolute top-[10px]",
+              isRTL ? "right-[10px]" : "left-[10px]"
+            )}>
+              <div className="bg-white/90 backdrop-blur-sm rounded-full px-[10px] py-[4px] shadow-md">
+                <span className="text-[9px] font-bold tracking-wide uppercase text-[var(--color-gray-700)]">
+                  {isRTL ? 'غير متوفر' : 'Out of Stock'}
+                </span>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Discount Badge - DARK background (Samokat style) - Only show if in stock */}
+        {badge && !isOutOfStock && (
           <div
             className={cn(
               'absolute bottom-[12px]',
@@ -294,24 +316,40 @@ export function ProductCard({
         {/* Price Button / Quantity Stepper / Notify Me */}
         <div className="mt-auto">
           {isOutOfStock ? (
-            /* Notify Me Button - shown when out of stock */
+            /* Notify Me Button - Icon only, text on hover for cleaner look */
             <button
               onClick={handleNotifyMe}
               className={cn(
-                'inline-flex items-center justify-center gap-[4px]',
-                'h-[32px] px-[12px] rounded-full',
-                'bg-[#FFF3E0] hover:bg-[#FFE0B2]',
-                'transition-colors duration-200',
-                'text-[var(--color-primary)] font-medium text-[12px]',
-                'whitespace-nowrap'
+                'group relative inline-flex items-center justify-center gap-[6px]',
+                'h-[36px] px-[12px] rounded-full',
+                'bg-white border-2 border-[var(--color-primary)]',
+                'hover:bg-[var(--color-primary)] hover:shadow-lg',
+                'transition-all duration-300',
+                'text-[var(--color-primary)] hover:text-white',
+                'overflow-hidden'
               )}
             >
               {/* Bell icon */}
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <svg
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2.5"
+                className="flex-shrink-0 transition-transform duration-300 group-hover:scale-110"
+              >
                 <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
                 <path d="M13.73 21a2 2 0 0 1-3.46 0" />
               </svg>
-              {t('product.notifyMe')}
+              {/* Text - hidden by default, appears on hover */}
+              <span className={cn(
+                'font-semibold text-[12px] whitespace-nowrap',
+                'max-w-0 opacity-0 group-hover:max-w-[100px] group-hover:opacity-100',
+                'transition-all duration-300 overflow-hidden'
+              )}>
+                {t('product.notifyMe')}
+              </span>
             </button>
           ) : cartQuantity > 0 ? (
             /* Quantity Stepper - shown when item is in cart */

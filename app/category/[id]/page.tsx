@@ -16,6 +16,7 @@ import Link from 'next/link';
 import { MapPin } from 'lucide-react';
 import { AppShell } from '@/components/layout';
 import { ProductCard, ProductGrid, ProductGridSkeleton } from '@/components/products/product-card';
+import { ProductDetailModal } from '@/components/products/product-detail-modal';
 import { CategoryFilters } from '@/components/category/category-filters';
 import { useTranslations } from '@/lib/hooks/use-translations';
 import { useAuth } from '@/lib/contexts/auth-context';
@@ -39,6 +40,9 @@ export default function CategoryPage({ params }: CategoryPageProps) {
   // Filter state
   const [selectedFilterId, setSelectedFilterId] = useState<number | null>(null);
   const [filterType, setFilterType] = useState<'subcategory' | 'company' | null>(null);
+
+  // Product detail modal state
+  const [selectedProductId, setSelectedProductId] = useState<number | null>(null);
 
   // Fetch all categories and find the current one (uses cached sidebar data)
   const { data: categories, isLoading: categoriesLoading } = useCategories();
@@ -88,9 +92,9 @@ export default function CategoryPage({ params }: CategoryPageProps) {
     setFilterType(type);
   };
 
-  // Handle product click
+  // Handle product click - opens product detail modal
   const handleProductClick = (productId: number) => {
-    console.log('Product clicked:', productId);
+    setSelectedProductId(productId);
   };
 
   // Handle add to cart - LOCAL ONLY, NO API call (following Flutter documentation)
@@ -291,6 +295,14 @@ export default function CategoryPage({ params }: CategoryPageProps) {
           <LocationWidget isRTL={isRTL} t={t} />
         </aside>
       </div>
+
+      {/* Product Detail Modal */}
+      {selectedProductId && (
+        <ProductDetailModal
+          productId={selectedProductId}
+          onClose={() => setSelectedProductId(null)}
+        />
+      )}
     </AppShell>
   );
 }
