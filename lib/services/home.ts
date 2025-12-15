@@ -385,7 +385,8 @@ export function useHomePage() {
             imageUrlAr: item.filePath || item.imageUrlAr || '',
             title: item.nameEn || item.nameEN || '',
             titleAr: item.nameAr || item.nameAR || '',
-            linkValue: item.linkValue || '#',
+            linkType: (item.linkType || 'none') as 'category' | 'product' | 'company' | 'url' | 'none',
+            linkValue: item.linkValue || '',
           }));
         }
 
